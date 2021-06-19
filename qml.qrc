@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>ScrBoard.qml</file>
+        <file>ScrConfig.qml</file>
+        <file>qtquickcontrols2.conf</file>
+        <file>ScrCube.qml</file>
+        <file>ScrPiece.qml</file>
+        <file>ColorPicker.qml</file>
+        <file>ScrDefaults.qml</file>
+        <file>ScrMain.qml</file>
+        <file>ScrGame.qml</file>
+        <file>ScrRack.qml</file>
+        <file>resources/newgame.png</file>
+        <file>resources/hamburger.png</file>
+    </qresource>
+</RCC>
