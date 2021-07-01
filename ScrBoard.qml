@@ -3,16 +3,22 @@ import QtQuick.Layouts
 
 GridLayout {
 
-    property int fieldSize: 20
-
-    rows: config.fieldCount+1
-    columns: config.fieldCount+1
+    property int fieldSize: 20 //px
+/*
+    function newGame() {
+        for (var i=0; i<rcBoard.count; i++) {
+            rcSquare[i].
+        }
+    }
+*/
+    rows: game.boardSize+1
+    columns: game.boardSize+1
     rowSpacing: 0
     columnSpacing: 0
     antialiasing: true
     Repeater {
         id: lbHorizontal
-        model: config.fieldCount
+        model: game.boardSize
         Rectangle {
             Layout.row: 0
             Layout.column: index+1
@@ -28,7 +34,7 @@ GridLayout {
     }
     Repeater {
         id: lbVertical
-        model: config.fieldCount
+        model: game.boardSize
         Rectangle {
             Layout.row: index+1
             Layout.column: 0
@@ -46,34 +52,35 @@ GridLayout {
     }
     Repeater {
         id: rcBoard
-        model: config.fieldCount * config.fieldCount
+        model: game.boardSize * game.boardSize
         ScrPiece {
-            id: rcSquares
-            Layout.column: (index % config.fieldCount) + 1
-            Layout.row: Math.floor(index / config.fieldCount) + 1
+            id: rcSquare
+            Layout.column: (index % game.boardSize) + 1
+            Layout.row: Math.floor(index / game.boardSize) + 1
             Layout.preferredHeight: fieldSize
             Layout.preferredWidth: fieldSize
-            pieceColor:  config.colors.get(config.fieldType[index]).itemColor
-            bonusTop:    config.markers && (index-config.fieldCount>0) && (config.fieldType[index-config.fieldCount]>1) ?
-                             config.colors.get(config.fieldType[index-config.fieldCount]).itemColor : "transparent"
-            bonusLeft:   config.markers && (index % config.fieldCount)>0 && (config.fieldType[index-1]>1) ?
-                             config.colors.get(config.fieldType[index-1]).itemColor : "transparent"
-            bonusRight:  config.markers && (index+1 % config.fieldCount)>0 && (config.fieldType[index+1]>1) ?
-                             config.colors.get(config.fieldType[index+1]).itemColor : "transparent"
-            bonusBottom: config.markers && (index+config.fieldCount<config.fieldType.length) && (config.fieldType[index+config.fieldCount]>1) ?
-                             config.colors.get(config.fieldType[index+config.fieldCount]).itemColor : "transparent"
+            pieceColor:  config.colors.get(game.fields[index]).itemColor
+            bonusTop:    config.markers && (index-game.boardSize>0) && (game.fields[index-game.boardSize]>1) ?
+                             config.colors.get(game.fields[index-game.boardSize]).itemColor : "transparent"
+            bonusLeft:   config.markers && (index % game.boardSize)>0 && (game.fields[index-1]>1) ?
+                             config.colors.get(game.fields[index-1]).itemColor : "transparent"
+            bonusRight:  config.markers && (index+1 % game.boardSize)>0 && (game.fields[index+1]>1) ?
+                             config.colors.get(game.fields[index+1]).itemColor : "transparent"
+            bonusBottom: config.markers && (index+game.boardSize<game.fields.length) && (game.fields[index+game.fieldCount]>1) ?
+                             config.colors.get(game.fields[index+game.boardSize]).itemColor : "transparent"
+
             DropArea {
-                id: dragTarget
                 anchors.fill: parent
-                property bool dropped: false
-                onEntered:
-                    drag.source.dragAccept = (game.letters[index] === "")
+                onEntered: drag.source.dragAccept = (game.getLetter(index)[0] === String.fromCharCode(0))
+//                onExited: drag.source.dragAccept = false
                 onDropped: {
                     if (drag.source.dragAccept)
                     {
-                        game.letters[index] = drag.source.pieceLabel
-                        rcSquares.pieceLabel = game.letters[index]
-                        dropped = true
+                        game.setLetter(drag.source.pieceLabel, drag.source.pieceValue, game.currentMove, index)
+                        rcSquare.pieceLabel = game.getLetter(index)[0]
+                        rcSquare.pieceValue = game.getLetter(index)[1]
+                        game.checkMove()
+//                        rcSquare.state = "new"
                     }
                 }
             }
@@ -81,9 +88,17 @@ GridLayout {
             MouseArea {
                 id: maSquare
                 anchors.fill: parent
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
                 onClicked: {
-//                            if (mouse.button === Qt.RightButton)
-                        console.log("foo")
+                    if (mouse.button === Qt.LeftButton) {
+                        //TODO: drag 'n drop
+                    } else
+                    {
+                        pieceLabel = String.fromCharCode(0)
+                        pieceValue = 0
+                        game.setLetter(String.fromCharCode(0), 0, 0, index)
+                        game.checkMove()
+                    }
                 }
                 onReleased: {
                 }

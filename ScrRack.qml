@@ -6,11 +6,11 @@ Flow {
 
     anchors.leftMargin: fieldSize
     anchors.fill: parent
-    anchors.topMargin: (config.fieldCount + 1.2) * fieldSize
+    anchors.topMargin: (game.boardSize + 1.2) * fieldSize
     spacing: 2
 
     Repeater {
-        model: game.rack.length
+        model: game.rack.count
         ScrPiece {
             property bool dragAccept: false
             property point beginDrag
@@ -20,8 +20,8 @@ Flow {
             height: fieldSize
             border.color: Qt.darker(color)
             //random label/value
-            pieceLabel: String.fromCharCode(Math.random()*20+65) //aPieces[index].What;
-            pieceValue: Math.trunc(Math.random()*20)
+            pieceLabel: game.rack.get(index).letter //String.fromCharCode(Math.random()*20+65) //aPieces[index].What;
+            pieceValue: game.rack.get(index).value //Math.trunc(Math.random()*20)
             Drag.active: maPiece.drag.active
             MouseArea {
                 id: maPiece
@@ -34,7 +34,7 @@ Flow {
                 onReleased: {
                     if (dragAccept)
                     {
-                        rcPiece.visible = false
+                        game.rack.remove(index)
                         parent.Drag.drop()
                     } else
                     {

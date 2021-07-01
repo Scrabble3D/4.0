@@ -13,5 +13,6 @@
         <file>ScrRack.qml</file>
         <file>resources/newgame.png</file>
         <file>resources/hamburger.png</file>
+        <file>resources/nextplayer.png</file>
     </qresource>
 </RCC>

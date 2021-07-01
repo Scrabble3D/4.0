@@ -2,7 +2,8 @@ import QtQuick
 import QtQuick.Shapes
 
 Rectangle {
-    property string pieceLabel: ""
+    id: root
+    property string pieceLabel: String.fromCharCode(0)
     property int pieceValue: 0
     property color pieceColor: "transparent"
     property color bonusTop: "transparent"
@@ -12,12 +13,12 @@ Rectangle {
 
     property int cMarkerSize: width/5
 
-    color: (pieceLabel === "") ? pieceColor : config.colors.get(8).itemColor
+    color: (pieceLabel === String.fromCharCode(0)) ? pieceColor : config.colors.get(8).itemColor
     border.color: Qt.lighter(color)
 //    border.color: (pieceLabel === "") ? Qt.lighter(color) : "transparent"
 //                    Drag.active: maPiece.drag.active
     Text {
-        text: pieceLabel
+        text: (pieceLabel === String.fromCharCode(0)) ? "" : pieceLabel
         anchors.centerIn: parent
         font.pixelSize: parent.height*0.75
     }
@@ -30,10 +31,6 @@ Rectangle {
         font.pixelSize: parent.height*0.25
     }
 
-    onPieceLabelChanged: {
-        color: "#0000FF"
-    }
-
     Rectangle {
         id: rcBonusTop
         color: "transparent"
@@ -41,7 +38,7 @@ Rectangle {
         anchors.left: parent.horizontalCenter; anchors.leftMargin: -cMarkerSize/2
         Shape {
             ShapePath {
-               fillColor: (pieceLabel === "") ? bonusTop : "transparent"
+               fillColor: (pieceLabel === String.fromCharCode(0)) ? bonusTop : "transparent"
                strokeColor: "transparent"
                startX:0; startY:0
                PathLine {x: rcBonusTop.width; y: 0 }
@@ -56,7 +53,7 @@ Rectangle {
         anchors.top: parent.verticalCenter; anchors.topMargin: -cMarkerSize/2
         Shape {
             ShapePath {
-               fillColor: (pieceLabel === "") ? bonusLeft : "transparent"
+               fillColor: (pieceLabel === String.fromCharCode(0)) ? bonusLeft : "transparent"
                strokeColor: "transparent"
                startX:0; startY:0
                PathLine {x: rcBonusLeft.width; y: rcBonusLeft.height/2 }
@@ -71,7 +68,7 @@ Rectangle {
         anchors.top: parent.verticalCenter; anchors.topMargin: -cMarkerSize/2; anchors.right: parent.right
         Shape {
             ShapePath {
-               fillColor: (pieceLabel === "") ? bonusRight : "transparent"
+               fillColor: (pieceLabel === String.fromCharCode(0)) ? bonusRight : "transparent"
                strokeColor: "transparent"
                startX:rcBonusRight.width; startY:0
                PathLine {x: 0; y: rcBonusRight.height/2 }
@@ -86,7 +83,7 @@ Rectangle {
         anchors.left: parent.horizontalCenter; anchors.leftMargin: -cMarkerSize/2; anchors.bottom: parent.bottom
         Shape {
             ShapePath {
-               fillColor: (pieceLabel === "") ? bonusBottom : "transparent"
+               fillColor: (pieceLabel === String.fromCharCode(0)) ? bonusBottom : "transparent"
                strokeColor: "transparent"
                startX:0; startY:rcBonusBottom.height
                PathLine {x: rcBonusBottom.width; y: rcBonusBottom.height }
@@ -95,17 +92,5 @@ Rectangle {
         }
     }
 
-/*        MouseArea {
-            id: maPiece
-            anchors.fill: parent
-            drag.target: parent
-            onPressed: {
-            }
-            onReleased: {
-//                            console.log( rcSquares.Layout.column + ':' + rcSquares.Layout.row + "/" + index + "=" + scr"letter"s[index])
-                scr"letter"s[index] = sc"letter".text
-                rcSquares.state = "tileDropped"
-            }
-        }
-*/    }
+}
 

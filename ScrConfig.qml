@@ -8,9 +8,14 @@ Page {
     property alias markers: cbMarkers.checked
     property ListModel colors: ({})
     property alias fieldCount: sbSize.value
-    property var fieldType: []
+    property var fields: []
+//    property alias fieldType: FieldType
     property alias is3D: rb3D.checked
     property alias numberOfLettersOnRack: sbPieces.value
+    property alias letterSet: tvLetterSet.model
+    property alias numberOfJokers: sbJoker.value
+
+//    enum FieldType {Normal=0,Green=1,Piece=8}
 
     ListModel {
         id: scrColors
@@ -28,7 +33,7 @@ Page {
         scrColors.append({"itemColor":Qt.rgba(96/255,0,0,1),"itemName":qsTr("3x word")}) //"#600000"
         scrColors.append({"itemColor":Qt.rgba(255/255,255/255,0,1),"itemName":qsTr("Pieces")}) //"#FFFF00"
         colors = scrColors
-        fieldType = defaults.fieldTypeClassicScrabble.slice()
+        fields = defaults.fieldsClassicScrabble.slice()
         cbLetterSet.currentIndex = 1
     }
 
@@ -109,34 +114,34 @@ Page {
                         text: qsTr("Preset:")
                     }
                     ComboBox {
-                        id: cbDefaultFieldType
+                        id: cbDefaultFields
                         implicitContentWidthPolicy: ComboBox.WidestText
                         model: [qsTr("Classic"), qsTr("Supperscrabble"), qsTr("Scrabble 3D"),qsTr("Superscrabble 3D"),qsTr("User-defined")]
                         onCurrentIndexChanged: {
                             switch (currentIndex) {
                               case 0:
-                                  fieldType = defaults.fieldTypeClassicScrabble.slice()
+                                  fields = defaults.fieldsClassicScrabble.slice()
                                   rb2D.checked = true
                                   break
                               case 1:
-                                  fieldType = defaults.fieldTypeSuperScrabble.slice()
+                                  fields = defaults.fieldsSuperScrabble.slice()
                                   rb2D.checked = true
                                   break
                               case 2:
-                                  fieldType = defaults.fieldTypeClassicScrabble3D.slice()
+                                  fields = defaults.fieldsClassicScrabble3D.slice()
                                   rb3D.checked = true
                                   break
                               case 3:
-                                  fieldType = defaults.fieldTypeSuperScrabble3D.slice()
+                                  fields = defaults.fieldsSuperScrabble3D.slice()
                                   rb3D.checked = true
                                   break
                               case 4:
                                   break
                             }
                             if (currentIndex < 2)
-                                sbSize.value = Math.sqrt(fieldType.length)
+                                sbSize.value = Math.sqrt(fields.length)
                             else if (currentIndex < 4)
-                                sbSize.value = Math.round(Math.cbrt(fieldType.length)) //cubic root = 14.99999
+                                sbSize.value = Math.round(Math.cbrt(fields.length)) //cubic root = 14.99999
                         }
                     }
                     Label {
@@ -165,17 +170,17 @@ Page {
                         id: sbSize
                         onValueChanged: {
                             //TODO: keep bonus distribution when adding new fields, meaning
-                            //fieldType needs to be two/three-dimensional- at least while resizing
-/*                            if (fieldType.length<sbSize.value*sbSize.value) {
+                            //fields needs to be two/three-dimensional- at least while resizing
+/*                            if (fields.length<sbSize.value*sbSize.value) {
                                 for (var i=1; i<sbSize.value; i++)
-                                    fieldType.splice(i*sbSize.value-1,0,7)
+                                    fields.splice(i*sbSize.value-1,0,7)
                                 for (i=0; i<sbSize.value; i++)
-                                    fieldType.splice(i+sbSize.value*sbSize.value,0,1)
+                                    fields.splice(i+sbSize.value*sbSize.value,0,1)
                             } else {
                                 for (i=1; i<sbSize.value; i++)
-                                    fieldType.splice(i*sbSize.value,1)
+                                    fields.splice(i*sbSize.value,1)
                                 for (i=0; i<sbSize.value; i++)
-                                    fieldType.splice(i+(sbSize.value*sbSize.value),1)
+                                    fields.splice(i+(sbSize.value*sbSize.value),1)
                             }
 */
 /*
@@ -183,17 +188,17 @@ Page {
                             for (var i=0; i<sbSize.value; i++)
                              for (var j=0; j<sbSize.value; j++) {
                                  z = i*sbSize.value+j
-                                 if (isNaN(fieldType[z]))
+                                 if (isNaN(fields[z]))
                                      tmp[z] = 1
                                  else
-                                     tmp[z] = fieldType[z]
+                                     tmp[z] = fields[z]
                              }
-                             fieldType = tmp
+                             fields = tmp
 */
 /*
                             for (var i=0; i<sbSize.value*sbSize.value; i++)
-                                if (isNaN(fieldType[i]))
-                                    fieldType[i]=1;
+                                if (isNaN(fields[i]))
+                                    fields[i]=1;
 */
                         }
                     }
@@ -216,14 +221,14 @@ Page {
 //                                Layout.preferredWidth: rightPane.width / sbSize.value
 //                                Layout.preferredHeight: Layout.preferredWidth
                                 property int i: index+sbSize.value*sbSize.value*(pos3D.value-1)
-                                color: colors.get(fieldType[i]).itemColor
+                                color: colors.get(fields[i]).itemColor
                                 MouseArea {
                                     anchors.fill: parent
                                     onClicked: {
                                         var tmp = []
-                                        tmp = fieldType
-                                        tmp[i] = (fieldType[i]+1) % 7
-                                        fieldType = tmp //to call refresh handler
+                                        tmp = fields
+                                        tmp[i] = (fields[i]+1) % 7
+                                        fields = tmp //to call refresh handler
                                     }
                                 }
                             }
@@ -240,7 +245,7 @@ Page {
                         Slider {
                             id: pos3D
                             from: 1
-                            to: rb3D.checked ? Math.round(Math.cbrt(fieldType.length)) : 1
+                            to: rb3D.checked ? Math.round(Math.cbrt(fields.length)) : 1
                             snapMode: Slider.SnapAlways
                             stepSize: 1
                         }
@@ -503,22 +508,22 @@ Page {
         }
     } //RowLayout
 /*
-    onFieldTypeChanged: {
+    onFieldsChanged: {
 
         function isEqual(array1, array2) {
             return array1.length === array2.length && array1.every(function(value, index) { return value === array2[index]})
         }
 
-        if (isEqual(fieldType,defaults.fieldTypeClassicScrabble))
-            cbDefaultFieldType.currentIndex = 0
-        else if (isEqual(fieldType,defaults.fieldTypeSuperScrabble))
-            cbDefaultFieldType.currentIndex = 1
-        else if (isEqual(fieldType,defaults.fieldTypeClassicScrabble3D))
-            cbDefaultFieldType.currentIndex = 2
-        else if (isEqual(fieldType,defaults.fieldTypeSuperScrabble3D))
-            cbDefaultFieldType.currentIndex = 3
+        if (isEqual(fields,defaults.fieldsClassicScrabble))
+            cbDefaultFields.currentIndex = 0
+        else if (isEqual(fields,defaults.fieldsSuperScrabble))
+            cbDefaultFields.currentIndex = 1
+        else if (isEqual(fields,defaults.fieldsClassicScrabble3D))
+            cbDefaultFields.currentIndex = 2
+        else if (isEqual(fields,defaults.fieldsSuperScrabble3D))
+            cbDefaultFields.currentIndex = 3
         else
-            cbDefaultFieldType.currentIndex = 4
+            cbDefaultFields.currentIndex = 4
     }
 */
     onWidthChanged: ;//console.log(rightPane.width)

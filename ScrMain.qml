@@ -3,8 +3,8 @@ import QtQuick.Controls
 import Qt5Compat.GraphicalEffects
 
 Page {
-    property int fs: swipeView.height < swipeView.width ? swipeView.height / (config.fieldCount+2.5)
-                                                        : swipeView.width / (config.fieldCount+2.5)
+    property int fs: swipeView.height < swipeView.width ? swipeView.height / (game.boardSize+2.5)
+                                                        : swipeView.width / (game.boardSize+2.5)
 
     ScrBoard {
         id: board
@@ -16,10 +16,17 @@ Page {
 
     Action {
         id: newGame
-        text: "New Game"
-        shortcut: tr("Ctrl+G")
+        text: qsTr("New Game")
+        shortcut: qsTr("Ctrl+G")
         icon.source: "qrc:///resources/newgame.png"
         onTriggered: game.startNewGame()
+    }
+    Action {
+        id: nextPlayer
+        text: qsTr("Next Player")
+        enabled: game.lastError < 2
+        icon.source: "qrc:///resources/nextplayer.png"
+        onTriggered: game.nextPlayer()
     }
 
     Image {
@@ -38,39 +45,39 @@ Page {
             Menu {
                 id: contextMenu
                 MenuItem { action: newGame }
-                MenuItem { text: "Next Player" }
+                MenuItem { action: nextPlayer }
                 MenuItem { text: "Tip" }
             }
         }
     }
 
-    Rectangle {
-        color: "forestgreen"
+    RoundButton {
+        id: actionButton
         width: 50
         height: 50
-        radius: width / 2
         anchors.left: board.right
         anchors.top: board.bottom
-        Image {
-            anchors.centerIn: parent
-            source: "qrc:///resources/newgame.png"
-        }
-        MouseArea {
-            id: mouseArea
-            hoverEnabled: true
+        action: game.isGameRunning ? nextPlayer :  newGame
+        icon.color: "white"
+        display: AbstractButton.IconOnly
+        background: Rectangle {
             anchors.fill: parent
-            onClicked: game.startNewGame()
+            radius: width / 2
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: actionButton.action.enabled ? "darkgreen" : "darkgrey"}
+                GradientStop { position: 1.0; color: actionButton.action.enabled ? "limegreen" : "lightgrey"}
+            }
         }
         ToolTip {
-            text: qsTr("Start a new game")
-            visible: mouseArea.containsMouse
+            text: actionButton.action.text
+            visible: actionButton.hovered
             delay: 1000
             timeout: 5000
         }
         layer.enabled: true
         layer.effect: DropShadow {
             transparentBorder: true
-            color: mouseArea.pressedButtons & Qt.LeftButton ? "transparent" : "darkgrey"
+            color: actionButton.down ? "transparent" : "darkgrey"
             horizontalOffset: 3
             verticalOffset: 3
             radius: 10
