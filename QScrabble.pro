@@ -7,14 +7,20 @@ CONFIG += c++11
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-#        gameplay.cpp \
-        main.cpp
+        main.cpp \
+        gameplay.cpp \
+        rack.cpp
 
 HEADERS += \
-#        gameplay.h
+        gameplay.h \
+        letter.h \
+        rack.h
 
 RESOURCES += \
         qml.qrc
+
+#DESTDIR = imports/GamePlay
+#TARGET = gameplay
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 #QML_IMPORT_NAME = Scrabble

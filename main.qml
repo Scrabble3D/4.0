@@ -10,10 +10,10 @@ ApplicationWindow {
     ScrDefaults {
         id: defaults
     }
-    ScrGame {
+/*    ScrGame {
         id: game
     }
-
+*/
     SwipeView {
         id: swipeView
         anchors.fill: parent

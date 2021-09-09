@@ -25,12 +25,12 @@ Page {
         //TODO: move colors into defaults
         scrColors.append({"itemColor":Qt.rgba(192/255,192/255,192/255,1),"itemName":qsTr("Start")}) //"#C0C0C0"
         scrColors.append({"itemColor":Qt.rgba(0,128/255,0,1),"itemName":qsTr("Default")}) //"#008000"
-        scrColors.append({"itemColor":Qt.rgba(0,255/255,255/255,1),"itemName":qsTr("1x letter")}) //"#00FFFF"
-        scrColors.append({"itemColor":Qt.rgba(0,0,255/255,1),"itemName":qsTr("2x letter")}) //"#0000FF"
-        scrColors.append({"itemColor":Qt.rgba(0,0,96/255,1),"itemName":qsTr("3x letter")}) //"#000060"
-        scrColors.append({"itemColor":Qt.rgba(255/255,96/255,96/255,1),"itemName":qsTr("1x word")}) //"#FF8080"
-        scrColors.append({"itemColor":Qt.rgba(255/255,0,0,1),"itemName":qsTr("2x word")}) //"#FF0000"
-        scrColors.append({"itemColor":Qt.rgba(96/255,0,0,1),"itemName":qsTr("3x word")}) //"#600000"
+        scrColors.append({"itemColor":Qt.rgba(0,255/255,255/255,1),"itemName":qsTr("2x letter")}) //"#00FFFF"
+        scrColors.append({"itemColor":Qt.rgba(0,0,255/255,1),"itemName":qsTr("3x letter")}) //"#0000FF"
+        scrColors.append({"itemColor":Qt.rgba(0,0,96/255,1),"itemName":qsTr("4x letter")}) //"#000060"
+        scrColors.append({"itemColor":Qt.rgba(255/255,96/255,96/255,1),"itemName":qsTr("2x word")}) //"#FF8080"
+        scrColors.append({"itemColor":Qt.rgba(255/255,0,0,1),"itemName":qsTr("3x word")}) //"#FF0000"
+        scrColors.append({"itemColor":Qt.rgba(96/255,0,0,1),"itemName":qsTr("4x word")}) //"#600000"
         scrColors.append({"itemColor":Qt.rgba(255/255,255/255,0,1),"itemName":qsTr("Pieces")}) //"#FFFF00"
         colors = scrColors
         fields = defaults.fieldsClassicScrabble.slice()
@@ -227,7 +227,7 @@ Page {
                                     onClicked: {
                                         var tmp = []
                                         tmp = fields
-                                        tmp[i] = (fields[i]+1) % 7
+                                        tmp[i] = (fields[i]+1) % 8
                                         fields = tmp //to call refresh handler
                                     }
                                 }

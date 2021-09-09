@@ -3,8 +3,8 @@ import QtQuick.Controls
 import Qt5Compat.GraphicalEffects
 
 Page {
-    property int fs: swipeView.height < swipeView.width ? swipeView.height / (game.boardSize+2.5)
-                                                        : swipeView.width / (game.boardSize+2.5)
+    property int fs: swipeView.height < swipeView.width ? swipeView.height / (GamePlay.boardSize+2.5)
+                                                        : swipeView.width / (GamePlay.boardSize+2.5)
 
     ScrBoard {
         id: board
@@ -15,18 +15,57 @@ Page {
     }
 
     Action {
-        id: newGame
+        id: acNewGame
         text: qsTr("New Game")
         shortcut: qsTr("Ctrl+G")
         icon.source: "qrc:///resources/newgame.png"
-        onTriggered: game.startNewGame()
+        onTriggered: {
+            var letterlist = [];
+            for (var i=0; i<config.letterSet.rowCount; i++) {
+                letterlist.push(config.letterSet.getRow(i).letter);
+                letterlist.push(config.letterSet.getRow(i).value);
+                letterlist.push(config.letterSet.getRow(i).count);
+            }
+            GamePlay.startNewGame(["Heiko"],
+                                  config.numberOfLettersOnRack,
+                                  config.is3D,
+                                  config.fields,
+                                  letterlist, //config.letterSet,
+                                  true,
+                                  50,
+                                  7,
+                                  10,
+                                  true,
+                                  0,
+                                  10,
+                                  3,
+                                  false,
+                                  false,
+                                  true,
+                                  true,
+                                  0,
+                                  10,
+                                  true,
+                                  0,
+                                  30,
+                                  10,
+                                  10,
+                                  50,
+                                  false,
+                                  false);
+        } //onTriggered
     }
     Action {
-        id: nextPlayer
+        id: acNextPlayer
         text: qsTr("Next Player")
-        enabled: game.lastError < 2
+//        enabled: game.lastError < 2
         icon.source: "qrc:///resources/nextplayer.png"
-        onTriggered: game.nextPlayer()
+        onTriggered: GamePlay.execNextPlayer()
+    }
+    Action {
+        id: acExitApp
+        text: qsTr("E&xit")
+        onTriggered: Qt.quit();
     }
 
     Image {
@@ -44,9 +83,10 @@ Page {
             }
             Menu {
                 id: contextMenu
-                MenuItem { action: newGame }
-                MenuItem { action: nextPlayer }
-                MenuItem { text: "Tip" }
+                MenuItem { action: acNewGame }
+                MenuItem { action: acNextPlayer }
+                MenuItem { text: "-" }
+                MenuItem { action: acExitApp }
             }
         }
     }
@@ -57,7 +97,7 @@ Page {
         height: 50
         anchors.left: board.right
         anchors.top: board.bottom
-        action: game.isGameRunning ? nextPlayer :  newGame
+        action: GamePlay.isRunning ? acNextPlayer : acNewGame
         icon.color: "white"
         display: AbstractButton.IconOnly
         background: Rectangle {

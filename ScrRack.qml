@@ -1,27 +1,30 @@
 import QtQuick
 import QtQuick.Layouts
+import letterstate
 
 Flow {
     property int fieldSize: 20
 
     anchors.leftMargin: fieldSize
     anchors.fill: parent
-    anchors.topMargin: (game.boardSize + 1.2) * fieldSize
+    anchors.topMargin: (GamePlay.boardSize + 1.2) * fieldSize
     spacing: 2
-
+//    GamePlay.rackSizeChanged: console.log("size changed");
+//    GamePlay.rackChanged: console.log("rack changed");
     Repeater {
-        model: game.rack.count
+        model: GamePlay.rackSize
         ScrPiece {
             property bool dragAccept: false
             property point beginDrag
-
+//            GamePlay.setRackIndex: index
             id: rcPiece
             width: fieldSize
             height: fieldSize
+            //cannot read - when not defined
+            //visible: GamePlay.rack[index].state === LetterState.lsRack
             border.color: Qt.darker(color)
-            //random label/value
-            pieceLabel: game.rack.get(index).letter //String.fromCharCode(Math.random()*20+65) //aPieces[index].What;
-            pieceValue: game.rack.get(index).value //Math.trunc(Math.random()*20)
+            pieceLabel: GamePlay.rack[index].what
+            pieceValue: GamePlay.rack[index].value
             Drag.active: maPiece.drag.active
             MouseArea {
                 id: maPiece
@@ -34,7 +37,7 @@ Flow {
                 onReleased: {
                     if (dragAccept)
                     {
-                        game.rack.remove(index)
+//                        GamePlay.placeLetter(index,0)
                         parent.Drag.drop()
                     } else
                     {

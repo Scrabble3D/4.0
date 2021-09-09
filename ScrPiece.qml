@@ -14,6 +14,8 @@ Rectangle {
     property int cMarkerSize: width/5
 
     color: (pieceLabel === String.fromCharCode(0)) ? pieceColor : config.colors.get(8).itemColor
+    // GamePlay.color
+
     border.color: Qt.lighter(color)
 //    border.color: (pieceLabel === "") ? Qt.lighter(color) : "transparent"
 //                    Drag.active: maPiece.drag.active

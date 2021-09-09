@@ -1,17 +1,18 @@
-import QtQuick 2.0
+import QtQuick
 
 Item {
-    property var fields: defaults.fieldsClassicScrabble
+    //property var fields: defaults.fieldsClassicScrabble
     property int boardSize: 15
-    property alias rack: rack
+//    property alias rack: rack
     property alias bag: bag
     property bool isGameRunning: false
     property int currentMove: 0
     property int lastError: 0
-
+/*
     ListModel {
         id: rack
     }
+*/
     ListModel {
         id: bag
     }
@@ -22,6 +23,7 @@ Item {
         id: currentLetters
     }
 
+    //bag holds all letters depending on language and letterset
     function fillBag() {
         for (var i = 0; i < config.letterSet.rowCount; i++) {
             var aLetter = config.letterSet.getRow(i)
@@ -40,7 +42,7 @@ Item {
     }
 
     function nextPlayer() {
-        for (var i = rack.count; i < config.numberOfLettersOnRack; i++) {
+/*        for (var i = rack.count; i < config.numberOfLettersOnRack; i++) {
             var j = bag.count-1
             if (j > 0) {
                 var aLetter = bag.get(j)
@@ -48,7 +50,7 @@ Item {
                 bag.remove(j,1)
             }
         }
-        currentMove++
+*/        currentMove++
         lastError = 1 //leNoLetter
     }
 
@@ -57,7 +59,7 @@ Item {
         for (var i = 0; i < config.fields.length; i++)
             letters.append({"letter":String.fromCharCode(0),"value":0,"move":0,"position":0})
     }
-
+/*
     function getLetter(index) {
         if (index < letters.count)
             return [letters.get(index).letter, letters.get(index).value]
@@ -70,14 +72,49 @@ Item {
         letters.get(position).value = value
         letters.get(position).move = move
     }
-
+*/
     function startNewGame() {
+        //TODO: tableview.model -> qvariantlist
+        var letterlist = [];
+        for (var i=0; i<config.letterSet.rowCount; i++) {
+            letterlist.push(config.letterSet.getRow(i).letter);
+            letterlist.push(config.letterSet.getRow(i).value);
+            letterlist.push(config.letterSet.getRow(i).count);
+        }
+
+        GamePlay.startNewGame(["Heiko"],
+                              config.numberOfLettersOnRack,
+                              config.is3D,
+                              config.fields,
+                              letterlist, //config.letterSet,
+                              true,
+                              50,
+                              7,
+                              10,
+                              true,
+                              0,
+                              10,
+                              3,
+                              false,
+                              false,
+                              true,
+                              true,
+                              0,
+                              10,
+                              true,
+                              0,
+                              30,
+                              10,
+                              10,
+                              50,
+                              false,
+                              false);
         boardSize = 0 //to clear the board
         fields = config.fields.slice()
         boardSize = config.fieldCount
         bag.clear()
         fillBag()
-        rack.clear()
+//        rack.clear()
         currentLetters.clear()
         currentMove = 0
         initLetters()
