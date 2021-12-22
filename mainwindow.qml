@@ -32,7 +32,7 @@ ApplicationWindow {
                 letterlist.push(config.letterSet.getRow(i).value);
                 letterlist.push(config.letterSet.getRow(i).count);
             }
-            GamePlay.startNewGame(["Heiko","Claudia","Sara","Ignacio"],
+            GamePlay.startNewGame(["1st player","2nd player","3rd player","4th player"],
                                   config.numberOfLettersOnRack,
                                   config.is3D,
                                   config.fields,
