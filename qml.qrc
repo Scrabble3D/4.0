@@ -1,6 +1,6 @@
 <RCC>
     <qresource prefix="/">
-        <file>main.qml</file>
+        <file>mainwindow.qml</file>
         <file>ScrBoard.qml</file>
         <file>ScrConfig.qml</file>
         <file>qtquickcontrols2.conf</file>
@@ -14,5 +14,16 @@
         <file>resources/newgame.png</file>
         <file>resources/hamburger.png</file>
         <file>resources/nextplayer.png</file>
+        <file>resources/down.png</file>
+        <file>resources/up.png</file>
+        <file>resources/abscissa.png</file>
+        <file>resources/ordinate.png</file>
+        <file>resources/applicate.png</file>
+        <file>resources/app.ico</file>
+        <file>ScrMessages.qml</file>
+        <file>ScrStatistics.qml</file>
+        <file>resources/dictionary.png</file>
+        <file>ScrStatusbar.qml</file>
+        <file>ShadowText.qml</file>
     </qresource>
 </RCC>

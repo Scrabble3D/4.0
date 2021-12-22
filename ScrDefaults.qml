@@ -2395,5 +2395,26 @@ Item {
         based on rules for British English
       */
     }
+/*  https://bugreports.qt.io/browse/QTBUG-16289
 
+    property var boardColors: ListModel {
+        id: boardColors
+        ListElement { itemColor: Qt.rgba(192/255,192/255,192/255,1); itemName: qsTr("Start")     } //"#C0C0C0"
+        ListElement { itemColor: Qt.rgba(0,128/255,0,1);             itemName: qsTr("Default")   } //"#008000"
+        ListElement { itemColor: Qt.rgba(0,255/255,255/255,1);       itemName: qsTr("2x letter") } //"#00FFFF"
+        ListElement { itemColor: Qt.rgba(0,0,255/255,1);             itemName: qsTr("3x letter") } //"#0000FF"
+        ListElement { itemColor: Qt.rgba(0,0,96/255,1);              itemName: qsTr("4x letter") } //"#000060"
+        ListElement { itemColor: Qt.rgba(255/255,96/255,96/255,1);   itemName: qsTr("2x word")   } //"#FF8080"
+        ListElement { itemColor: Qt.rgba(255/255,0,0,1);             itemName: qsTr("3x word")   } //"#FF0000"
+        ListElement { itemColor: Qt.rgba(96/255,0,0,1);              itemName: qsTr("4x word")   } //"#600000"
+        ListElement { itemColor: Qt.rgba(255/255,255/255,0,1);       itemName: qsTr("Pieces")    } //"#FFFF00"
+    }
+    property var playerColors: ListModel {
+        id: playerColors
+        ListElement { itemColor: Qt.rgba(1,0,0,1);    itemName: qsTr("First player")  }
+        ListElement { itemColor: Qt.rgba(0,1,0,1);    itemName: qsTr("Second player") }
+        ListElement { itemColor: Qt.rgba(0,0,1,1);    itemName: qsTr("Third player")  }
+        ListElement { itemColor: Qt.rgba(1,0.75,0,1); itemName: qsTr("Fourth player") }
+    }
+*/
 }

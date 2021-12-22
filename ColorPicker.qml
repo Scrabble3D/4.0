@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects
 import Qt.labs.platform
+import Qt5Compat.GraphicalEffects
 
 RowLayout {
     property ListModel pickerColors:({})
@@ -10,10 +10,13 @@ RowLayout {
     ComboBox {
         id: cbColors
         model: pickerColors
+        Layout.preferredWidth: 200
+
         delegate: Rectangle {
-            implicitWidth: 180
-            implicitHeight: 40
+            height: 32
+            width: parent.width
             Rectangle {
+                id: delegateColorDot
                 width: parent.height * 0.75
                 height: width
                 radius: width * 0.5
@@ -23,6 +26,7 @@ RowLayout {
                 color: itemColor
             }
             Text {
+                id: delegateColorName
                 leftPadding: parent.height * 1.25
                 text: itemName
                 anchors.verticalCenter: parent.verticalCenter
@@ -31,18 +35,17 @@ RowLayout {
                 anchors.fill: parent
                 onClicked: {
                     cbColors.currentIndex = index
-                    rcBackground.color = itemColor
-                    lbBackground.text = itemName
+                    rcColorDot.color = itemColor
+                    lbColorName.text = itemName
                     cbColors.popup.close()
                 }
             }
         }
 
         background: Rectangle {
-            implicitWidth: 180
-            implicitHeight: 40
+            id: rcBackground
             Rectangle {
-                id: rcBackground
+                id: rcColorDot
                 width: parent.height * 0.75
                 height: width
                 radius: width * 0.5
@@ -51,7 +54,7 @@ RowLayout {
                 anchors.leftMargin: width * 0.25
             }
             Text {
-                id: lbBackground
+                id: lbColorName
                 leftPadding: parent.height * 1.25
                 anchors.verticalCenter: parent.verticalCenter
             }
@@ -67,30 +70,25 @@ RowLayout {
 
         Component.onCompleted: {
             currentIndex: 1
-            rcBackground.color = pickerColors.get(1).itemColor
-            lbBackground.text = pickerColors.get(1).itemName
+            rcColorDot.color = pickerColors.get(1).itemColor
+            lbColorName.text = pickerColors.get(1).itemName
         }
 
     }
 
     Button {
         id: btnColors
-        text: qsTr("...")
-        onClicked: {
-            colorDialog.open()
-        }
+        text: "..."
+        onClicked: colorDialog.open()
     }
 
     ColorDialog {
         id: colorDialog
         title: "Please choose a color"
-        color: rcBackground.color
+        color: rcColorDot.color
         onAccepted: {
             pickerColors.setProperty(cbColors.currentIndex, "itemColor", colorDialog.color)
-            rcBackground.color = colorDialog.color
-        }
-        onRejected: {
-            console.log("Canceled")
+            rcColorDot.color = colorDialog.color
         }
     }
 

@@ -2,10 +2,10 @@ import QtQuick
 import QtQuick.Shapes
 
 Rectangle {
-    id: root
     property string pieceLabel: String.fromCharCode(0)
     property int pieceValue: 0
     property color pieceColor: "transparent"
+    property color pieceShadow: "transparent"
     property color bonusTop: "transparent"
     property color bonusLeft: "transparent"
     property color bonusRight: "transparent"
@@ -13,12 +13,19 @@ Rectangle {
 
     property int cMarkerSize: width/5
 
-    color: (pieceLabel === String.fromCharCode(0)) ? pieceColor : config.colors.get(8).itemColor
-    // GamePlay.color
+    color: pieceColor
 
     border.color: Qt.lighter(color)
 //    border.color: (pieceLabel === "") ? Qt.lighter(color) : "transparent"
 //                    Drag.active: maPiece.drag.active
+    Text {
+        text: (pieceLabel === String.fromCharCode(0)) ? "" : pieceLabel
+        color: pieceShadow
+        anchors.centerIn: parent
+        anchors.verticalCenterOffset: 1
+        anchors.horizontalCenterOffset: 1
+        font.pixelSize: parent.height*0.75
+    }
     Text {
         text: (pieceLabel === String.fromCharCode(0)) ? "" : pieceLabel
         anchors.centerIn: parent
@@ -93,6 +100,5 @@ Rectangle {
             }
         }
     }
-
 }
 

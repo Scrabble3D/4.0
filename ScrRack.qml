@@ -1,50 +1,57 @@
 import QtQuick
 import QtQuick.Layouts
-import letterstate
 
-Flow {
-    property int fieldSize: 20
+Item {
 
-    anchors.leftMargin: fieldSize
-    anchors.fill: parent
-    anchors.topMargin: (GamePlay.boardSize + 1.2) * fieldSize
-    spacing: 2
-//    GamePlay.rackSizeChanged: console.log("size changed");
-//    GamePlay.rackChanged: console.log("rack changed");
-    Repeater {
-        model: GamePlay.rackSize
+    property int fieldSize
+
+    ListView {
+        anchors.fill: parent
+        orientation: Qt.Horizontal
+        spacing: 1
+        model: GamePlay.rackModel
+        delegate: rackDelegate
+    }
+
+    Component {
+        id: rackDelegate
         ScrPiece {
-            property bool dragAccept: false
-            property point beginDrag
-//            GamePlay.setRackIndex: index
             id: rcPiece
+            property int rackIndex: index
+
             width: fieldSize
             height: fieldSize
-            //cannot read - when not defined
-            //visible: GamePlay.rack[index].state === LetterState.lsRack
             border.color: Qt.darker(color)
-            pieceLabel: GamePlay.rack[index].what
-            pieceValue: GamePlay.rack[index].value
-            Drag.active: maPiece.drag.active
+            pieceColor: config.colors.get(8).itemColor
+
+            visible: isVisible // LetterState::lsRack
+            pieceLabel: what
+            pieceValue: value
+
+            property bool dragAccept: false
+            property point beginDragAt
+
+            Drag.active: maRack.drag.active
+
             MouseArea {
-                id: maPiece
+                id: maRack
                 anchors.fill: parent
-                drag.target: parent //rcBoard.rcSquares
+                drag.target: parent
                 cursorShape: drag.active ? (dragAccept ? Qt.DragLinkCursor : Qt.ClosedHandCursor) : Qt.ArrowCursor
                 onPressed: {
-                    rcPiece.beginDrag = Qt.point(rcPiece.x, rcPiece.y);
+                    rcPiece.beginDragAt = Qt.point(rcPiece.x, rcPiece.y);
+                    rcPiece.z = Infinity //BringToFront
                 }
                 onReleased: {
-                    if (dragAccept)
-                    {
-//                        GamePlay.placeLetter(index,0)
-                        parent.Drag.drop()
+                    rcPiece.z = rackIndex
+                    if (dragAccept) {
+                        rcPiece.Drag.drop()
                     } else
                     {
                         backAnimX.from = rcPiece.x;
-                        backAnimX.to = beginDrag.x;
+                        backAnimX.to = beginDragAt.x;
                         backAnimY.from = rcPiece.y;
-                        backAnimY.to = beginDrag.y;
+                        backAnimY.to = beginDragAt.y;
                         backAnim.start()
                     }
                 }

@@ -3,8 +3,8 @@ import QtQuick.Controls
 import Qt5Compat.GraphicalEffects
 
 Page {
-    property int fs: swipeView.height < swipeView.width ? swipeView.height / (GamePlay.boardSize+2.5)
-                                                        : swipeView.width / (GamePlay.boardSize+2.5)
+    property int fs: parent.height < parent.width ? parent.height / (GamePlay.boardSize+2.5)
+                                                  : parent.width / (GamePlay.boardSize+2.5)
 
     ScrBoard {
         id: board
@@ -13,10 +13,19 @@ Page {
     ScrRack {
         fieldSize: fs
     }
+    //todo v
+    onWidthChanged: updateFieldSize();
+    onHeightChanged: updateFieldSize();
+    function updateFieldSize() {
+        fs = parent.height < parent.width
+                ? parent.height / (GamePlay.boardSize+2.5)
+                : parent.width / (GamePlay.boardSize+2.5)
+    }
 
     Action {
         id: acNewGame
         text: qsTr("New Game")
+        property string tip: text
         shortcut: qsTr("Ctrl+G")
         icon.source: "qrc:///resources/newgame.png"
         onTriggered: {
@@ -53,12 +62,16 @@ Page {
                                   50,
                                   false,
                                   false);
+            fs = parent.height < parent.width ? parent.height / (GamePlay.boardSize+2.5)
+                                              : parent.width / (GamePlay.boardSize+2.5)
+            board.updateLabelsModel();
         } //onTriggered
     }
     Action {
         id: acNextPlayer
         text: qsTr("Next Player")
-//        enabled: game.lastError < 2
+        property string tip: enabled ? text : GamePlay.getLastError()
+        enabled: GamePlay.isAccepted
         icon.source: "qrc:///resources/nextplayer.png"
         onTriggered: GamePlay.execNextPlayer()
     }
@@ -85,7 +98,7 @@ Page {
                 id: contextMenu
                 MenuItem { action: acNewGame }
                 MenuItem { action: acNextPlayer }
-                MenuItem { text: "-" }
+                MenuSeparator { }
                 MenuItem { action: acExitApp }
             }
         }
@@ -95,8 +108,10 @@ Page {
         id: actionButton
         width: 50
         height: 50
-        anchors.left: board.right
-        anchors.top: board.bottom
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.rightMargin: 25
+        anchors.bottomMargin: 50
         action: GamePlay.isRunning ? acNextPlayer : acNewGame
         icon.color: "white"
         display: AbstractButton.IconOnly
@@ -109,8 +124,8 @@ Page {
             }
         }
         ToolTip {
-            text: actionButton.action.text
-            visible: actionButton.hovered
+            text: actionButton.action.tip
+            visible: text.length === 0 ? false : actionButton.hovered
             delay: 1000
             timeout: 5000
         }

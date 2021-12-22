@@ -1,99 +1,238 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-
 import QtQuick3D
-import QtDataVisualization
-//import QtQuick3D.Helpers
 
-Page {
-    id: scrCube
-
+Item {
     View3D {
         id: view
         anchors.fill: parent
+        camera: camera
 
         environment: SceneEnvironment {
             id: seEnvironment
-            clearColor: "skyblue"
-            backgroundMode: SceneEnvironment.Color
+            backgroundMode: SceneEnvironment.Transparent
+            antialiasingMode: SceneEnvironment.SSAA
+            antialiasingQuality: SceneEnvironment.VeryHigh
         }
 
         PerspectiveCamera {
             id: pcCamera
-                position: Qt.vector3d(0, 0, -10)
-            //eulerRotation.x: -30
-            z: -10
+            position: Qt.vector3d(0, 0, 30)
         }
-
 
         DirectionalLight {
-            eulerRotation.x: -30
-            eulerRotation.y: -70
         }
 
-        Repeater3D {
-            id: rep3d
-            model: config.is3D ? config.fieldCount * config.fieldCount * config.fieldCount : 0
+        Skeleton {
+            id: sceneRoot
+            eulerRotation.y: -180
+            Repeater3D {
+                id: cube
+                model: GamePlay.cubeModel
+                Model {
+                    property int bs: GamePlay.boardSize
+                    property real bs2: bs/2
+                    property int x: (index % bs)
+                    property int y: Math.floor(index / bs) % bs
+                    property int z: Math.floor(index / (bs * bs)) % bs
+
+                    property int aFieldType: fieldtype
+                    property string aWhat: what
+                    property int aValue: value
+                    property int aWhen: when
+                    property int aWho: who
+
+                    source: "#Cube"
+                    position: Qt.vector3d(bs2-x, bs2-y,  bs2-z)
+                    scale: Qt.vector3d(0.01, 0.01, 0.01)
+
+                    materials: [
+                        DefaultMaterial {
+                            diffuseMap: Texture {
+                                sourceItem:
+                                    ScrPiece {
+                                        implicitWidth: 128
+                                        implicitHeight: 128
+                                        pieceColor: aWhat == String.fromCharCode(0) //empty?
+                                                    ? config.colors.get(aFieldType).itemColor //use field color when empty
+                                                    : aWhen === GamePlay.currentMove
+                                                      ? config.colors.get(8).itemColor //use (yellow) field color for non-empty squares
+                                                      : Qt.lighter(config.colors.get(8).itemColor) // ... but a bit lighter when removing is not possible
+                                        pieceShadow: (isplaced && config.colorplayers)
+                                                     ? config.playercolors.get(aWho).itemColor //colored shadow to show who placed a piece
+                                                     : "transparent"
+                                        pieceLabel: aWhat
+                                        pieceValue: aValue
+                                    }
+                                }
+                            lighting: DefaultMaterial.NoLighting
+                            opacity: (aWhat == String.fromCharCode(0))
+                                     ? (aFieldType == 1) ? 0.025 : 0.25 //normal fields are almost fully transparent, bonus fields largely
+                                     : 1.0
+                         }
+                     ]
+                }
+            }
             Model {
-                property int x: (index % config.fieldCount)
-                property int y: Math.floor(index / (config.fieldCount * config.fieldCount))
-                property int z: (Math.floor(index / config.fieldCount) % config.fieldCount)
-                property int aFieldType: config.fieldType[ x + y*config.fieldCount + z*config.fieldCount*config.fieldCount ]
+                id: plane
+                property int bs: GamePlay.boardSize
+                property real pos: bs/2 - GamePlay.activePosition
                 source: "#Cube"
-                position: Qt.vector3d(x, y, z)
-                scale: Qt.vector3d(0.01, 0.01, 0.01)
+                scale: (GamePlay.activeDimension === 0)
+                               ? Qt.vector3d(bs*0.01+0.02, bs*0.01+0.02, 0)
+                               : GamePlay.activeDimension === 1
+                                 ? Qt.vector3d(0, bs*0.01+0.02, bs*0.01+0.02)
+                                 : Qt.vector3d(bs*0.01+0.02, 0, bs*0.01+0.02)
+                position: (GamePlay.activeDimension === 0)
+                          ? Qt.vector3d(0, 0, pos)
+                          : GamePlay.activeDimension === 1
+                            ? Qt.vector3d(pos, 0, 0)
+                            : Qt.vector3d(0, pos, 0)
+
                 materials: [
-                    PrincipledMaterial {
-                        baseColor: config.colors.get(aFieldType).itemColor
-                        opacity: (aFieldType === 1) ? 0.05 : 0.75
-                    }
+                    DefaultMaterial {
+                        diffuseColor: "lightgrey"
+                        opacity: 0.25
+                        cullMode: Material.NoCulling
+                     }
                  ]
             }
         }
-
 
         MouseArea {
              id: inputArea
              anchors.fill: parent
              hoverEnabled: true
              acceptedButtons: Qt.LeftButton | Qt.RightButton
-             property int mouseX: config.is3D ? pcCamera.eulerrotation.x : 0
-             property int mouseY: config.is3D ? pcCamera.eulerrotation.y : 0
+             property point lastPos
+             property real wheelpos
+             onPressed:
+                 if (mouse.buttons == Qt.LeftButton) //rotate with left mouse button pressed
+                    lastPos = Qt.point(mouse.x, mouse.y);
+                 else if (mouse.modifiers & Qt.ControlModifier) //toggle dimension with right mb and control pressed
+                    GamePlay.activeDimension += 1
 
-             onPositionChanged: {
-                 if ((mouseX > -1) && (pressedButtons === Qt.LeftButton)) {
-                    //pcCamera.rotation.y -= mouse.y+mouseY
-                    pcCamera.eulerRotation.y -= mouse.x-mouseX
-                    //pcCamera.rotation.x -= mouse.x+mouseX
-                    pcCamera.eulerRotation.x -= mouse.y-mouseY
+             onPositionChanged:
+                 if (mouse.buttons == Qt.LeftButton) {
+                     sceneRoot.eulerRotation.x -= mouse.y - lastPos.y
+                     sceneRoot.eulerRotation.y += mouse.x - lastPos.x
+                     lastPos = Qt.point(mouse.x, mouse.y);
                  }
-//                 pcCamera.lookAt(Qt.vector3d(config.fieldCount/2,config.fieldCount/2,config.fieldCount/2))
-                 mouseX = mouse.x
-                 mouseY = mouse.y
-             }
-
-             onWheel: {
-                 var fZoom = pcCamera.position.z
-/*                 if (fZoom > 100)
-                     fZoom += wheel.angleDelta.y / 2.0;
-                 else if (fZoom > 50)
-                     fZoom += wheel.angleDelta.y / 60.0;
-                 else
-                     fZoom += wheel.angleDelta.y / 120.0;
-                 if (fZoom > 1000)
-                     fZoom = 1000;
-                 else if (fZoom < 10)
-                     fZoom = 10;
-*/
-                 fZoom += wheel.angleDelta.y / 10
-                 pcCamera.position.z = fZoom
-                 console.log(fZoom)
-//                 pcCamera.zoomLevel = fZoom
-//                 pcCamera.lookAt(Qt.vector3d(config.fieldCount/2,config.fieldCount/2,config.fieldCount/2))
-//                 pcCamera.lookAt(Qt.vector3d(0,0,0))
-             }
-         }
+             onWheel:
+                if (wheel.modifiers & Qt.ControlModifier)
+                {
+                     wheelpos += wheel.angleDelta.y/120
+                     if (wheelpos < -1) {
+                        GamePlay.activePosition -= 1
+                        wheelpos = 0
+                     } else
+                     if (wheelpos > 1) {
+                        GamePlay.activePosition += 1
+                        wheelpos = 0
+                     }
+                 } else
+                 {
+                    var fZoom = pcCamera.position.z
+                    fZoom += wheel.angleDelta.y / 50
+                    pcCamera.position.z = fZoom
+                 }
+        }
     }
-
+    RowLayout {
+        id: topPanel
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        height: 50
+        Label {
+            Layout.leftMargin: 8
+            text: qsTr("Pos: ")
+        }
+        Slider {
+            id: pos3D
+            implicitWidth: 100
+            from: 0
+            to: GamePlay.is3D ? GamePlay.boardSize-1 : 0
+            value: GamePlay.activePosition
+            onValueChanged: GamePlay.activePosition = value
+            snapMode: Slider.SnapAlways
+            stepSize: 1
+        }
+        Label {
+            text: pos3D.value + 1
+        }
+        Label {
+            Layout.leftMargin: 16
+            text: qsTr("Dim: ")
+        }
+        Rectangle {
+            height: 38
+            width: 38
+            color: "lightgrey"
+            border.width: GamePlay.activeDimension === 0 ? 3 : 0
+            Image {
+                anchors.fill: parent
+                anchors.margins: 6
+                source: "qrc:///resources/abscissa.png"
+            }
+            MouseArea {
+                anchors.fill: parent
+                onClicked: GamePlay.activeDimension = 0
+            }
+        }
+        Rectangle {
+            height: 38
+            width: 38
+            color: "lightgrey"
+            border.width: GamePlay.activeDimension === 1 ? 3 : 0
+            Image {
+                anchors.fill: parent
+                anchors.margins: 6
+                source: "qrc:///resources/ordinate.png"
+            }
+            MouseArea {
+                anchors.fill: parent
+                onClicked: GamePlay.activeDimension = 1
+            }
+        }
+        Rectangle {
+            height: 38
+            width: 38
+            color: "lightgrey"
+            border.width: GamePlay.activeDimension === 2 ? 3 : 0
+            Image {
+                anchors.fill: parent
+                anchors.margins: 6
+                source: "qrc:///resources/applicate.png"
+            }
+            MouseArea {
+                anchors.fill: parent
+                onClicked: GamePlay.activeDimension = 2
+            }
+        }
+        Item {
+            Layout.fillWidth: true
+        }
+    }
+    Image {
+        id: showTopPanel
+        width: 24
+        height: 24
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.rightMargin: 16
+        anchors.topMargin: 16
+        source: "qrc:///resources/up.png"
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                topPanel.visible = !topPanel.visible;
+                if (topPanel.visible)
+                    parent.source = "qrc:///resources/up.png"
+                else
+                    parent.source = "qrc:///resources/down.png"
+            }
+        }
+    }
 }

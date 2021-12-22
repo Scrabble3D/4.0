@@ -3,26 +3,29 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 
-Page {
+Item {
 
     property alias markers: cbMarkers.checked
+    property alias colorplayers: cbPlayerColors.checked
     property ListModel colors: ({})
+    property ListModel playercolors: ({})
     property alias fieldCount: sbSize.value
     property var fields: []
-//    property alias fieldType: FieldType
     property alias is3D: rb3D.checked
     property alias numberOfLettersOnRack: sbPieces.value
     property alias letterSet: tvLetterSet.model
     property alias numberOfJokers: sbJoker.value
 
-//    enum FieldType {Normal=0,Green=1,Piece=8}
-
     ListModel {
         id: scrColors
         dynamicRoles: true
     }
+    ListModel {
+        id: scrPlayerColors
+        dynamicRoles: true
+    }
     Component.onCompleted: {
-        //TODO: move colors into defaults
+        //TODO: move colors into defaults; allow other bonus fields/colors
         scrColors.append({"itemColor":Qt.rgba(192/255,192/255,192/255,1),"itemName":qsTr("Start")}) //"#C0C0C0"
         scrColors.append({"itemColor":Qt.rgba(0,128/255,0,1),"itemName":qsTr("Default")}) //"#008000"
         scrColors.append({"itemColor":Qt.rgba(0,255/255,255/255,1),"itemName":qsTr("2x letter")}) //"#00FFFF"
@@ -33,81 +36,111 @@ Page {
         scrColors.append({"itemColor":Qt.rgba(96/255,0,0,1),"itemName":qsTr("4x word")}) //"#600000"
         scrColors.append({"itemColor":Qt.rgba(255/255,255/255,0,1),"itemName":qsTr("Pieces")}) //"#FFFF00"
         colors = scrColors
+        scrPlayerColors.append({"itemColor":Qt.rgba(1,0,0,1),"itemName":qsTr("First player")})
+        scrPlayerColors.append({"itemColor":Qt.rgba(0,1,0,1),"itemName":qsTr("Second player")})
+        scrPlayerColors.append({"itemColor":Qt.rgba(0,0,1,1),"itemName":qsTr("Third player")})
+        scrPlayerColors.append({"itemColor":Qt.rgba(1,0.75,0,1),"itemName":qsTr("Fourth player")})
+        playercolors = scrPlayerColors
+
         fields = defaults.fieldsClassicScrabble.slice()
         cbLetterSet.currentIndex = 1
-    }
 
+        cbDefaultFields.currentIndex = 0 //todo: not 3d by default
+    }
+/*
     header: Label {
         text: qsTr("Configuration")
         font.pixelSize: Qt.application.font.pixelSize * 2
         padding: 10
     }
+*/
+    Layout.fillWidth: true
+    Layout.fillHeight: true
 
-    RowLayout {
+    onFieldsChanged: {
+        var comp = JSON.stringify(fields)
+        if (comp == JSON.stringify(defaults.fieldsClassicScrabble))
+            cbDefaultFields.currentIndex = 0
+        else if (comp == JSON.stringify(defaults.fieldsSuperScrabble))
+            cbDefaultFields.currentIndex = 1
+        else if (comp == JSON.stringify(defaults.fieldsClassicScrabble3D))
+            cbDefaultFields.currentIndex = 2
+        else if (comp == JSON.stringify(defaults.fieldsSuperScrabble3D))
+            cbDefaultFields.currentIndex = 3
+        else
+            cbDefaultFields.currentIndex = 4;
+    }
+
+    SplitView {
+        id: splitView
         anchors.fill: parent
+
+        layer.enabled: true //TODO: shadow on the panels breaks splitview
+        layer.effect: DropShadow {
+            transparentBorder: true
+            color: "lightgrey"
+            horizontalOffset: 2
+            verticalOffset: 2
+            radius: 5
+        }
+
         Rectangle {
             id: leftPane
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.leftMargin: 10
-            Layout.topMargin: 10
-            Layout.bottomMargin: 10
-            Layout.minimumWidth: 50
+            SplitView.preferredWidth: parent.width * 1/3
+            SplitView.minimumWidth: 50
             ListView {
-                id: lview
+                id: lView
                 anchors.fill: parent
                 anchors.margins: 10
-                implicitWidth: contentItem.childrenRect.width
+                Component {
+                    id: lViewDelegates
+                    Rectangle {
+                        width: parent.width
+                        height: 32
+                        color: ListView.isCurrentItem ? palette.highlight : "transparent"
+                        Text {
+                            id: delegateText
+                            text: name
+                            leftPadding: 8
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: lView.currentIndex == index ? palette.highlightedText : palette.base //TODO: WindowText = white, Base = black?
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: lView.currentIndex = index
+                        }
+                    }
+                }
+
                 model: ListModel {
                     ListElement { name: qsTr("Board") }
                     ListElement { name: qsTr("Letters") }
                     ListElement { name: qsTr("Rules") }
                     ListElement { name: qsTr("Dictionary") }
                 }
-                delegate: ItemDelegate {
-                    width: parent.width
-                    Text {
-                        text: name
-                        anchors.leftMargin: 8
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: lview.currentIndex = index
-                    }
-                }
-                highlight: Rectangle {
-                    color: palette.highlight
-                    radius: 1
-                }
-            }
-
-            layer.enabled: true
-            layer.effect: DropShadow {
-                transparentBorder: true
-                color: "lightgrey"
-                horizontalOffset: 2
-                verticalOffset: 2
-                radius: 5
+                delegate: lViewDelegates
             }
         }
 
         Rectangle {
             id: rightPane
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.minimumWidth: 100
-            Layout.rightMargin: 10
-            Layout.topMargin: 10
-            Layout.bottomMargin: 10
-            Item {
-                id: configBoard
-                visible: lview.currentIndex === 0
+            SplitView.minimumWidth: 100
+            SplitView.fillWidth: true
+            ScrollView {
+                id: scrollView
+                anchors.fill: parent
+//                onWidthChanged: console.log("pane: ", width)
+//                width: rightPane.width
+//                height: rightPane.height
+                contentWidth: boardLayout.width //TODO: should depend on the actual view
+                contentHeight: boardLayout.height
+                clip: true
                 GridLayout {
                     id: boardLayout
+                    visible: lView.currentIndex == 0
                     columns: 2
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
+                    columnSpacing: 8
+                    rowSpacing: 8
                     Label {
                         id: lbPreset
                         leftPadding: 8
@@ -115,8 +148,14 @@ Page {
                     }
                     ComboBox {
                         id: cbDefaultFields
-                        implicitContentWidthPolicy: ComboBox.WidestText
-                        model: [qsTr("Classic"), qsTr("Supperscrabble"), qsTr("Scrabble 3D"),qsTr("Superscrabble 3D"),qsTr("User-defined")]
+                        Layout.minimumWidth: 200 //TODO: implicitContentWidthPolicy: ComboBox.WidestText not working
+                        model:
+                            [ qsTr("Classic"),
+                              qsTr("Supperscrabble"),
+                              qsTr("Scrabble 3D"),
+                              qsTr("Superscrabble 3D"),
+                              qsTr("User-defined")
+                            ]
                         onCurrentIndexChanged: {
                             switch (currentIndex) {
                               case 0:
@@ -169,37 +208,37 @@ Page {
                     SpinBox {
                         id: sbSize
                         onValueChanged: {
-                            //TODO: keep bonus distribution when adding new fields, meaning
-                            //fields needs to be two/three-dimensional- at least while resizing
-/*                            if (fields.length<sbSize.value*sbSize.value) {
-                                for (var i=1; i<sbSize.value; i++)
-                                    fields.splice(i*sbSize.value-1,0,7)
+                            var tmp = [] //new Array(sbSize.value*sbSize.value)
+                            var lastSize
+                            var i,j,k,z,v
+                            if (rb3D.checked)
+                            {
+                                lastSize = Math.round(Math.cbrt(fields.length))
                                 for (i=0; i<sbSize.value; i++)
-                                    fields.splice(i+sbSize.value*sbSize.value,0,1)
-                            } else {
-                                for (i=1; i<sbSize.value; i++)
-                                    fields.splice(i*sbSize.value,1)
+                                 for (j=0; j<sbSize.value; j++)
+                                  for (k=0; k<sbSize.value; k++) {
+                                     z = i*lastSize*lastSize+j*lastSize+k  //TODO: doesnt work
+                                     v = i*sbSize.value*sbSize.value+j*sbSize.value+k
+                                     if (isNaN(fields[z]))
+                                         tmp[v] = 1
+                                     else
+                                         tmp[v] = fields[z]
+                                 }
+
+                            } else
+                            {
+                                lastSize = Math.sqrt(fields.length)
                                 for (i=0; i<sbSize.value; i++)
-                                    fields.splice(i+(sbSize.value*sbSize.value),1)
+                                 for (j=0; j<sbSize.value; j++) {
+                                     z = i*lastSize+j
+                                     v = i*sbSize.value+j
+                                     if (isNaN(fields[z]))
+                                         tmp[v] = 1
+                                     else
+                                         tmp[v] = fields[z]
+                                 }
                             }
-*/
-/*
-                            var tmp = []
-                            for (var i=0; i<sbSize.value; i++)
-                             for (var j=0; j<sbSize.value; j++) {
-                                 z = i*sbSize.value+j
-                                 if (isNaN(fields[z]))
-                                     tmp[z] = 1
-                                 else
-                                     tmp[z] = fields[z]
-                             }
-                             fields = tmp
-*/
-/*
-                            for (var i=0; i<sbSize.value*sbSize.value; i++)
-                                if (isNaN(fields[i]))
-                                    fields[i]=1;
-*/
+                            fields = tmp.slice()
                         }
                     }
                     Label {
@@ -218,7 +257,7 @@ Page {
                             Rectangle {
                                 Layout.minimumWidth: 20
                                 Layout.minimumHeight: 20
-//                                Layout.preferredWidth: rightPane.width / sbSize.value
+//                                Layout.preferredWidth: rightPane.width / sbSize.value //TODO: size to fit
 //                                Layout.preferredHeight: Layout.preferredWidth
                                 property int i: index+sbSize.value*sbSize.value*(pos3D.value-1)
                                 color: colors.get(fields[i]).itemColor
@@ -256,7 +295,7 @@ Page {
                     Label {
                         id: lbBonusMarker
                         leftPadding: 8
-                        text: qsTr("Bonus markers in 2D:")
+                        text: qsTr("Bonus markers:")
                     }
                     CheckBox {
                         id: cbMarkers
@@ -269,48 +308,78 @@ Page {
                         text: qsTr("Colors:")
                     }
                     ColorPicker {
+                        id: cpColors
                         pickerColors: colors
                     }
-                } //ColumnLayout
-            }
-            Item {
-                id: configLetter
-                visible: lview.currentIndex === 1
+                    Label {
+                        id: lbPlayerColors
+                        leftPadding: 8
+                        text: qsTr("Player colors:")
+                    }
+                    ColorPicker {
+                        id: cpPlayerColors
+                        pickerColors: playercolors
+                    }
+                    Label {
+                        id: lbDummy
+                        text: ""
+                    }
+                    CheckBox {
+                        id: cbPlayerColors
+                        text: qsTr("Use on board")
+                        checkState: Qt.Checked
+                    }
+
+                }
                 GridLayout {
-                    Layout.fillHeight: true
+                    id: configLetter
+                    visible: lView.currentIndex === 1
                     columns: 2
-                    ComboBox {
-                        id: cbLetterSet
-                        Layout.leftMargin: 8
+                    columnSpacing: 8
+                    rowSpacing: 8
+                    RowLayout {
+                        id: layoutCenteredPreset
                         Layout.columnSpan: 2
-                        Layout.preferredWidth: width
-                        implicitContentWidthPolicy: ComboBox.WidestTextWhenCompleted
-                        model: defaults.languages
-                        textRole: "nativeName"
-                        onCurrentIndexChanged: {
-                            tvLetterSet.model = defaults.languages[currentIndex].letters
-                            sbJoker.value = defaults.languages[currentIndex].numberOfJokers
-                            sbPieces.value = defaults.languages[currentIndex].numberOfLetters
-                            sbRandoms.value = defaults.languages[currentIndex].numberOfRandoms
-                            rbReadingDirectionLTR.checked = defaults.languages[currentIndex].readingDirection === Qt.LeftToRight
-                            rbReadingDirectionRTL.checked = defaults.languages[currentIndex].readingDirection === Qt.RightToLeft
+                        Layout.fillWidth: parent
+                        Layout.alignment: Qt.AlignRight
+                        Layout.bottomMargin: 12
+                        Label {
+                            id: lbLetterSet
+                            text: qsTr("Letter set:")
+                        }
+                        ComboBox {
+                            id: cbLetterSet
+                            Layout.minimumWidth: 200 //TODO: implicitContentWidthPolicy: ComboBox.WidestText not working
+                            Layout.preferredWidth: 300
+                            model: defaults.languages
+                            textRole: "nativeName"
+                            onCurrentIndexChanged: {
+                                tvLetterSet.model = defaults.languages[currentIndex].letters
+                                sbJoker.value = defaults.languages[currentIndex].numberOfJokers
+                                sbPieces.value = defaults.languages[currentIndex].numberOfLetters
+                                sbRandoms.value = defaults.languages[currentIndex].numberOfRandoms
+                                rbReadingDirectionLTR.checked = defaults.languages[currentIndex].readingDirection === Qt.LeftToRight
+                                rbReadingDirectionRTL.checked = defaults.languages[currentIndex].readingDirection === Qt.RightToLeft
+                            }
                         }
                     }
                     Label {
+                        id: lbLetterDistribution
                         Layout.alignment: Qt.AlignTop | Qt.AlignRight
                         Layout.topMargin: horizontalHeader.height/2 - font.pixelSize /2
                         text: qsTr("Letter distribution:")
                     }
                     ColumnLayout {
+                        id: layoutLetterSet
                         Layout.leftMargin: 8
-                        Layout.fillHeight: true //does not work?
+                        Layout.fillHeight: true //TODO does not work?
                         HorizontalHeaderView {
                             id: horizontalHeader
                             syncView: tvLetterSet
                             model: [qsTr("Letter"), qsTr("Points"), qsTr("Count")]
                         }
                         TableView {
-                            id: tvLetterSet
+                            id: tvLetterSet //TODO: should be editable
                             Layout.preferredWidth: contentWidth + sbLetterSet.width
                             Layout.minimumHeight: 200
                             Layout.fillHeight: true
@@ -340,7 +409,7 @@ Page {
                         Label {
                             id: lbNumberOfLetters
                         }
-                     }
+                    }
                     Label {
                         id: lbJoker
                         Layout.leftMargin: 8
@@ -359,7 +428,6 @@ Page {
                     SpinBox {
                         id: sbPieces
                     }
-                    id: rlRandoms
                     Label {
                         id: lbRandoms
                         Layout.leftMargin: 8
@@ -376,6 +444,7 @@ Page {
                         text: qsTr("Reading direction:")
                     }
                     RowLayout {
+                        id: layoutReadingDirection
                         Label {
                             text: qsTr("left to right")
                         }
@@ -390,28 +459,32 @@ Page {
                         }
                     }
                 }
-            }
-            Item {
-                id: configRules
-                visible: lview.currentIndex === 2
                 GridLayout {
+                    id: configRules
+                    visible: lView.currentIndex === 2
                     columns: 2
+                    columnSpacing: 8
+                    rowSpacing: 8
                     Label {
+                        id: lbTimeControl
+                        leftPadding: 8
                         Layout.alignment: Qt.AlignRight | Qt.AlignTop
-                        Layout.leftMargin: 8
-                        Layout.topMargin: 8
                         text: qsTr("Time control:")
                     }
                     GridLayout {
+                        id: layoutTimeControl
                         columns: 2
+                        Layout.bottomMargin: 8
                         RadioButton {
                             id: rbNoLimit
                             Layout.columnSpan: 2
                             text: qsTr("No Limit")
+                            checked: defaults.languages[cbLetterSet.currentIndex].timeControl == 0
                         }
                         RadioButton {
                             id: rbPerMove
                             text: qsTr("Per Move")
+                            checked: defaults.languages[cbLetterSet.currentIndex].timeControl == 1
                         }
                         TextInput {
                             id: tiPerMove
@@ -420,48 +493,47 @@ Page {
                             text: "1:00:00"
                             validator: RegularExpressionValidator { regularExpression: /^(?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d)$/ }
                         }
-/*                        Label {
-                            enabled: rbPerMove.checked
-                            color: enabled ? "black" : "grey"
-                            text: qsTr("hh:mm:ss")
-                        }
-*/
                         RadioButton {
                             id: rbPerGame
                             text: qsTr("Per Game")
+                            checked: defaults.languages[cbLetterSet.currentIndex].timeControl == 2
                         }
                         TextInput {
                             id: tiPerGame
                             enabled: rbPerGame.checked
                             color: enabled ? "black" : "grey"
-                            text: "1:00:00"
+                            text: defaults.languages[cbLetterSet.currentIndex].timePerGame
                             validator: RegularExpressionValidator { regularExpression: /^(?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d)$/ }
                         }
                     }
                     Label {
+                        id: lbPenalty
                         Layout.alignment: Qt.AlignRight | Qt.AlignTop
-                        Layout.leftMargin: 8
-                        Layout.topMargin: 8
                         text: qsTr("Penalty:")
                     }
                     ColumnLayout {
+                        id: layoutPenalty
                         RadioButton {
                             id: rbGameEnd
                             Layout.columnSpan: 2
                             text: qsTr("Game ends on timeout")
+                            checked: defaults.languages[cbLetterSet.currentIndex].timeControlEnd
                         }
                         RadioButton {
                             id: rbPanelty
                             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
                             text: qsTr("Penalty on timeout")
+                            checked: defaults.languages[cbLetterSet.currentIndex].timeControlBuy
                         }
                         GridLayout {
+                            id: layoutPenaltyPoints
                             columns: 2
                             SpinBox {
                                 id: sbPenaltyPoints
                                 enabled: rbPanelty.checked
-                                value: 10
-                                IntValidator{bottom: 1; top: 100;}
+                                value: defaults.languages[cbLetterSet.currentIndex].penaltyValue
+                                from: 1
+                                to: 5000
                             }
                             Label {
                                 id: lbPenaltyPointsUnit
@@ -479,8 +551,9 @@ Page {
                             SpinBox {
                                 id: sbPenaltyCount
                                 enabled: rbPanelty.checked
-                                value: 2
-                                IntValidator{bottom: 1; top: 50;}
+                                value: defaults.languages[cbLetterSet.currentIndex].penaltyCount
+                                from: 1
+                                to: 5000
                             }
                             Label {
                                 id: lbPenaltyCountUnit
@@ -492,39 +565,168 @@ Page {
                         CheckBox {
                             id: cbGameEnd
                             text: qsTr("Game lost after last timeout")
+                            checked: defaults.languages[cbLetterSet.currentIndex].gameLostByTime
                         }
                     }
-                } //GridLayout
-             }
+                 }
+                GridLayout {
+                    id: configDictionary
+                    columns: 2
+                    width: scrollView.width
+                    height: scrollView.height
+                    onWidthChanged: dictTable.forceLayout()
+                    visible: lView.currentIndex === 3
 
-            layer.enabled: true
-            layer.effect: DropShadow {
-                transparentBorder: true
-                color: "lightgrey"
-                horizontalOffset: 2
-                verticalOffset: 2
-                radius: 5
+                    property int selectedDic: -1
+
+//                    rows: 3
+//                    columnSpacing: 8
+//                    rowSpacing: 8
+                    HorizontalHeaderView {
+                        id: dictHeader
+                        syncView: dictTable
+                        model: GamePlay.dictModel
+                        Layout.leftMargin: 8
+                        Layout.columnSpan: 2
+                    }
+                    TableView {
+                        id: dictTable
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: contentWidth
+                        Layout.leftMargin: 8
+                        Layout.columnSpan: 2
+                        ScrollBar.vertical: ScrollBar {}
+                        clip: true;
+                        columnWidthProvider: function(column) {
+                            return column < 2
+                                    ? configDictionary.width * 1/4
+                                    : configDictionary.width * 1/8
+                        }
+                        model: GamePlay.dictModel
+                        selectionModel: ItemSelectionModel {
+                            id: dictSelect
+                            model: dictTable.model
+                            onSelectionChanged: console.log("changed")
+                        }
+                        delegate: Rectangle {
+                            id: dictDelegate
+                            required property bool selected
+                            implicitWidth: parent.width
+                            implicitHeight: text.height + 2
+                            color: isSelected ? palette.highlight
+                                              : selected ? Qt.lighter(palette.highlight) : "transparent"
+                            border.color: "lightgrey"
+
+                            function isDark(aColor) {
+                                var temp = Qt.darker(aColor, 1) //Force conversion to color QML type object
+                                var a = 1 - ( 0.299 * temp.r + 0.587 * temp.g + 0.114 * temp.b);
+                                return temp.a > 0 && a >= 0.3
+                            }
+
+                            Text {
+                                id: text
+                                width: parent.width
+                                padding: 2
+                                color: isDark(parent.color) ? "white" : "black"
+                                horizontalAlignment: Text.AlignHCenter
+                                elide: Text.ElideRight
+                                text: display
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                onDoubleClicked: {
+                                    configDictionary.selectedDic = -1 //don't load again via action button
+                                    var fileName = GamePlay.dictModel.data(GamePlay.dictModel.index(row,2))
+                                    var dicName = GamePlay.dictModel.data(GamePlay.dictModel.index(row,0))
+                                    if (GamePlay.loadDictionary(fileName))
+                                        GamePlay.addMessage(qsTr("Dictionary %1 successfully loaded.").arg(dicName))
+                                }
+                                onClicked: {
+                                    isSelected ? configDictionary.selectedDic = -1
+                                               : configDictionary.selectedDic = model.row
+                                    authorLabel.text = author
+                                    licenseLabel.text = license
+                                    commentLabel.text = comment
+                                    releaseLabel.text = release
+                                    dictSelect.select(GamePlay.dictModel.index(model.row,0),ItemSelectionModel.ClearAndSelect | ItemSelectionModel.Rows)
+                                }
+                            }
+                        }
+                    }
+
+                    RoundButton {
+                        id: actionButton
+                        implicitWidth: 50
+                        implicitHeight: 50
+                        Layout.columnSpan: 2
+                        display: AbstractButton.IconOnly
+                        icon.source: "qrc:///resources/dictionary.png"
+                        background: Rectangle {
+                            anchors.fill: parent
+                            radius: width / 2
+                            gradient: Gradient {
+                                GradientStop {
+                                    position: actionButton.hovered ? 1.0 : 1.0
+                                    color: actionButton.enabled ? "darkgreen" : "lightgrey"
+                                }
+                                GradientStop {
+                                    position: actionButton.hovered ? 1.0 : 0.0
+                                    color: actionButton.enabled ? "limegreen" : "lightgrey"
+                                }
+                            }
+                        }
+                        ToolTip {
+                            text: qsTr("Load dictionary")
+                            visible: actionButton.hovered
+                            delay: 1000
+                            timeout: 5000
+                        }
+                        anchors.right: dictTable.right
+                        anchors.bottom: dictTable.bottom
+                        anchors.rightMargin: -25
+                        anchors.bottomMargin: -25
+                        enabled: configDictionary.selectedDic > -1
+                        //TODO: make an action
+                        onPressed: {
+                            var fileName = GamePlay.dictModel.data(GamePlay.dictModel.index(configDictionary.selectedDic,2))
+                            var dicName = GamePlay.dictModel.data(GamePlay.dictModel.index(configDictionary.selectedDic,0))
+                            if (GamePlay.loadDictionary(fileName))
+                                GamePlay.addMessage(qsTr("Dictionary %1 successfully loaded.").arg(dicName))
+                            configDictionary.selectedDic = -1
+                        }
+                    }
+
+
+                    Label {
+                        Layout.leftMargin: 16
+                        text: qsTr("Author:"); }
+                    Label { id: authorLabel }
+
+                    Label {
+                        Layout.leftMargin: 16
+                        text: qsTr("License:"); }
+                    Label { id: licenseLabel }
+
+                    Label {
+                        Layout.leftMargin: 16
+                        text: qsTr("Release:"); }
+                    Label { id: releaseLabel }
+
+                    Label {
+                        Layout.leftMargin: 16
+                        Layout.bottomMargin: 32
+                        Layout.alignment: Qt.AlignTop
+                        text: qsTr("Comment:"); }
+                    Label {
+                        Layout.bottomMargin: 32
+                        Layout.fillWidth: true
+                        wrapMode: Text.WordWrap
+                        id: commentLabel }
+
+                }
+
             }
         }
-    } //RowLayout
-/*
-    onFieldsChanged: {
-
-        function isEqual(array1, array2) {
-            return array1.length === array2.length && array1.every(function(value, index) { return value === array2[index]})
-        }
-
-        if (isEqual(fields,defaults.fieldsClassicScrabble))
-            cbDefaultFields.currentIndex = 0
-        else if (isEqual(fields,defaults.fieldsSuperScrabble))
-            cbDefaultFields.currentIndex = 1
-        else if (isEqual(fields,defaults.fieldsClassicScrabble3D))
-            cbDefaultFields.currentIndex = 2
-        else if (isEqual(fields,defaults.fieldsSuperScrabble3D))
-            cbDefaultFields.currentIndex = 3
-        else
-            cbDefaultFields.currentIndex = 4
     }
-*/
-    onWidthChanged: ;//console.log(rightPane.width)
-} //Page
+
+}

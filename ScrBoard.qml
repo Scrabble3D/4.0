@@ -1,116 +1,163 @@
 import QtQuick
 import QtQuick.Layouts
 
-GridLayout {
+Item {
+    anchors.fill: parent
 
-    property int fieldSize: 20 //px
-    property int boardSize: GamePlay.boardSize
-/*
-    function newGame() {
-        for (var i=0; i<rcBoard.count; i++) {
-            rcSquare[i].
+    property int fieldSize //set in ScrMain
+
+    ListModel {
+        id: horizLabelModel
+        dynamicRoles: true
+    }
+    ListModel {
+        id: vertLabelModel
+        dynamicRoles: true
+    }
+    Component.onCompleted: updateLabelsModel();
+
+    function updateLabelsModel() {
+        horizLabelModel.clear()
+        vertLabelModel.clear()
+        horizLabelModel.append({"label":""}); //empty dummy for the top left corner
+        vertLabelModel.append({"label":""});
+        for (var i=0; i<GamePlay.boardSize; i++)
+        {
+            horizLabelModel.append({"label":i+1})
+            if (i < 26)
+                vertLabelModel.append({"label":String.fromCharCode(65 + i)});
+            else
+                vertLabelModel.append({"label":String.fromCharCode(65 + i % 26) + Math.floor(i / 26)});
         }
     }
-*/
-    rows: boardSize+1
-    columns: boardSize+1
-    rowSpacing: 0
-    columnSpacing: 0
-    antialiasing: true
-    Repeater {
-        id: lbHorizontal
-        model: boardSize
+
+    ListView {
+        id: horzLabels
+        anchors.top: parent.top
+        anchors.left: parent.left
+        width: fieldSize * GamePlay.boardSize
+        height: fieldSize
+        model: horizLabelModel
+        delegate: labelDelegate
+        orientation: ListView.Horizontal
+    }
+    ListView {
+        id: vertLabels
+        anchors.top: parent.top
+        anchors.left: parent.left
+        height: fieldSize * GamePlay.boardSize
+        model: vertLabelModel
+        delegate: labelDelegate
+        orientation: ListView.Vertical
+    }
+    GridView {
+        id: gdBoard
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.topMargin: fieldSize
+        anchors.leftMargin: fieldSize
+        width: fieldSize*GamePlay.boardSize
+        height: fieldSize*GamePlay.boardSize
+        cellHeight: fieldSize
+        cellWidth: fieldSize
+        model: GamePlay.boardModel
+        delegate: boardDelegate
+    }
+
+    Component {
+        id: labelDelegate
         Rectangle {
-            Layout.row: 0
-            Layout.column: index+1
-            Layout.preferredWidth: fieldSize
-            Layout.preferredHeight: fieldSize
+            implicitWidth: fieldSize
+            implicitHeight: fieldSize
+            color: "transparent"
+            border.color: Qt.lighter(color)
             Text {
-                text: index+1
+                text: label
                 anchors.horizontalCenter: parent.horizontalCenter
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 2
-            }
-        } //Label
-    }
-    Repeater {
-        id: lbVertical
-        model: boardSize
-        Rectangle {
-            Layout.row: index+1
-            Layout.column: 0
-            Layout.preferredWidth: fieldSize
-            Layout.preferredHeight: fieldSize
-            Text {
-                //TODO: 3D dimension
-                text: index < 26 ? String.fromCharCode(65 + index)
-                                 : String.fromCharCode(65 + index % 26) + Math.floor(index / 26)
                 anchors.verticalCenter: parent.verticalCenter
-                anchors.right: parent.right
-                anchors.rightMargin: 5
             }
-        } //Label
+        }
     }
-    Repeater {
-        id: rcBoard
-        model: boardSize * boardSize
+
+    Component {
+        id: boardDelegate
         ScrPiece {
-            id: rcSquare
-            Layout.column: (index % boardSize) + 1
-            Layout.row: Math.floor(index / boardSize) + 1
-            Layout.preferredHeight: fieldSize
-            Layout.preferredWidth: fieldSize
-            pieceColor:  config.colors.get(GamePlay.fieldType(index)).itemColor
-            pieceLabel: GamePlay.boardLetter(index).what
-            pieceValue: GamePlay.boardLetter(index).value
-            bonusTop:    config.markers && (index-boardSize>0) && (GamePlay.fieldType(index-boardSize)>1) ?
-                             config.colors.get(GamePlay.fieldType(index-boardSize)).itemColor : "transparent"
-            bonusLeft:   config.markers && (index % boardSize)>0 && (GamePlay.fieldType(index-1)>1) ?
-                             config.colors.get(GamePlay.fieldType(index-1)).itemColor : "transparent"
-            bonusRight:  config.markers && (index+1 % boardSize)>0 && (GamePlay.fieldType(index+1)>1) ?
-                             config.colors.get(GamePlay.fieldType(index+1)).itemColor : "transparent"
-            bonusBottom: config.markers && (index+boardSize<boardSize*boardSize) && (GamePlay.fieldType(index+boardSize*boardSize)>1) ?
-                             config.colors.get(GamePlay.fieldType(index+boardSize)).itemColor : "transparent"
+            id: rcPiece
+            property string aWhat: what
+
+            implicitWidth: fieldSize
+            implicitHeight: fieldSize
+
+            function setAlpha(aColor, aAlpha) {
+                return Qt.hsla(aColor.hslHue, aColor.hslSaturation, aColor.hslLightness, aAlpha)
+            }
+
+            pieceColor: aWhat == String.fromCharCode(0) //empty?
+                        ? config.colors.get(fieldtype).itemColor //use field color when empty
+                        : isplaced && config.colorplayers && (GamePlay.currentMove-when-1) < GamePlay.numberOfPlayers
+                          ? setAlpha(config.playercolors.get(who).itemColor,0.25) //use (lighter) player color for the last move, if set in config
+                          : when === GamePlay.currentMove
+                            ? config.colors.get(8).itemColor //use (yellow) field color for non-empty squares
+                            : Qt.lighter(config.colors.get(8).itemColor) // ... but a bit lighter when removing is not possible
+            pieceLabel: aWhat
+            pieceValue: value
+            pieceShadow: (isplaced && config.colorplayers)
+                         ? config.playercolors.get(who).itemColor //colored shadow to show who placed a piece
+                         : "transparent"
+
+            bonusTop:    config.markers && (bonustop>0)    ? config.colors.get(bonustop).itemColor   : "transparent"
+            bonusLeft:   config.markers && (bonusleft>0)   ? config.colors.get(bonusleft).itemColor  : "transparent"
+            bonusRight:  config.markers && (bonusright>0)  ? config.colors.get(bonusright).itemColor : "transparent"
+            bonusBottom: config.markers && (bonusbottom>0) ? config.colors.get(bonusbottom).itemColor : "transparent"
+
+            property bool dragAccept: false
+            property point beginDragAt
+
+//            Drag.active: maBoard.drag.active
 
             DropArea {
                 anchors.fill: parent
                 onEntered: drag.source.dragAccept = GamePlay.canDrop(index);
-//                           (game.getLetter(index)[0] === String.fromCharCode(0))
-//                onExited: drag.source.dragAccept = false
-                onDropped: {
-                    if (drag.source.dragAccept)
-                    {
-                        GamePlay.placeLetter(drag.source.rackIndex, index)
-//                        game.setLetter(drag.source.pieceLabel, drag.source.pieceValue, game.currentMove, index)
- //                        rcSquare.pieceLabel = GamePlay.boardLetter(index).what
- //                        rcSquare.pieceValue = GamePlay.boardLetter(index).value
-//                        game.checkMove()
-//                        rcSquare.state = "new"
-                    }
-                }
+                // todo
+                //onExited: drag.source.dragAccept = false
+                onDropped: GamePlay.dropLetter(drag.source.rackIndex, index)
             }
 
             MouseArea {
-                id: maSquare
+                id: maBoard
                 anchors.fill: parent
+//                drag.target: parent
+                cursorShape: drag.active ? (dragAccept ? Qt.DragLinkCursor : Qt.ClosedHandCursor) : Qt.ArrowCursor
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
-                onClicked: {
-                    if (mouse.button === Qt.LeftButton) {
-                        //TODO: drag 'n drop
+                onPressed: if (!isplaced) {
+                    if (mouse.button == Qt.RightButton)
+                        GamePlay.removeLetter(index, false);
+                    if (mouse.button == Qt.LeftButton)
+                        if (GamePlay.removeLetter(index, true)) {
+                            rcPiece.z = Infinity //BringToFront
+                            rcPiece.beginDragAt = Qt.point(index, rcPiece.z);
+                        }
+                }
+                onReleased: if (drag.active) {
+                    rcPiece.z = rcPiece.beginDragAt.y //BringToFront
+                    if (dragAccept) {
+                        rcPiece.Drag.drop()
                     } else
                     {
-                        GamePlay.removeLetter(index);
-/*                        pieceLabel = String.fromCharCode(0)
-                        pieceValue = 0
-//                        game.rack.append({"letter":pieceLabel,"value":pieceValue,""})
-                        game.setLetter(String.fromCharCode(0), 0, 0, index)
-                        game.checkMove()
-*/                    }
+                        backAnimX.from = rcPiece.x;
+                        backAnimX.to = beginDragAt.x;
+                        backAnimY.from = rcPiece.y;
+                        backAnimY.to = beginDragAt.y;
+                        backAnim.start()
+                    }
                 }
-                onReleased: {
-                }
-//                        drag.target: rcSquares
-//                        onReleased: game.letters[index] = rcPieces.Text
+            }
+            ParallelAnimation {
+                id: backAnim
+                SpringAnimation { id: backAnimX; target: rcPiece; property: "x";
+                                  duration: 500; spring: 2; damping: 0.2 }
+                SpringAnimation { id: backAnimY; target: rcPiece; property: "y";
+                                  duration: 500; spring: 2; damping: 0.2 }
             }
         }
     }
