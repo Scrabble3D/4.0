@@ -23,5 +23,5 @@
         <file>resources/dictionary.png</file>
         <file>ScrStatusbar.qml</file>
         <file>ShadowText.qml</file>
-    </qresource>
+    </qresource> 
 </RCC>
