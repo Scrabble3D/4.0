@@ -10,12 +10,12 @@ cubemodel::cubemodel(QObject *parent, board* aBoard)
 int cubemodel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    return m_pBoard->getBoardsize() * m_pBoard->getBoardsize() * m_pBoard->getBoardsize();
+    return m_pBoard->getBoardSize() * m_pBoard->getBoardSize() * m_pBoard->getBoardSize();
 }
 
 void cubemodel::updateSquare(Point3D aPos)
 {
-    QModelIndex aIndex = this->index( m_pBoard->PointToWhere(aPos) );
+    QModelIndex aIndex = this->index( m_pBoard->pointToWhere(aPos) );
     emit dataChanged(aIndex, aIndex, { WhatRole, ValueRole, WhoRole, WhenRole, IsPlacedRole } );
 }
 
@@ -33,7 +33,7 @@ QHash<int, QByteArray> cubemodel::roleNames() const
     roles[WhoRole] = "who";
     roles[WhenRole] = "when";
     roles[ValueRole] = "value";
-    roles[IsPlacedRole] = "isplaced";
+    roles[IsPlacedRole] = "isPlaced";
     return roles;
 }
 
@@ -47,10 +47,10 @@ QVariant cubemodel::data(const QModelIndex &index, int role) const
         (role == WhenRole) ||
         (role == ValueRole) ||
         (role == IsPlacedRole)) {
-        if (z < m_pBoard->getFieldsize()) //if board is not yet initialized
+        if (z < m_pBoard->getFieldSize()) //if board is not yet initialized
             aLetter = m_pBoard->getLetter(z);
     }
-    else if (z > m_pBoard->getFieldsize())
+    else if (z > m_pBoard->getFieldSize())
         return(1); //ftDefault
 
     switch (role) {

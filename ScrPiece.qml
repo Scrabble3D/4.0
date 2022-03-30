@@ -4,6 +4,7 @@ import QtQuick.Shapes
 Rectangle {
     property string pieceLabel: String.fromCharCode(0)
     property int pieceValue: 0
+    property bool pieceIsJoker: false
     property color pieceColor: "transparent"
     property color pieceShadow: "transparent"
     property color bonusTop: "transparent"
@@ -17,9 +18,9 @@ Rectangle {
 
     border.color: Qt.lighter(color)
 //    border.color: (pieceLabel === "") ? Qt.lighter(color) : "transparent"
-//                    Drag.active: maPiece.drag.active
+
     Text {
-        text: (pieceLabel === String.fromCharCode(0)) ? "" : pieceLabel
+        text: (pieceLabel === String.fromCharCode(0) || pieceLabel === "?") ? "" : pieceLabel
         color: pieceShadow
         anchors.centerIn: parent
         anchors.verticalCenterOffset: 1
@@ -27,7 +28,7 @@ Rectangle {
         font.pixelSize: parent.height*0.75
     }
     Text {
-        text: (pieceLabel === String.fromCharCode(0)) ? "" : pieceLabel
+        text: (pieceLabel === String.fromCharCode(0) || pieceLabel === "?") ? "" : pieceLabel
         anchors.centerIn: parent
         font.pixelSize: parent.height*0.75
     }
@@ -38,6 +39,17 @@ Rectangle {
         anchors.right: parent.right
         anchors.rightMargin: 3
         font.pixelSize: parent.height*0.25
+    }
+
+    Image {
+        visible: pieceIsJoker
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        anchors.rightMargin: 3
+        anchors.bottomMargin: 3
+        width: parent.height*0.25
+        height: parent.height*0.25
+        source: "qrc:///resources/star.png"
     }
 
     Rectangle {

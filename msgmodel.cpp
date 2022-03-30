@@ -40,11 +40,12 @@ int msgmodel::columnCount(const QModelIndex &parent) const
     return 2;
 }
 
-void msgmodel::addmessage(const QString aWhat, const int aWho)
+void msgmodel::addMessage(const QString aWhat, const int aWho)
 {
     Message aMessage;
     aMessage.What = aWhat;
-    aMessage.What.replace(":-)", "☺");//QString::fromUtf8("\xD83D\xDE00")); //TODO: true emoticons
+    //TODO: messages: true emoticons QString::fromUtf8("\xD83D\xDE00"));
+    aMessage.What.replace(":-)", "☺");
     aMessage.Who = aWho;
     aMessage.When = QTime().currentTime();
     const int i = m_msglist.count();

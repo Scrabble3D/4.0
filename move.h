@@ -13,13 +13,18 @@ public:
 
     QString LastError() { return m_LastError; }
     unsigned int Value() {return m_Value + m_Bonus; }
-    void setBonus(unsigned int nBonus) {m_Bonus = nBonus;}
-    bool addLetter(Letter aLetter);
+    void setBonus(unsigned int nBonus, bool bIsScrabble) {m_Bonus = nBonus; m_IsScrabble = bIsScrabble; }
+    bool addLetter(Letter aLetter, const bool doCheck = true);
     Letter getLetter(unsigned int index) const;
     bool deleteLetter(const unsigned int x);
     int letterCount() { return m_PlacedLetters.count(); }
     bool checkMove();
+    bool isFirstMove() { return m_IsFirstMove; }
+    bool isScrabble() { return m_IsScrabble; }
+    int activePosition() { return getPosition(); }
+    Dimension activeDimension() { return m_Dimension; }
     QVariantList exportPlacedLetters();
+    void setJokerLetter(const QString aWhat);//set Letter.What for Letter.IsJoker of m_PlacedLetters.last()
 
 private:
     bool checkFirstMove();
@@ -33,6 +38,7 @@ private:
     Letter infrontOf(Point3D aPoint);
     Letter behindOf(Point3D aPoint);
     QString getResults(const Dimension eDimension, const Point3D nStart);
+    int getPosition();
     Dimension m_Dimension;
     QList<Letter> m_PlacedLetters;
     unsigned int m_Value;

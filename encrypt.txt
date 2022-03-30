@@ -1,0 +1,31 @@
+QString encrypt(QString aLine, QString aKey)
+{
+    if (aKey == "")
+        return aLine;
+
+    QByteArray aByteData = aLine.toUtf8();
+    int keyLen = aKey.length();
+    for (int i=0; i<aByteData.size(); i++)
+        aByteData[i] = aByteData[i] xor aKey[(i % keyLen)].toLatin1();
+
+    return aByteData.toBase64(QByteArray::Base64Encoding);
+}
+
+
+/*    loadDictionary("deutsch_unenc.dic");
+
+    QString aLine;
+    const QString sKey = "7AVFU8PP";
+    QFile aFile(dictionaryPath().path() + "/" + "encrypted.dic");
+    if (aFile.open(QIODevice::WriteOnly))
+    {
+        QTextStream out(&aFile);
+
+        for (int i=0; i<m_Words.count(); i++)
+        {
+            aLine = m_Words[i] + "=" + m_Meanings[i];
+            if (m_Categories[i] > 0) aLine += ";" + QString::number(m_Categories[i]);
+            out << encrypt(aLine, sKey) << Qt::endl;
+        }
+        aFile.close();
+     }*/

@@ -37,6 +37,7 @@ Rectangle {
         clip: true
         elide: shadowElide
         text: shadowText
+        color: isDark(parent.color) ? "white" : "black"
     }
     TextMetrics {
         id: metrics

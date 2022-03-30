@@ -10,7 +10,7 @@ public:
         //Display = placed, connected, value
         WhoRole = Qt::UserRole + 1,
         ConnectedWords,
-        BonusRole,
+        BestValueRole,
         IsScrabbleRole,
         TimeRole
     };
@@ -23,8 +23,8 @@ public:
     void addMove(QString PlacedWord,
                  QString ConnectedWords,
                  uint Who,
-                 int Value,
-                 int Bonus,
+                 int value,
+                 int bestValue,
                  bool IsScrabble,
                  int moveTime);
     void clear();
@@ -38,7 +38,7 @@ private:
       QString connectedWords;
       uint who;
       int value;
-      int bonus;
+      int bestValue;
       bool isScrabble;
       int time;
     };

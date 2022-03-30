@@ -27,7 +27,7 @@ QVariant statmodel::data(const QModelIndex &index, int role) const
         else if (index.column() == 2) //value
             return aData.value;
         else if (index.column() == 3) //best value
-            return "";
+            return aData.bestValue;
         else if (index.column() == 4) //move time
             return "";
         break;
@@ -36,9 +36,6 @@ QVariant statmodel::data(const QModelIndex &index, int role) const
         break;
       case ConnectedWords:
         return aData.connectedWords;
-        break;
-      case BonusRole:
-        return aData.bonus;
         break;
       case IsScrabbleRole:
         return aData.isScrabble;
@@ -57,15 +54,15 @@ QVariant statmodel::headerData(int section, Qt::Orientation orientation, int rol
     if ((role == Qt::DisplayRole) && (orientation == Qt::Horizontal))
     {
         if (section == 0)
-            return QString("#"); //TODO localize
+            return tr("#");
         else if (section == 1)
-            return QString("Word");
+            return tr("Word");
         else if (section == 2)
-            return QString("Value");
+            return tr("Value");
         else if (section == 3)
-            return QString("Best");
+            return tr("Best");
         else if (section == 4)
-            return QString("Time");
+            return tr("Time");
     }
     return QVariant();
 }
@@ -89,7 +86,7 @@ QHash<int, QByteArray> statmodel::roleNames() const
     roles[WhoRole] = "who";
     roles[ConnectedWords] = "connectedWords";
     roles[IsScrabbleRole] = "isScrabble";
-    roles[BonusRole] = "bonus";
+    roles[BestValueRole] = "bonus";
     roles[TimeRole] = "time";
     return roles;
 }
@@ -101,14 +98,14 @@ void statmodel::clear()
     endResetModel();
 }
 
-void statmodel::addMove(QString PlacedWord, QString ConnectedWords, uint Who, int Value, int Bonus, bool IsScrabble, int moveTime)
+void statmodel::addMove(QString PlacedWord, QString ConnectedWords, uint Who, int value, int bestValue, bool IsScrabble, int moveTime)
 {
     ModelData aData;
     aData.placedWord = PlacedWord;
     aData.connectedWords = ConnectedWords;
     aData.who = Who;
-    aData.value = Value;
-    aData.bonus = Bonus;
+    aData.value = value;
+    aData.bestValue = bestValue;
     aData.isScrabble = IsScrabble;
     aData.time = moveTime;
 

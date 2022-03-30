@@ -1,4 +1,5 @@
 #include "gameplay.h"
+#include "defines.h"
 
 #include <algorithm>
 #include <random>
@@ -15,13 +16,20 @@ GamePlay::GamePlay(QObject *parent)
     m_nRackSize = 0;
     m_bIs3D = false;
     m_bIsRunning = false;
+
+    //TODO: download: check all files for updates
+    m_pDownloadManager = new DownloadManager(this);
+    if (!QFileInfo::exists(dictionaryPath().path() + "/Scrabble3D.conf"))
+        download("Binaries/raw/main/Scrabble3D.conf.zip");
+
     m_pBoard = new board();
     m_pRackModel = new rackmodel(this);
     m_pBoardModel = new boardmodel(this, m_pBoard);
     m_pCubeModel = new cubemodel(this, m_pBoard);
     m_pMsgModel = new msgmodel(this);
     m_pStatModel = new statmodel(this);
-    m_pDictModel = new dictionary(this);
+    m_pDicListModel = new dicList(this);
+    m_pComputeMove = new computemove(this, m_pBoard, m_pRackModel, m_pDicListModel->dictionary);
 }
 
 rackmodel *GamePlay::rackModel()
@@ -49,9 +57,9 @@ statmodel *GamePlay::statModel()
     return m_pStatModel;
 }
 
-dictionary *GamePlay::dictModel()
+dicList *GamePlay::dicListModel()
 {
-    return m_pDictModel;
+    return m_pDicListModel;
 }
 
 void GamePlay::startNewGame(QStringList PlayerNames,
@@ -59,6 +67,7 @@ void GamePlay::startNewGame(QStringList PlayerNames,
                              bool is3D,
                              QVariantList FieldTypeArray,
                              QVariantList LetterList,
+                             int NumberOfJokers,
                              bool CanJokerExchange,
                              int GameEndBonus,
                              int NumberOfPasses,
@@ -83,6 +92,7 @@ void GamePlay::startNewGame(QStringList PlayerNames,
                              bool RandomSequence)
 {
     m_lPlayerNames.clear();
+    emit numberOfPlayersChanged(); //refreh names in case the number is equal
     m_lPlayerNames = PlayerNames;
     emit numberOfPlayersChanged();
     m_bIs3D = is3D;
@@ -96,13 +106,27 @@ void GamePlay::startNewGame(QStringList PlayerNames,
     m_nRackSize = RackSize;
 
     m_pRackModel->clearRack();
+    for (uint i = 0; i < m_nRackSize; ++i)
+        m_pRackModel->addLetter(EmptyLetter);
+    //TODO: newgame: letters per players
     m_lBag.clear();
+    QString sChars;
     for (int i=0; i<LetterList.count(); i+=3) {
         Letter aLetter;
-        aLetter.What=LetterList[i].toString();
-        aLetter.Value=LetterList[i+1].toInt();
+        aLetter.What = LetterList[i].toString();
+        sChars += aLetter.What;
+        aLetter.Value = LetterList[i+1].toInt();
         for (int j=0; j<LetterList[i+2].toInt(); j++)
             m_lBag.append(aLetter);
+    }
+    m_pDicListModel->dictionary->setLetterSet(sChars);
+
+    for (int i=0; i<NumberOfJokers; i++) {
+        Letter aLetter;
+        aLetter.IsJoker = true;
+        aLetter.What = JokerChar;
+        aLetter.Value = 0;
+        m_lBag.append(aLetter);
     }
     std::random_device rd;
     std::mt19937 rng(rd());
@@ -131,11 +155,11 @@ void GamePlay::startNewGame(QStringList PlayerNames,
     m_bIsCLABBERS = isCLABBERS;
     m_bRandomSequence = RandomSequence;
 
-    m_nCurrentMove = -1;
+    m_nCurrentMove = -1; //TODO: gameplay: m_nCurrentMove is uint but -1 used to ++ in first nextplayer()
     m_bIsRunning = true;
     m_bIsFirstMove = true;
     emit isRunningChanged();
-    m_pMsgModel->addmessage( tr("New game has been started successfully :-).") );
+    m_pMsgModel->addMessage( tr("New game has been started successfully :-).") );
 
     m_lMoves.clear();
     statModel()->clear();
@@ -149,22 +173,14 @@ void GamePlay::execNextPlayer()
         !m_bIsLoading &&
         (!m_lMoves.last()->PlacedWord.isEmpty()))
     {
-        QStringList unknownWords;
-        unknownWords.append(m_lMoves.last()->PlacedWord);
-        unknownWords.append(m_lMoves.last()->ConnectedWords.split(","));
-        int i = unknownWords.count();
-        while (i > 0)
-        {
-            if (m_pDictModel->contains(unknownWords[i-1]))
-                unknownWords.remove(i-1);
-            i--;
-        }
-
-        if (unknownWords.count()>0)
+        QStringList unknownWords = m_pDicListModel->dictionary->checkWords(m_lMoves.last()->PlacedWord,m_lMoves.last()->ConnectedWords);
+        if (!unknownWords.isEmpty())
         {
             QMessageBox msgBox;
             msgBox.setWindowTitle("Scrabble3D");
-            msgBox.setText(tr("Word(s) %1 not found.","",unknownWords.count()).arg(unknownWords.join(",")));
+            QString msgText = tr("Unknown word(s):")+"\n%1";
+            msgBox.setText(msgText.arg(unknownWords.join(",")));
+            //msgBox.setText(tr("%n Word(s) %1 not found.","",unknownWords.count()).arg(unknownWords.join(",")));
             msgBox.setInformativeText(tr("Do you want to accept anyway?"));
             msgBox.setIcon(QMessageBox::Question);
             msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
@@ -176,7 +192,7 @@ void GamePlay::execNextPlayer()
     if ((m_lMoves.count()>0) &&
         (!m_bIsLoading) &&
         (!m_lMoves.last()->PlacedWord.isEmpty()))
-        m_pMsgModel->addmessage(tr("%1 places %2 %3 and receives %4 points.")
+        m_pMsgModel->addMessage(tr("%1 places %2 %3 and receives %4 points.")
                                .arg(m_lPlayerNames[m_nCurrentPlayer])
                                .arg(m_lMoves.last()->PlacedWord)
                                .arg(!m_lMoves.last()->ConnectedWords.isEmpty() ? tr("and") + " " + m_lMoves.last()->ConnectedWords : "")
@@ -188,99 +204,144 @@ void GamePlay::execNextPlayer()
                               m_lMoves.last()->ConnectedWords,
                               m_nCurrentPlayer,
                               m_lMoves.last()->Value(),
-                              0,false,0); //TODO: finish
-
+                              m_pComputeMove->numberOfResults() > 0 ? m_pComputeMove->result(0)->Value() : 0,
+                              m_lMoves.last()->isScrabble(),
+                              0);
+    //TODO: nextplayer: add bonus, movetime; show in statistics
     m_nCurrentMove++;
     m_nCurrentPlayer = m_nCurrentMove % m_lPlayerNames.count();
     emit currentPlayerChanged();
 
-    //TODO: lMoves is zero before first move
+    //lMoves is zero before first move
     if ((m_lMoves.count()>0) && (m_lMoves.last()->Value()>0))
         m_bIsFirstMove = false;
 
     m_lMoves.append(new move(m_bIsFirstMove, m_bIs3D, m_pBoard));
     //boardModel updates the UI and CurrentMove needs to be set before
     m_pBoard->placeLetters();
-    if (m_bIsLoading) return; //do not touch the rack not update the UI
+    if (m_bIsLoading) return; //do not touch the rack on execnewgame()
 
     m_pBoardModel->updateAllSquares();
-    for (unsigned int i = m_pRackModel->rackSize(); i < m_nRackSize; i++) {
-        if (m_lBag.count()>0) {
+    for (int i=0; i<m_pRackModel->rackSize(); i++)
+        if (m_pRackModel->getLetter(i).IsEmpty() && (m_lBag.count()>0)) {
             Letter aLetter = m_lBag[0];
             aLetter.State = LetterState::lsRack;
             aLetter.RackPos = i;
-            m_pRackModel->addLetter(aLetter);
+            m_pRackModel->setLetter(aLetter);
             m_lBag.removeAt(0);
         }
-    }
     //allow next player action
-    //TODO: if game has not ended
+    //TODO: nextplayer: consider game end
     m_bIsAccepted = true;
-    m_pMsgModel->addmessage(tr("It's %1's turn.").arg(m_lPlayerNames[m_nCurrentPlayer]));
-
+    m_pMsgModel->addMessage(tr("It's %1's turn.").arg(m_lPlayerNames[m_nCurrentPlayer]));
+    //TODO: nextplayer: add move/game timer
     emit isAcceptedChanged();
     emit lastErrorChanged();
 
-    saveGame(QUrl::fromLocalFile(QCoreApplication::applicationDirPath()+"/debug.ssg")); //TODO: remove
+    m_pComputeMove->clear();
+
+    //TODO: nextplayer: remove debug.ssg on every move
+    QString fileName = configPath().path() +"/debug.ssg";
+    saveGame(QUrl::fromLocalFile(fileName));
+
+    //compute and place if player is "Computer"
+    if (m_lPlayerNames[m_nCurrentPlayer] == "Computer") {
+        computeMove();
+        placeBestMove(1);
+        execNextPlayer();
+    }
 }
 
 bool GamePlay::canDrop(const unsigned int boardIndex)
 {
-    int z = m_pBoard->PointToWhere( m_pBoard->Pos3D(boardIndex) );
+    int z = m_pBoard->pointToWhere( m_pBoard->pos3D(boardIndex) );
     return (m_pBoard->getLetter(z).State == LetterState::lsEmpty);
 }
 
-void GamePlay::dropLetter(const unsigned int rackIndex, const unsigned int boardIndex)
+void GamePlay::resetPieces()
+{
+    Letter aLetter;
+    for (int i=0; i<m_pBoard->getFieldSize(); i++)
+    {
+        aLetter = m_pBoard->getLetter(i);
+        if (aLetter.State == LetterState::lsBoard)
+            removeLetter(aLetter);
+     }
+}
+
+void GamePlay::dropLetter(const uint rackIndex, const uint boardIndex)
 {
     Letter aLetter = m_pRackModel->getLetter(rackIndex);
 
     aLetter.State = LetterState::lsBoard;
     aLetter.When = m_nCurrentMove;
     aLetter.Who = m_nCurrentPlayer;
-    aLetter.Point = m_pBoard->Pos3D(boardIndex);
-    aLetter.Where = m_pBoard->PointToWhere(aLetter.Point);
+    aLetter.Point = m_pBoard->pos3D(boardIndex);
+    aLetter.Where = m_pBoard->pointToWhere(aLetter.Point);
     m_pBoard->setLetter(aLetter);
     m_pBoardModel->updateSquare(aLetter.Point);
     if (m_bIs3D) cubeModel()->updateSquare(aLetter.Point);//aIndex);
-    m_pRackModel->removeLetter(rackIndex);
+    m_pRackModel->placeLetter(rackIndex);
 
     m_bIsAccepted = m_lMoves.last()->addLetter(aLetter);
     if (m_bIsAccepted)
     {
-        if (m_pRackModel->rackSize() == 0)
-            m_lMoves.last()->setBonus( m_nScrabbleBonus );
+        if (m_pRackModel->rackSize() == m_lMoves.last()->letterCount())
+            m_lMoves.last()->setBonus( m_nScrabbleBonus, true );
     }
+    emit placedValueChanged();
     emit isAcceptedChanged();
     emit lastErrorChanged();
 }
 
-bool GamePlay::removeLetter(const unsigned int boardIndex, const bool startDrag)
+void GamePlay::dropLetterRack(const uint fromIndex, const uint toIndex)
 {
-    int z = m_pBoard->PointToWhere( m_pBoard->Pos3D(boardIndex) );
-    Letter aLetter = m_pBoard->getLetter(z);
-    Point3D aPoint = aLetter.Point;
+    m_pRackModel->move(fromIndex, toIndex);
+}
 
-    if (aLetter.State != LetterState::lsEmpty) {
+void GamePlay::setJokerLetter(const uint boardIndex, const QString aWhat)
+{
+    int z = m_pBoard->pointToWhere( m_pBoard->pos3D(boardIndex) );
+    m_pBoard->setJokerLetter(z, aWhat);
+    m_lMoves.last()->setJokerLetter(aWhat); //last placed letter
+    m_lMoves.last()->checkMove(); //re-check to update placeword
+    Letter aLetter = m_pBoard->getLetter(z);
+    m_pBoardModel->updateSquare(aLetter.Point);
+}
+
+void GamePlay::removeLetter(const uint boardIndex)
+{
+    int z = m_pBoard->pointToWhere( m_pBoard->pos3D(boardIndex) );
+    Letter aLetter = m_pBoard->getLetter(z);
+    removeLetter(aLetter);
+}
+
+void GamePlay::removeLetter(Letter aLetter)
+{
+    Point3D aPoint = aLetter.Point;
+    int z = aLetter.Where;
+    if (aLetter.State == LetterState::lsBoard) {
         aLetter.State = LetterState::lsRack;
         aLetter.When = 0;
         aLetter.Who = 0;
         aLetter.Where = 0;
+        if (aLetter.IsJoker) aLetter.What = JokerChar;
         aLetter.Point = Point3D(0,0,0);
 
         m_pBoard->removeLetter(z);
         m_pBoardModel->updateSquare(aPoint);
-//        QModelIndex aIndex = m_pBoard->removeLetter(z);
         if (m_bIs3D) cubeModel()->updateSquare(aPoint);//aIndex);
 
-        if (!startDrag)
-            m_pRackModel->addLetter(aLetter);
+//        if (!startDrag)
+            m_pRackModel->setLetter(aLetter);
+
         m_bIsAccepted = m_lMoves.last()->deleteLetter(z);
 
+        emit placedValueChanged();
         emit isAcceptedChanged();
         emit lastErrorChanged();
-        return true;
-    }
-    return false;
+    } else
+        qWarning() << "removeLetter failed";
 }
 
 void GamePlay::setActiveDimension(const unsigned int aDimension)
@@ -304,14 +365,15 @@ unsigned int GamePlay::getActiveDimension()
     return static_cast<int>(m_pBoard->getActiveDimension());
 }
 
-void GamePlay::setActivePosition(const int aPosition)
+void GamePlay::setActivePosition(const int aPosition, const bool bSilent)
 {
     if ( m_bIs3D &&
-         (aPosition < m_pBoard->getBoardsize()) && (aPosition>=0) &&
+         (aPosition < m_pBoard->getBoardSize()) && (aPosition>=0) &&
          (aPosition != getActivePosition())
        )
     {
         m_pBoard->setActivePosition(aPosition);
+        if (bSilent) return;
         m_pBoardModel->updateAllFields();
         emit activePositionChanged();
     }
@@ -322,15 +384,58 @@ int GamePlay::getActivePosition()
     return m_pBoard->getActivePosition();
 }
 
+void GamePlay::setComputeProgress(const int aProgress)
+{
+    if (m_nProgress != aProgress) {
+        m_nProgress = aProgress;
+        emit computeProgressChanged();
+        //refresh
+        QCoreApplication::processEvents(QEventLoop::AllEvents);
+    }
+}
+
+void GamePlay::saveConfig(QString fileName, QVariantMap configData)
+{
+    if (fileName.isEmpty()) //new game
+        fileName = configPath().path() + "/Scrabble3D.ini";
+    else
+        fileName = QUrl(fileName).toLocalFile();
+    QSettings settings(fileName, QSettings::IniFormat);
+
+    settings.beginGroup("config");
+    for (auto i = configData.begin(); i!=configData.end(); i++)
+        settings.setValue(i.key(), i.value());
+    settings.endGroup();
+}
+
+QVariantMap GamePlay::loadConfig(QString fileName)
+{
+    if (fileName.isEmpty()) //new game
+        fileName = configPath().path() + "/Scrabble3D.ini";
+    else
+        fileName = QUrl(fileName).toLocalFile();
+
+    QSettings settings(fileName, QSettings::IniFormat);
+
+    QVariantMap configData;
+    settings.beginGroup("config");
+    QStringList keys = settings.childKeys();
+    for (int i=0; i<keys.count(); i++)
+        configData[keys[i]] = settings.value(keys[i]).toString();
+    settings.endGroup();
+    return configData;
+}
+
 void GamePlay::saveGame(const QUrl &fileName)
 {
-    qDebug() << "Save game to " << fileName.toLocalFile(); //TODO: debug
-    m_pMsgModel->addmessage(tr("Game saved as %1").arg(fileName.toLocalFile()));
-    QSettings settings(fileName.toLocalFile(), QSettings::IniFormat); //TODO: path
-//                       QSettings::UserScope, "scrabble3d", "Scrabble3D");
+    qDebug() << "Save game to " << fileName.toLocalFile();
+    m_pMsgModel->addMessage(tr("Game saved as %1").arg(fileName.toLocalFile()));
+    QSettings settings(fileName.toLocalFile(), QSettings::IniFormat);
+
     //clear previous values
     settings.clear();
-//TODO: save randseed
+
+    //TODO: saveGame: store randseed => maybe not neccessary since bag is randomized at beginning
     if (m_bIs3D)
     {
         settings.setValue("ActiveDimension",m_pBoard->getActiveDimension());
@@ -378,7 +483,7 @@ void GamePlay::saveGame(const QUrl &fileName)
     settings.beginGroup("board");
     {
         QVariantList aList;
-        for (int i=0; i<m_pBoard->getFieldsize(); i++)
+        for (int i=0; i<m_pBoard->getFieldSize(); i++)
             aList.append( m_pBoard->getFieldtype(i) );
         settings.setValue("fieldtypes", aList);
     }
@@ -406,15 +511,20 @@ void GamePlay::saveGame(const QUrl &fileName)
         }
     }
     settings.endArray();
+
+    settings.beginGroup("extra");
+    {
+        settings.setValue("letterset",m_pDicListModel->dictionary->getLetterSet());
+    }
+    settings.endGroup();
 }
 
 void GamePlay::loadGame(const QUrl &fileName)
 {
-    qDebug() << "Load game from " << fileName.toLocalFile(); //TODO: debug
-    m_pMsgModel->addmessage(tr("Loading game from %1...").arg(fileName.toLocalFile()));
+    qDebug() << "Load game from " << fileName.toLocalFile();
+    m_pMsgModel->addMessage(tr("Loading game from %1...").arg(fileName.toLocalFile()));
     m_bIsLoading = true;
-    QSettings settings(fileName.toLocalFile(), QSettings::IniFormat); //TODO: path
-//                       QSettings::UserScope, "scrabble3d", "Scrabble3D");
+    QSettings settings(fileName.toLocalFile(), QSettings::IniFormat);
     statModel()->clear();
     m_lPlayerNames.clear();
     settings.beginGroup("game");
@@ -453,6 +563,7 @@ void GamePlay::loadGame(const QUrl &fileName)
         aList = settings.value("fieldtypes").toList();
         m_pBoard->initialize(aList, m_bIs3D);
         m_pBoardModel->reset();
+        if (m_bIs3D) m_pCubeModel->reset();
         emit boardSizeChanged();
         emit is3DChanged();
     }
@@ -482,9 +593,10 @@ void GamePlay::loadGame(const QUrl &fileName)
     }
     settings.endArray();
 
+    m_bIsAccepted = true;
     int nMoves = settings.beginReadArray("moves");
     {
-        m_nCurrentMove = -1;
+        m_nCurrentMove = 0;
         m_bIsRunning = true;
         m_bIsFirstMove = true;
         m_lMoves.clear();
@@ -500,12 +612,19 @@ void GamePlay::loadGame(const QUrl &fileName)
                 m_bIsAccepted = m_lMoves.last()->addLetter(aLetter);
             }
             if (nLetters == m_nRackSize)
-                m_lMoves.last()->setBonus( m_nScrabbleBonus );
+                m_lMoves.last()->setBonus( m_nScrabbleBonus, true );
 
             settings.endArray();
         }
-        m_pMsgModel->addmessage(QString("It's player %1's turn.").arg(QString::number(m_nCurrentPlayer+1)), m_nCurrentPlayer);
+        m_pMsgModel->addMessage(tr("It's player %1's turn.").arg(QString::number(m_nCurrentPlayer+1)), m_nCurrentPlayer);
     }
+
+    settings.beginGroup("extra");
+    {
+        m_pDicListModel->dictionary->setLetterSet(settings.value("letterset").toString());
+    }
+    settings.endGroup();
+
     m_pBoardModel->updateAllSquares();
     if (m_bIs3D) cubeModel()->reset();
     settings.endArray();
@@ -513,13 +632,15 @@ void GamePlay::loadGame(const QUrl &fileName)
     if (m_bIs3D)
     {
         setActiveDimension(settings.value("ActiveDimension").toInt());
+        emit activeDimensionChanged();
         setActivePosition(settings.value("ActivePosition").toInt());
+        emit activePositionChanged();
     }
 
     m_bIsLoading = false;
 
     emit numberOfPlayersChanged();
-    emit currentPlayerChanged();//TODO: check
+    emit currentPlayerChanged();
     emit isAcceptedChanged();
     emit lastErrorChanged();
     emit isRunningChanged();
@@ -527,9 +648,41 @@ void GamePlay::loadGame(const QUrl &fileName)
 
 void GamePlay::computeMove()
 {
-    QString s;
-    for (int i=0; i<rackModel()->rackSize(); i++)
-        s += rackModel()->getLetter(i).What;
-    s = dictModel()->variation(s);
-    addMessage(s);
+    resetPieces(); //return previously placed pieces
+    m_pComputeMove->run(m_bIsFirstMove, m_bIs3D);
+    setComputeProgress(0);//clear
+    //feedback
+    if (m_lPlayerNames[m_nCurrentPlayer] != "Computer") {
+        if (m_pComputeMove->numberOfResults()==0)
+            addMessage(tr("No word found"));
+        else
+            addMessage(tr("Out of %1 possible words found the best scores %2 points.")
+                          .arg(m_pComputeMove->numberOfResults())
+                          .arg(m_pComputeMove->result(0)->Value()));
+        emit bestMoveCountChanged();
+    }
+}
+
+void GamePlay::placeBestMove(const int index)
+{
+    //clear board
+    resetPieces();
+
+    if ((index<1) || (index>m_pComputeMove->numberOfResults()))
+        return;
+
+    Letter aLetter;
+    move* aMove = m_pComputeMove->result(index-1);
+    if (m_bIs3D) {
+        setActivePosition(aMove->activePosition());
+        setActiveDimension(aMove->activeDimension()); //move's dimension is also used for position at col/row
+    }
+    for (int j=0; j<aMove->letterCount(); j++) {
+        aLetter = aMove->getLetter(j);
+        // dropping letter via qml always takes the current 2d plane - and converts into 3d
+        // so we have to convert the correct 3d point into the preliminary plane value
+        dropLetter(aLetter.RackPos, m_pBoard->pointToPlane(aLetter.Point));
+        if (aLetter.IsJoker)
+            setJokerLetter(aLetter.Where, aLetter.What);
+    }
 }

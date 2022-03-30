@@ -2,15 +2,21 @@
 #include <QIcon>
 #include <gameplay.h>
 
+#ifdef _WIN32
+#include <QQuickWindow>
+#endif
+
 int main(int argc, char *argv[])
 {
+#ifdef _WIN32
+    QQuickWindow::setSceneGraphBackend("software");
+#endif
+
     QApplication app(argc, argv);
 
     app.setWindowIcon(QIcon(":/resources/app.ico"));
 
     QQmlApplicationEngine engine;
-
-    qmlRegisterUncreatableMetaObject(LetterState::staticMetaObject, "letterstate", 1, 0, "LetterState", "Error");
 
     GamePlay* gamePlay = new GamePlay();
     engine.rootContext()->setContextProperty("GamePlay", gamePlay);

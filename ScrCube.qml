@@ -4,6 +4,12 @@ import QtQuick.Layouts
 import QtQuick3D
 
 Item {
+
+    function updateCubeModel() {
+        //TODO: cube: feeback on init
+        cube.model = GamePlay.cubeModel //assign model not until it is used to avoid delay on app start
+    }
+
     View3D {
         id: view
         anchors.fill: parent
@@ -29,7 +35,7 @@ Item {
             eulerRotation.y: -180
             Repeater3D {
                 id: cube
-                model: GamePlay.cubeModel
+                model: {} //empty to quickly start; will be initialized at first usage
                 Model {
                     property int bs: GamePlay.boardSize
                     property real bs2: bs/2
@@ -59,7 +65,7 @@ Item {
                                                     : aWhen === GamePlay.currentMove
                                                       ? config.colors.get(8).itemColor //use (yellow) field color for non-empty squares
                                                       : Qt.lighter(config.colors.get(8).itemColor) // ... but a bit lighter when removing is not possible
-                                        pieceShadow: (isplaced && config.colorplayers)
+                                        pieceShadow: (isPlaced && config.bColoredPlayers)
                                                      ? config.playercolors.get(aWho).itemColor //colored shadow to show who placed a piece
                                                      : "transparent"
                                         pieceLabel: aWhat

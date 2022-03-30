@@ -13,6 +13,7 @@ public:
         WhoRole,
         WhenRole,
         IsPlacedRole,
+        IsJokerRole,
         BonusTopRole,
         BonusBottomRole,
         BonusLeftRole,

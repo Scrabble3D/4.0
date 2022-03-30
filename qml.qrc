@@ -8,7 +8,6 @@
         <file>ScrPiece.qml</file>
         <file>ColorPicker.qml</file>
         <file>ScrDefaults.qml</file>
-        <file>ScrRack.qml</file>
         <file>resources/newgame.png</file>
         <file>resources/hamburger.png</file>
         <file>resources/nextplayer.png</file>
@@ -23,5 +22,24 @@
         <file>resources/dictionary.png</file>
         <file>ScrStatusbar.qml</file>
         <file>ShadowText.qml</file>
-    </qresource> 
+        <file>ScrMainLandscape.qml</file>
+        <file>ScrMainPortrait.qml</file>
+        <file>ScrConfigRules.qml</file>
+        <file>ScrConfigBoard.qml</file>
+        <file>ScrConfigLetter.qml</file>
+        <file>ScrConfigDictionary.qml</file>
+        <file>ScrNewGame.qml</file>
+        <file>resources/wheelchair.png</file>
+        <file>ScrWordSearch.qml</file>
+        <file>resources/save.png</file>
+        <file>resources/load.png</file>
+        <file>resources/reset.png</file>
+        <file>ScrJokerPicker.qml</file>
+        <file>resources/star.png</file>
+        <file>ScrAbout.qml</file>
+        <file>resources/about.png</file>
+        <file>LinkText.qml</file>
+        <file>resources/bingo.png</file>
+        <file>ToolbarButton.qml</file>
+    </qresource>
 </RCC>

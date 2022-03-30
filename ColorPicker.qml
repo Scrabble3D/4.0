@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Qt.labs.platform
-import Qt5Compat.GraphicalEffects
 
 RowLayout {
     property ListModel pickerColors:({})
@@ -11,10 +10,12 @@ RowLayout {
         id: cbColors
         model: pickerColors
         Layout.preferredWidth: 200
+        Layout.preferredHeight: 28
 
         delegate: Rectangle {
             height: 32
             width: parent.width
+            color: myPalette.button
             Rectangle {
                 id: delegateColorDot
                 width: parent.height * 0.75
@@ -29,6 +30,7 @@ RowLayout {
                 id: delegateColorName
                 leftPadding: parent.height * 1.25
                 text: itemName
+                color: myPalette.buttonText
                 anchors.verticalCenter: parent.verticalCenter
             }
             MouseArea {
@@ -45,26 +47,24 @@ RowLayout {
         background: Rectangle {
             id: rcBackground
             Rectangle {
-                id: rcColorDot
-                width: parent.height * 0.75
-                height: width
-                radius: width * 0.5
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.left: parent.left
-                anchors.leftMargin: width * 0.25
-            }
-            Text {
-                id: lbColorName
-                leftPadding: parent.height * 1.25
-                anchors.verticalCenter: parent.verticalCenter
-            }
-            layer.enabled: true
-            layer.effect: DropShadow {
-                transparentBorder: true
-                color: "lightgrey"
-                horizontalOffset: 2
-                verticalOffset: 2
-                radius: cbColors.hovered ? 15 : 5
+                anchors.fill: parent
+                color: myPalette.button
+                Rectangle {
+                    id: rcColorDot
+                    width: parent.height * 0.75
+                    height: width
+                    radius: width * 0.5
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: parent.left
+                    anchors.leftMargin: width * 0.25
+                }
+                Text {
+                    id: lbColorName
+                    color: myPalette.buttonText
+                    leftPadding: parent.height * 1.25
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
             }
         }
 

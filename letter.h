@@ -79,51 +79,6 @@ struct Letter
         Point = Point3D(aList[8].toUInt(),aList[9].toUInt(),aList[10].toUInt());
         State = static_cast<LetterState::State>(aList[11].toInt());
     }
-/*
-    QJsonObject toJson()
-    {
-        QJsonObject jLetter;
-        jLetter["w"] = What;
-        jLetter["v"] = int(Value);
-        jLetter["j"] = IsJoker;
-        jLetter["r"] = IsRandom;
-        jLetter["h"] = int(When);
-        jLetter["o"] = int(Who);
-        jLetter["p"] = int(RackPos);
-        jLetter["e"] = int(Where);
-        jLetter["x"] = int(Point.x());
-        jLetter["y"] = int(Point.y());
-        jLetter["z"] = int(Point.z());
-        jLetter["s"] = State;
-        return jLetter;
-    };
-    void fromJson(const QJsonObject &jLetter) {
-        if (jLetter.contains("w") && jLetter["w"].isString())
-            What = jLetter["w"].toString();
-        if (jLetter.contains("v") && jLetter["v"].isDouble())
-            Value = jLetter["v"].toInt();
-        if (jLetter.contains("j") && jLetter["j"].isBool())
-            IsJoker = jLetter["j"].toBool();
-        if (jLetter.contains("r") && jLetter["r"].isBool())
-            IsRandom = jLetter["r"].toBool();
-        if (jLetter.contains("h") && jLetter["h"].isDouble())
-            When = jLetter["h"].toInt();
-        if (jLetter.contains("o") && jLetter["o"].isDouble())
-            Who = jLetter["o"].toInt();
-        if (jLetter.contains("p") && jLetter["p"].isDouble())
-            RackPos = jLetter["p"].toInt();
-        if (jLetter.contains("e") && jLetter["e"].isDouble())
-            Where = jLetter["e"].toInt();
-        if (jLetter.contains("x") && jLetter["x"].isDouble())
-            Point.setX(jLetter["x"].toInt());
-        if (jLetter.contains("y") && jLetter["y"].isDouble())
-            Point.setY(jLetter["y"].toInt());
-        if (jLetter.contains("z") && jLetter["z"].isDouble())
-            Point.setZ(jLetter["z"].toInt());
-        if (jLetter.contains("s") && jLetter["s"].isDouble())
-            State = static_cast<LetterState::State>(jLetter["s"].toInt());
-    }
-*/
     bool IsEmpty()
     {
         bool aResult = true;
@@ -143,7 +98,7 @@ struct Letter
     }
 
 };
-
+const QString JokerChar = "?";
 const Letter EmptyLetter = {QString(QChar::Null), 0,
                             false, false,
                             0, 0, 0, 0, Point3D(0,0,0),

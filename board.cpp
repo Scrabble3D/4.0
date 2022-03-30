@@ -4,27 +4,27 @@ board::board()
 {
     //initialize with 2D Classic distribution
     const int ft[255] =
-        {6,1,1,2,1,1,1,6,1,1,1,2,1,1,6,
-         1,5,1,1,1,3,1,1,1,3,1,1,1,5,1,
-         1,1,5,1,1,1,2,1,2,1,1,1,5,1,1,
-         2,1,1,5,1,1,1,2,1,1,1,5,1,1,2,
-         1,1,1,1,5,1,1,1,1,1,5,1,1,1,1,
-         1,3,1,1,1,3,1,1,1,3,1,1,1,3,1,
-         1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,
-         6,1,1,2,1,1,1,0,1,1,1,2,1,1,6,
-         1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,
-         1,3,1,1,1,3,1,1,1,3,1,1,1,3,1,
-         1,1,1,1,5,1,1,1,1,1,5,1,1,1,1,
-         2,1,1,5,1,1,1,2,1,1,1,5,1,1,2,
-         1,1,5,1,1,1,2,1,2,1,1,1,5,1,1,
-         1,5,1,1,1,3,1,1,1,3,1,1,1,5,1,
-         6,1,1,2,1,1,1,6,1,1,1,2,1,1,6};
-    for (unsigned int i=0; i<256; i++)
+    {6,1,1,2,1,1,1,6,1,1,1,2,1,1,6,
+     1,5,1,1,1,3,1,1,1,3,1,1,1,5,1,
+     1,1,5,1,1,1,2,1,2,1,1,1,5,1,1,
+     2,1,1,5,1,1,1,2,1,1,1,5,1,1,2,
+     1,1,1,1,5,1,1,1,1,1,5,1,1,1,1,
+     1,3,1,1,1,3,1,1,1,3,1,1,1,3,1,
+     1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,
+     6,1,1,2,1,1,1,0,1,1,1,2,1,1,6,
+     1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,
+     1,3,1,1,1,3,1,1,1,3,1,1,1,3,1,
+     1,1,1,1,5,1,1,1,1,1,5,1,1,1,1,
+     2,1,1,5,1,1,1,2,1,1,1,5,1,1,2,
+     1,1,5,1,1,1,2,1,2,1,1,1,5,1,1,
+     1,5,1,1,1,3,1,1,1,3,1,1,1,5,1,
+     6,1,1,2,1,1,1,6,1,1,1,2,1,1,6};
+    for (unsigned int i=0; i<sizeof(ft)/sizeof(int); i++)
     {
         m_Fieldtypes.append( static_cast<FieldType>(ft[i]) );
         m_Letters.append( EmptyLetter );
     }
-    m_nBoardsize = 15;
+    m_nBoardSize = qSqrt(sizeof(ft)/sizeof(int));
     m_nActivePosition = 0;
     m_eActiveDimension = dmAbscissa;
 }
@@ -34,22 +34,34 @@ void board::initialize(const QVariantList fieldTypeArray, const bool Is3D)
     m_eActiveDimension = dmAbscissa;
     m_nActivePosition = 0;
 
-    m_nFieldsize = fieldTypeArray.count();
+    m_nFieldSize = fieldTypeArray.count();
     if (Is3D)
-        m_nBoardsize = round(cbrt(m_nFieldsize));
+        m_nBoardSize = round(cbrt(m_nFieldSize));
     else
-        m_nBoardsize = round(sqrt(m_nFieldsize));
+        m_nBoardSize = round(sqrt(m_nFieldSize));
     //m_ActivePosition = round(m_BoardSize / 2);
     //clear
     m_Fieldtypes.clear();
     m_Letters.clear();
-    for (int i=0; i<m_nFieldsize; i++) {
+    for (int i=0; i<m_nFieldSize; i++) {
        m_Fieldtypes.append( static_cast<FieldType>(fieldTypeArray[i].toInt()) );
        m_Letters.append(EmptyLetter);
     }
 }
 
-FieldType board::getFieldtype(const uint index)
+void board::initialize(const board *aParentBoard)
+{
+    m_nBoardSize = aParentBoard->m_nBoardSize;
+    m_nFieldSize = aParentBoard->m_nFieldSize;
+    m_Letters.clear();
+    m_Letters.append(aParentBoard->m_Letters);
+    m_Fieldtypes.clear();
+    m_Fieldtypes.append(aParentBoard->m_Fieldtypes);
+    m_eActiveDimension = aParentBoard->m_eActiveDimension;
+    m_nActivePosition = aParentBoard->m_nActivePosition;
+}
+
+FieldType board::getFieldtype(const int index)
 {
     if (index<m_Fieldtypes.count())
         return m_Fieldtypes[index];
@@ -62,11 +74,11 @@ FieldType board::getFieldtype(const uint index)
 
 void board::setLetter(Letter &aLetter)
 {
-    aLetter.Where = PointToWhere(aLetter.Point);
+    aLetter.Where = pointToWhere(aLetter.Point);
     m_Letters[aLetter.Where] = aLetter;
 }
 
-Letter board::getLetter(const uint index)
+Letter board::getLetter(const int index)
 {
     if (index<m_Letters.count())
         return m_Letters[index];
@@ -77,63 +89,95 @@ Letter board::getLetter(const uint index)
     }
 }
 
+Letter board::getLetter(const Point3D aWhere)
+{
+    return getLetter(pointToWhere(aWhere));
+}
+
+Letter board::getLetter(const int col, const int row)
+{
+    int aIndex = col * m_nBoardSize + row;
+    return getLetter(pos3D(aIndex));
+}
+
 void board::placeLetters()
 {
-    for (int i=0; i < m_nFieldsize; i++)
+    for (int i=0; i < m_nFieldSize; i++)
       if (m_Letters[i].State == LetterState::lsBoard)
           m_Letters[i].State = LetterState::lsPlaced;
 }
 
-void board::removeLetter(const unsigned int aLetterIndex)
+void board::removeLetter(const int aLetterIndex)
 {
     if ( aLetterIndex < m_Letters.count() )
         m_Letters[aLetterIndex] = EmptyLetter;
+    else
+        qWarning() << "Remove index" << aLetterIndex << "out of bounds" << "(" << m_Letters.count() << ")";
 }
 
-unsigned int board::PointToWhere(const Point3D nPoint)
+int board::pointToWhere(const Point3D nPoint)
 {
     return nPoint.x() +
-           nPoint.y() * (m_nBoardsize) +
-           nPoint.z() * (m_nBoardsize * m_nBoardsize) ;
+           nPoint.y() * (m_nBoardSize) +
+           nPoint.z() * (m_nBoardSize * m_nBoardSize) ;
 }
 
-Point3D board::WhereToPoint(const unsigned int aWhere)
+int board::pointToPlane(const Point3D nPoint)
 {
-    return Point3D( aWhere % m_nBoardsize,
-                   (aWhere / m_nBoardsize) % m_nBoardsize,
-                    aWhere / (m_nBoardsize * m_nBoardsize));
-}
-
-Point3D board::Pos3D(int nIndex2D)
-{
-    Point3D aPoint;
     switch (m_eActiveDimension) {
       case dmAbscissa: //always true for 2D
-        aPoint = Point3D(nIndex2D % m_nBoardsize, nIndex2D / m_nBoardsize, m_nActivePosition);
-        break;
+        return nPoint.x() + nPoint.y() * m_nBoardSize;
       case dmOrdinate:
-        aPoint = Point3D(m_nActivePosition, nIndex2D % m_nBoardsize, nIndex2D / m_nBoardsize);
-        break;
+        return nPoint.y() + nPoint.z() * m_nBoardSize;
       case dmApplicate:
-        aPoint = Point3D(nIndex2D % m_nBoardsize, m_nActivePosition, nIndex2D / m_nBoardsize);
-        break;
+        return nPoint.x() + nPoint.z() * m_nBoardSize;
+      default:
+        qCritical("Dimension not defined");
     }
-    return aPoint;
 }
 
-int board::Index2D(Point3D aPoint3D)
+Point3D board::whereToPoint(const int aWhere)
+{
+    return Point3D( aWhere % m_nBoardSize,
+                   (aWhere / m_nBoardSize) % m_nBoardSize,
+                    aWhere / (m_nBoardSize * m_nBoardSize));
+}
+
+Point3D board::pos3D(int nIndex2D)
+{
+    switch (m_eActiveDimension) {
+      case dmAbscissa: //always true for 2D
+        return Point3D(nIndex2D % m_nBoardSize, nIndex2D / m_nBoardSize, m_nActivePosition);
+      case dmOrdinate:
+        return Point3D(m_nActivePosition, nIndex2D % m_nBoardSize, nIndex2D / m_nBoardSize);
+      case dmApplicate:
+        return Point3D(nIndex2D % m_nBoardSize, m_nActivePosition, nIndex2D / m_nBoardSize);
+      default:
+        qCritical("Dimension not defined");
+    }
+}
+
+int board::index2D(Point3D aPoint3D)
 {
     int aIndex;
     switch (m_eActiveDimension) {
       case dmAbscissa:
-        aIndex = aPoint3D.y()*m_nBoardsize + aPoint3D.x();
+        aIndex = aPoint3D.y()*m_nBoardSize + aPoint3D.x();
         break;
       case dmOrdinate:
-        aIndex = aPoint3D.z()*m_nBoardsize + aPoint3D.y();
+        aIndex = aPoint3D.z()*m_nBoardSize + aPoint3D.y();
         break;
       case dmApplicate:
-        aIndex = aPoint3D.z()*m_nBoardsize + aPoint3D.x();
+        aIndex = aPoint3D.z()*m_nBoardSize + aPoint3D.x();
         break;
     }
     return aIndex;
+}
+
+void board::setJokerLetter(const int aLetterIndex, const QString aWhat)
+{
+    if (aLetterIndex < m_Letters.count())
+        m_Letters[aLetterIndex].What = aWhat;
+    else
+        qWarning() << "Joker index at " << aLetterIndex << "out of bounds" << "(" << m_Letters.count() << ")";
 }

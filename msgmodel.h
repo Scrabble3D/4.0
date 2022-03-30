@@ -24,7 +24,7 @@ public:
     int rowCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
     int columnCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
 
-    void addmessage(const QString aWhat, const int aWho = -1);
+    void addMessage(const QString aWhat, const int aWho = -1);
     void clear();
 
 protected:

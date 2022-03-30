@@ -10,7 +10,7 @@ boardmodel::boardmodel(QObject *parent, board* aBoard)
 int boardmodel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    return m_pBoard->getBoardsize() * m_pBoard->getBoardsize();
+    return m_pBoard->getBoardSize() * m_pBoard->getBoardSize();
 }
 
 void boardmodel::reset()
@@ -21,18 +21,18 @@ void boardmodel::reset()
 
 void boardmodel::updateSquare(Point3D aPos)
 {
-    QModelIndex aIndex = this->index( m_pBoard->Index2D(aPos) );
+    QModelIndex aIndex = this->index( m_pBoard->index2D(aPos) );
     emit dataChanged(aIndex, aIndex, { WhatRole, ValueRole, WhoRole, WhenRole, IsPlacedRole } );
 }
 
 void boardmodel::updateAllSquares()
 {
     QModelIndex aIndex;
-    int z = m_pBoard->getBoardsize();
+    int z = m_pBoard->getBoardSize();
     for (int i=0; i<z; i++)
      for (int j=0; j<z; j++)
      {
-         aIndex = this->index( i * m_pBoard->getBoardsize() + j );
+         aIndex = this->index( i * m_pBoard->getBoardSize() + j );
          emit dataChanged(aIndex, aIndex, { WhatRole, ValueRole, WhoRole, WhenRole, IsPlacedRole } );
      }
 }
@@ -40,10 +40,10 @@ void boardmodel::updateAllSquares()
 void boardmodel::updateAllFields()
 {
     QModelIndex aIndex;
-    for (int i=0; i<m_pBoard->getBoardsize(); i++)
-     for (int j=0; j<m_pBoard->getBoardsize(); j++)
+    for (int i=0; i<m_pBoard->getBoardSize(); i++)
+     for (int j=0; j<m_pBoard->getBoardSize(); j++)
      {
-         aIndex = this->index( i * m_pBoard->getBoardsize() + j );
+         aIndex = this->index( i * m_pBoard->getBoardSize() + j );
          emit dataChanged(aIndex, aIndex, { WhatRole, ValueRole, WhoRole, WhenRole, IsPlacedRole, FieldTypeRole, BonusTopRole, BonusBottomRole, BonusLeftRole, BonusRightRole } );
      }
 }
@@ -55,7 +55,8 @@ QHash<int, QByteArray> boardmodel::roleNames() const
     roles[ValueRole] = "value";
     roles[WhoRole] = "who";
     roles[WhenRole] = "when";
-    roles[IsPlacedRole] = "isplaced";
+    roles[IsPlacedRole] = "isPlaced";
+    roles[IsJokerRole] = "isJoker";
     roles[FieldTypeRole] = "fieldtype";
     roles[BonusTopRole] = "bonustop";
     roles[BonusBottomRole] = "bonusbottom";
@@ -67,48 +68,37 @@ QHash<int, QByteArray> boardmodel::roleNames() const
 QVariant boardmodel::data(const QModelIndex &index, int role) const
 {
     Letter aLetter = EmptyLetter;
-    int z = m_pBoard->PointToWhere( m_pBoard->Pos3D(index.row()) );
+    int z = m_pBoard->pointToWhere( m_pBoard->pos3D(index.row()) );
 
     if (((role == WhatRole) || (role == ValueRole) || (role == WhoRole) ||
          (role == WhenRole) ||(role == IsPlacedRole)
-        ) && (z < m_pBoard->getFieldsize()) //if board is not yet initialized
+        ) && (z < m_pBoard->getFieldSize()) //if board is not yet initialized
        ) aLetter = m_pBoard->getLetter(z);
 
     switch (role) {
-      case WhatRole:
-        return aLetter.What;
-        break;
-      case ValueRole:
-        return aLetter.Value;
-        break;
-      case WhoRole:
-        return aLetter.Who;
-        break;
-      case WhenRole:
-        return aLetter.When;
-        break;
-      case IsPlacedRole:
-        return (aLetter.State == LetterState::lsPlaced);
-        break;
-      case FieldTypeRole:
-        return (m_pBoard->getFieldtype(z));
-        break;
+      case WhatRole:      return aLetter.What;  break;
+      case ValueRole:     return aLetter.Value; break;
+      case WhoRole:       return aLetter.Who;   break;
+      case WhenRole:      return aLetter.When;  break;
+      case IsPlacedRole:  return (aLetter.State == LetterState::lsPlaced); break;
+      case IsJokerRole:   return aLetter.IsJoker; break;
+      case FieldTypeRole: return (m_pBoard->getFieldtype(z)); break;
       case BonusTopRole ... BonusRightRole:
       {
         int x = -1;
-        int y = m_pBoard->Index2D(m_pBoard->Pos3D(index.row()));
+        int y = m_pBoard->index2D(m_pBoard->pos3D(index.row()));
         FieldType aBonusField = ftStart; //ftStart "bonus" will be transparent
 
-        if ((role == BonusTopRole) && (y - m_pBoard->getBoardsize() > 0))
-           x = m_pBoard->PointToWhere( m_pBoard->Pos3D(y - m_pBoard->getBoardsize()) );
-        else if ((role == BonusBottomRole) && (y + m_pBoard->getBoardsize() < m_pBoard->getBoardsize() * m_pBoard->getBoardsize()))
-           x = m_pBoard->PointToWhere( m_pBoard->Pos3D(y + m_pBoard->getBoardsize()) );
-        else if ((role == BonusLeftRole) && (y % m_pBoard->getBoardsize() > 0))
-           x = m_pBoard->PointToWhere( m_pBoard->Pos3D( y - 1) );
-        else if ((role == BonusRightRole) && ((y+1) % m_pBoard->getBoardsize() > 0))
-           x = m_pBoard->PointToWhere( m_pBoard->Pos3D( y + 1) );
+        if ((role == BonusTopRole) && (y - m_pBoard->getBoardSize() > 0))
+           x = m_pBoard->pointToWhere( m_pBoard->pos3D(y - m_pBoard->getBoardSize()) );
+        else if ((role == BonusBottomRole) && (y + m_pBoard->getBoardSize() < m_pBoard->getBoardSize() * m_pBoard->getBoardSize()))
+           x = m_pBoard->pointToWhere( m_pBoard->pos3D(y + m_pBoard->getBoardSize()) );
+        else if ((role == BonusLeftRole) && (y % m_pBoard->getBoardSize() > 0))
+           x = m_pBoard->pointToWhere( m_pBoard->pos3D( y - 1) );
+        else if ((role == BonusRightRole) && ((y+1) % m_pBoard->getBoardSize() > 0))
+           x = m_pBoard->pointToWhere( m_pBoard->pos3D( y + 1) );
 
-        if ((x >= 0) && (x < m_pBoard->getFieldsize()))
+        if ((x >= 0) && (x < m_pBoard->getFieldSize()))
             aBonusField = m_pBoard->getFieldtype(x);
         if (aBonusField == ftDefault)
             aBonusField = ftStart;
