@@ -1,13 +1,14 @@
-#include "statmodel.h"
+#include "gamecoursemodel.h"
 #include <QDebug>
+#include <QDateTime>
 
-statmodel::statmodel(QObject *parent)
+gamecoursemodel::gamecoursemodel(QObject *parent)
     : QAbstractTableModel(parent),
       m_lData(0)
 {
 }
 
-QVariant statmodel::data(const QModelIndex &index, int role) const
+QVariant gamecoursemodel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
@@ -29,7 +30,11 @@ QVariant statmodel::data(const QModelIndex &index, int role) const
         else if (index.column() == 3) //best value
             return aData.bestValue;
         else if (index.column() == 4) //move time
-            return "";
+        {
+            QTime aTime(0,0,0);
+            aTime = aTime.addSecs(aData.time);
+            return aTime.toString("mm:ss");
+        }
         break;
       case WhoRole:
         return aData.who;
@@ -49,7 +54,7 @@ QVariant statmodel::data(const QModelIndex &index, int role) const
 
 }
 
-QVariant statmodel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant gamecoursemodel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if ((role == Qt::DisplayRole) && (orientation == Qt::Horizontal))
     {
@@ -67,19 +72,19 @@ QVariant statmodel::headerData(int section, Qt::Orientation orientation, int rol
     return QVariant();
 }
 
-int statmodel::rowCount(const QModelIndex &parent) const
+int gamecoursemodel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
     return m_lData.count();
 }
 
-int statmodel::columnCount(const QModelIndex &parent) const
+int gamecoursemodel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
     return 5;
 }
 
-QHash<int, QByteArray> statmodel::roleNames() const
+QHash<int, QByteArray> gamecoursemodel::roleNames() const
 {
     QHash<int, QByteArray> roles;
     roles[Qt::DisplayRole] = "display";
@@ -91,14 +96,14 @@ QHash<int, QByteArray> statmodel::roleNames() const
     return roles;
 }
 
-void statmodel::clear()
+void gamecoursemodel::clear()
 {
     beginResetModel();
     m_lData.clear();
     endResetModel();
 }
 
-void statmodel::addMove(QString PlacedWord, QString ConnectedWords, uint Who, int value, int bestValue, bool IsScrabble, int moveTime)
+void gamecoursemodel::addMove(QString PlacedWord, QString ConnectedWords, uint Who, int value, int bestValue, bool IsScrabble, int moveTime)
 {
     ModelData aData;
     aData.placedWord = PlacedWord;
@@ -113,4 +118,19 @@ void statmodel::addMove(QString PlacedWord, QString ConnectedWords, uint Who, in
     beginInsertRows(QModelIndex(), i, i);
     m_lData.append(aData);
     endInsertRows();
+}
+
+void gamecoursemodel::getScores(QList<int>& result)
+{
+    for (int i = 0; i < m_lData.count(); i++)
+        result[m_lData[i].who] += m_lData[i].value;
+}
+
+int gamecoursemodel::timeTotalPerPlayer(const uint nPlayer)
+{
+    int nResult = 0;
+    for (int i = 0; i < m_lData.count(); i++)
+        if (m_lData[i].who == nPlayer)
+            nResult += m_lData[i].time;
+    return nResult;
 }

@@ -15,8 +15,8 @@ T.ToolButton {
 
     padding: 4
 
-    icon.width: 32
-    icon.height: 32
+    icon.width: 22
+    icon.height: 22
     icon.color: Color.transparent(isDark(myPalette.base)
                                   ? "white"
                                   : "black", enabled ? 1.0 : 0.2)

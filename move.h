@@ -6,7 +6,7 @@
 class move : public QObject
 {
 public:
-    move(const bool IsFirstMove, const bool Is3D, board* aBoard);
+    move(const bool IsFirstMove, board* aBoard);
 
     QString PlacedWord;
     QString ConnectedWords;
@@ -44,7 +44,6 @@ private:
     unsigned int m_Value;
     unsigned int m_Bonus;
     bool m_IsFirstMove;
-    bool m_Is3D;
 
     board* m_pBoard;
     bool m_IsScrabble;

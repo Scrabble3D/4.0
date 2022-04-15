@@ -17,6 +17,8 @@ GridLayout {
         sbPenaltyPoints.value = defaults.languages[defaultLetterSet].penaltyValue
         sbPenaltyCount.value = defaults.languages[defaultLetterSet].penaltyCount
         cbGameEnd.checked = defaults.languages[defaultLetterSet].gameLostByTime
+        sbPasses.value = defaults.languages[defaultLetterSet].numberOfPasses
+        sbBingo.value = defaults.languages[defaultLetterSet].scrabbleBonus
     }
 
     property alias rbNoLimit: rbNoLimit
@@ -29,6 +31,26 @@ GridLayout {
     property alias sbPenaltyPoints: sbPenaltyPoints
     property alias sbPenaltyCount: sbPenaltyCount
     property alias cbGameEnd: cbGameEnd
+    property alias sbPasses: sbPasses
+
+    function timeStringToSeconds(aString) {
+        const sParts = aString.split(":");
+        var nResult = 0;
+        var nTime;
+
+        if (sParts.length === 3) {
+            nTime = parseInt(sParts[0]);
+            if (nTime < 24)
+                nResult += nTime * 3600;
+            nTime = parseInt(sParts[1]);
+            if (nTime < 60)
+                nResult += nTime * 60;
+            nTime = parseInt(sParts[2]);
+            if (nTime < 60)
+                nResult += nTime;
+        }
+        return nResult;
+    }
 
     Label {
         id: lbTimeControl
@@ -44,28 +66,62 @@ GridLayout {
             id: rbNoLimit
             Layout.columnSpan: 2
             text: qsTr("No Limit")
+            onCheckedChanged: if (checked) config.timeControl = 0
         }
         RadioButton {
             id: rbPerMove
             text: qsTr("Per Move")
+            onCheckedChanged: if (checked) {
+                config.timeControl = 1
+                tiPerMove.textChanged()
+            }
         }
         TextField {
             id: tiPerMove
             enabled: rbPerMove.checked
+            property bool accepted
             color: enabled ? myPalette.windowText : myPalette.midlight
             text: "0:01:00" //1 min
+            background: Rectangle {
+                id: bgPerMove
+                width: 100
+                color: tiPerMove.enabled
+                       ? (tiPerMove.accepted)
+                          ? "red" : config.myPalette.base
+                       : config.myPalette.mid
+            }
+            onTextChanged: if (rbPerMove.checked) {
+                config.timeControlValue = timeStringToSeconds(tiPerMove.text)
+                tiPerMove.accepted = config.timeControlValue === 0
+            }
             validator: RegularExpressionValidator { regularExpression: /^(?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d)$/ }
         }
-
         RadioButton {
             id: rbPerGame
             text: qsTr("Per Game")
+            onCheckedChanged: if (checked) {
+                config.timeControl = 2
+                tiPerGame.textChanged()
+            }
         }
         TextField {
             id: tiPerGame
             enabled: rbPerGame.checked
+            property bool accepted
             color: enabled ? myPalette.windowText : myPalette.midlight
             text: "1:00:00" //1 h
+            background: Rectangle {
+                id: bgPerGame
+                width: 100
+                color: tiPerGame.enabled
+                       ? (tiPerGame.accepted)
+                          ? "red" : config.myPalette.base
+                       : config.myPalette.mid
+            }
+            onTextChanged: if (rbPerGame.checked) {
+                config.timeControlValue = timeStringToSeconds(tiPerGame.text)
+                tiPerGame.accepted = config.timeControlValue === 0
+            }
             validator: RegularExpressionValidator { regularExpression: /^(?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d)$/ }
         }
     }
@@ -126,4 +182,28 @@ GridLayout {
             text: qsTr("Game lost after last timeout")
         }
     }
- }
+    Label {
+        id: lbPasses
+        leftPadding: 8
+        Layout.alignment: Qt.AlignRight | Qt.AlignTop
+        text: qsTr("Max passes:")
+    }
+    SpinBox {
+        id: sbPasses
+        from: 1
+        to: 99
+        onValueChanged: config.numberOfPasses = value
+    }
+    Label {
+        id: lbBongo
+        leftPadding: 8
+        Layout.alignment: Qt.AlignRight | Qt.AlignTop
+        text: qsTr("Bingo bonus:")
+    }
+    SpinBox {
+        id: sbBingo
+        from: 0
+        to: 999
+        onValueChanged: config.bingoBonus = value
+    }
+}

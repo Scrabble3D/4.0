@@ -5,7 +5,7 @@ import QtQuick.Layouts
 Dialog {
     title: qsTr("Search for words")
     standardButtons: Dialog.Close
-    width: 500 //TODO: wordsearch: hard-coded width to solve Binding loop detected for property "implicitWidth"
+//    width: 500 //TODO: wordsearch: hard-coded width to solve Binding loop detected for property "implicitWidth"
     x: (parent.width - width) / 2
     y: (parent.height - height) / 2
 

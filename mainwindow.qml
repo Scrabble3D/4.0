@@ -83,7 +83,7 @@ ApplicationWindow {
         text: qsTr("Compute Move")
         shortcut: StandardKey.Find
         property string tip: text
-        enabled: GamePlay.isRunning
+        enabled: GamePlay.isRunning && GamePlay.bestMoveCount === 0 //TODO: action: && currentplayer
         icon.source: "qrc:///resources/wheelchair.png"
         icon.color: iconColor
         onTriggered: GamePlay.computeMove()
@@ -124,7 +124,7 @@ ApplicationWindow {
         main.board.updateLabelsModel()
         main.board.updateFieldSize() //changing the number of fields should result in resizing
         main.board.jokerPicker.updatePickerModel(); //setup letterlist
-        if (config.bIs3D) main.cube.updateCubeModel()
+        if (GamePlay.is3D) main.cube.updateCubeModel()
     }
 
     FileDialog {

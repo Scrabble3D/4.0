@@ -10,7 +10,6 @@ DownloadManager::DownloadManager(QObject* parent)
     m_pParent = parent;
     connect(&manager, &QNetworkAccessManager::finished,
             this, &DownloadManager::downloadFinished);
-
 }
 
 void DownloadManager::download(const QString fileName)
@@ -28,6 +27,7 @@ void DownloadManager::download(const QString fileName)
     connect(reply, &QNetworkReply::sslErrors,
             this, &DownloadManager::sslErrors);
 #endif
+
 }
 
 void DownloadManager::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)

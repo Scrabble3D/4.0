@@ -50,6 +50,7 @@ bool dicFile::loadDictionary(const QString fileName)
         m_Meanings.clear();
         m_Categories.clear();
         m_sChars.clear();
+        replaceLetter.clear(); //letter.h
         QTextStream in(&inputFile);
         QString sKey="";
         QString sLine; //<word>=<meaning>;<category>
@@ -99,9 +100,15 @@ bool dicFile::loadDictionary(const QString fileName)
                     aCatInfo.name = sLine.last(sLine.length()-nEqual-1);
                     aCatInfo.enabled = false;
                     m_CategoryNames.append(aCatInfo);
-                    break;
                 }
-                case scReplace: break;
+                break;
+                case scReplace: {
+                    nEqual = sLine.indexOf("=");
+                    QString sKey = sLine.left(nEqual>-1 ? nEqual : sLine.length());
+                    QString sValue = sLine.right(nEqual>-1 ? sLine.length() - nEqual - 1 : sLine.length());
+                    replaceLetter[sKey] = sValue;
+                }
+                break;
                 case scWords: {
                     sLine = decrypt(sLine, sKey);
                     nEqual = sLine.indexOf("=");
@@ -109,8 +116,8 @@ bool dicFile::loadDictionary(const QString fileName)
                     m_Words.append(sLine.first(nEqual>-1 ? nEqual : sLine.length()));
                     m_Meanings.append(sLine.mid(nEqual+1,nSemicolon-nEqual-1));
                     m_Categories.append(nSemicolon>-1 ? sLine.last(sLine.length()-nSemicolon-1).toInt() : 0);
-                    break;
                 }; //scWords
+                break;
                 }; //switch
         };//while infile
         inputFile.close();
@@ -137,10 +144,7 @@ bool dicFile::loadDictionary(const QString fileName)
     }
 
     qDebug() << "Successfully read" << m_Words.count() << "words from" << fileName;
-    //get all characters
-    //TODO: dic resp. gameplay: store chars with savegame
-    charsFromWords();
-    //update the word search spin box maximum
+
     return true;
 }
 
@@ -200,10 +204,11 @@ QString dicFile::variation(const QString aChars)
     QString s = "";
     QString us;
     QString chars = aChars;
-    const QString letterSet = m_sChars;
 
-    if (letterSet.isEmpty())
-        qCritical("Fatal error: no letters to vary");
+    if (m_sChars.isEmpty())
+        charsFromWords();
+
+    const QString letterSet = m_sChars;
 
     while ( true ) //((i > letterSet.length()) && (s == ""))
     {
@@ -274,6 +279,23 @@ QString dicFile::getWord(const uint index)
         qWarning() << "Word index" << index << "out of bounds" << "(" << m_Words.count() << ")";
         return "";
     }
+}
+
+QString dicFile::getMeanings(const QString aWords)
+{
+    QStringList sWords = aWords.split(",");
+    QString sResult = "<html>\n";
+    int aIndex;
+
+    for (int i = 0; i<sWords.count(); i++) {
+        aIndex = indexByWord(sWords[i]);
+        if (i > 0) sResult += "</p>";
+        sResult += sWords[i];
+        if ((aIndex > -1) && !m_Meanings[aIndex].isEmpty())
+            sResult += ": <i>" + m_Meanings[aIndex] + "</i>";
+    }
+    sResult += "</html>";
+    return sResult;
 }
 
 bool dicFile::containsWord(QString word)
@@ -428,7 +450,7 @@ QVariant dicList::data(const QModelIndex &index, int role) const
     }
     case AuthorRole: if (index.row() == m_nCurrentDictionary) {
         qDebug() << index.row() << ":"  << index.column();
-        return "Hello World";
+        return "Hello World"; //TODO: dictionary dummy
         break;
     }
     case LicenseRole: if (index.row() == m_nCurrentDictionary) {

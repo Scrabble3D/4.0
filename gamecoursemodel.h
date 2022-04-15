@@ -2,7 +2,7 @@
 
 #include <QAbstractTableModel>
 
-class statmodel : public QAbstractTableModel
+class gamecoursemodel : public QAbstractTableModel
 {
 
 public:
@@ -15,7 +15,7 @@ public:
         TimeRole
     };
 
-    explicit statmodel(QObject *parent = nullptr);
+    explicit gamecoursemodel(QObject *parent = nullptr);
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     int rowCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
@@ -27,6 +27,9 @@ public:
                  int bestValue,
                  bool IsScrabble,
                  int moveTime);
+    void getScores(QList<int>& result);
+    int timeTotalPerPlayer(const uint nPlayer);
+    int timePerMove(const uint nMove) { if (nMove < m_lData.count()) return m_lData[nMove].time; else return 0; }
     void clear();
 
 protected:

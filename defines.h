@@ -4,6 +4,7 @@
 #include <QCoreApplication>
 #include <QDir>
 
+//TODO: defines: make path configurable
 // portable
 // QDir dictionaryPath() {return QCoreApplication::applicationDirPath(); }
 
@@ -12,7 +13,7 @@ static const QDir dictionaryPath() { return QStandardPaths::writableLocation(QSt
 // /home/<user>.config/QScrabble
 static const QDir appPath() { return QCoreApplication::applicationDirPath(); }
 // .<exe>
-static const QDir configPath() { return appPath(); }
+static const QDir configPath() { return dictionaryPath(); }
 //
 static const QDir docPath() { return QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation); }
 

@@ -117,7 +117,7 @@ GridLayout {
     }
     SpinBox {
         id: sbJoker
-        onValueChanged: config.nNumberOfJokers = value
+        onValueChanged: config.numberOfJokers = value
     }
     Label {
         id: lbPieces
@@ -127,7 +127,7 @@ GridLayout {
     }
     SpinBox {
         id: sbPieces
-        onValueChanged: config.nNumberOfLettersOnRack = value
+        onValueChanged: config.numberOfLettersOnRack = value
     }
     Label {
         id: lbRandoms

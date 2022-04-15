@@ -37,12 +37,23 @@ private:
     int mz;
 };
 
+//Q_GLOBAL_STATIC(QList<QString>, replaceBy);
+inline QMap<QString, QString> replaceLetter;
+
+inline QString replaceAllLetters(QString sWord) {
+    QString sResult = "";
+    for (int i=0; i<sWord.length(); i++)
+        sResult += replaceLetter.value(sWord[i], sWord[i]);
+    return sResult;
+}
+
 struct Letter
 {
     QString What = QString(QChar::Null);
     unsigned int Value = 0;
     bool IsJoker = false;
     bool IsRandom = false;
+    bool IsExchange = false;
     unsigned int When = 0;
     unsigned int Who = 0;
     unsigned int RackPos = 0;
@@ -100,7 +111,7 @@ struct Letter
 };
 const QString JokerChar = "?";
 const Letter EmptyLetter = {QString(QChar::Null), 0,
-                            false, false,
+                            false, false, false,
                             0, 0, 0, 0, Point3D(0,0,0),
                             LetterState::lsEmpty};
 

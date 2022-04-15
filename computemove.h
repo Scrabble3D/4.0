@@ -10,7 +10,8 @@ class computemove : public QObject
 {
 public:
     computemove(QObject* parent, board* aBoard, rackmodel* aRack, dicFile* aDictionary);
-    void run(const bool isFirstMove, const bool is3D);
+    void run(const bool isFirstMove);
+    void markLettersForExchange();
     int numberOfResults() { return m_pMoves.count(); }
     move* result(int index) { return m_pMoves[index]; }
     void clear() { m_pMoves.clear(); m_pParent->setProperty("bestMoveCount", 0); }

@@ -37,6 +37,18 @@ void boardmodel::updateAllSquares()
      }
 }
 
+void boardmodel::updateAllSquares2()
+{
+    QModelIndex aIndex;
+    int z = m_pBoard->getBoardSize();
+    for (int i=0; i<z; i++)
+     for (int j=0; j<z; j++)
+     {
+         aIndex = this->index( i * m_pBoard->getBoardSize() + j );
+         emit dataChanged(aIndex, aIndex, { IsPlacedRole } );
+     }
+}
+
 void boardmodel::updateAllFields()
 {
     QModelIndex aIndex;
@@ -76,7 +88,7 @@ QVariant boardmodel::data(const QModelIndex &index, int role) const
        ) aLetter = m_pBoard->getLetter(z);
 
     switch (role) {
-      case WhatRole:      return aLetter.What;  break;
+      case WhatRole:      return replaceLetter.value(aLetter.What, aLetter.What);  break;
       case ValueRole:     return aLetter.Value; break;
       case WhoRole:       return aLetter.Who;   break;
       case WhenRole:      return aLetter.When;  break;

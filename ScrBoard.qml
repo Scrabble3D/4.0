@@ -1,6 +1,7 @@
 import QtQuick
-//import QtQuick.Dialogs //return value of jokerpicker
+import QtQuick.Controls
 
+//FIXME: board: move-nr. - 1 highlight
 Item {
     anchors.fill: parent
 
@@ -105,7 +106,7 @@ Item {
 
             pieceColor: aWhat == String.fromCharCode(0) //empty?
                         ? config.colors.get(fieldtype).itemColor //use field color when empty
-                        : isPlaced && config.bColoredPlayers && (GamePlay.currentMove-when-1) < GamePlay.numberOfPlayers
+                        : isPlaced && config.bColoredPlayers && (GamePlay.currentMove - when - 1) < GamePlay.numberOfPlayers
                           ? Qt.lighter(config.playercolors.get(who).itemColor, 1.75) //use (lighter) player color for the last move, if set in config
                           : when === GamePlay.currentMove
                             ? config.colors.get(8).itemColor //use (yellow) field color for non-empty squares
@@ -123,12 +124,19 @@ Item {
             bonusRight:  config.bMarkers && (bonusright>0)  ? config.colors.get(bonusright).itemColor : "transparent"
             bonusBottom: config.bMarkers && (bonusbottom>0) ? config.colors.get(bonusbottom).itemColor : "transparent"
 
+            ToolTip { //TODO: board: suppress empty tooltips
+                id: tipMeaning
+                visible: maBoard.containsMouse && (text !== "<html>\n</html>") && (text !== "")
+                delay: 1000
+                timeout: 5000
+            }
+
             DropArea {
                 anchors.fill: parent
-                onEntered: drag.source.dragAccept = GamePlay.canDrop(index);
-                // todo
+                onEntered: (drag)=> { drag.source.dragAccept = GamePlay.canDrop(index); }
+                // TODO: scrboard: droparea exit?
 //                onExited: drag.source.dragAccept = false
-                onDropped: {
+                onDropped: (drag)=> {
                     GamePlay.dropLetter(drag.source.rackIndex, index)
                     if (drag.source.pieceIsJoker) {
                         var p = mapToItem(board, drag.x,drag.y)
@@ -143,21 +151,27 @@ Item {
                     }
                 }
             }
-
             MouseArea {
                 id: maBoard
                 anchors.fill: parent
+                hoverEnabled: true
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
-                onPressed: if (!isPlaced) {
-                    var rackIndex = 0
-                    if (mouse.button === Qt.RightButton)
-                        GamePlay.removeLetter(index);
-                    if (mouse.button === Qt.LeftButton) {
-                        GamePlay.removeLetter(index)
-                        Drag.source = rackList.itemAtIndex(0)
-                        Drag.active = true
-                    }
-                }
+                onEntered: tipMeaning.text = GamePlay.meaningAt(index)
+                onPressed: (mouse)=> {
+                    if (!isPlaced && (aWhat !== String.fromCharCode(0))) {
+                        var rackIndex = 0
+                        if (mouse.button === Qt.RightButton)
+                            GamePlay.removeLetter(index);
+                        if (mouse.button === Qt.LeftButton) {
+                            GamePlay.removeLetter(index)
+                            Drag.source = rackList.itemAtIndex(0)
+                            Drag.active = true
+                         }
+                     }
+                 }
+            }
+            TapHandler {
+                onTapped: tipMeaning.visible = true
             }
         }
     }
@@ -184,7 +198,8 @@ Item {
             width: fieldSize
             height: fieldSize
             border.color: Qt.darker(color)
-            pieceColor: config.colors.get(8).itemColor
+            pieceColor: isExchange ? config.colors.get(0).itemColor //start
+                                   : config.colors.get(8).itemColor //piece
 
             visible: isVisible // LetterState::lsRack
             pieceLabel: what
@@ -206,13 +221,19 @@ Item {
             MouseArea {
                 id: maRack
                 anchors.fill: parent
-                drag.target: parent
                 cursorShape: drag.active ? (dragAccept ? Qt.DragLinkCursor : Qt.ClosedHandCursor) : Qt.ArrowCursor
-                onPressed: {
-                    rcPiece.dragStartedAt = Qt.point(rcPiece.x, rcPiece.y);
-                    rcPiece.z = Infinity //topmost z-order
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                onPressed: (mouse) => {
+                    if (mouse.button === Qt.RightButton) {
+                       GamePlay.exchangeLetter(index)
+                    } else
+                    if ((mouse.button === Qt.LeftButton) && GamePlay.canDrag()) {
+                       drag.target = parent
+                       rcPiece.dragStartedAt = Qt.point(rcPiece.x, rcPiece.y);
+                       rcPiece.z = Infinity //topmost z-order
+                    }
                 }
-                onReleased: {
+                onReleased: if (rcPiece.dragAccept) {
                     rcPiece.z = rackIndex //original z-order
                     if (dragAccept) {
                         rcPiece.Drag.drop()

@@ -48,7 +48,6 @@ Item {
                     property int aValue: value
                     property int aWhen: when
                     property int aWho: who
-
                     source: "#Cube"
                     position: Qt.vector3d(bs2-x, bs2-y,  bs2-z)
                     scale: Qt.vector3d(0.01, 0.01, 0.01)
@@ -113,19 +112,20 @@ Item {
              acceptedButtons: Qt.LeftButton | Qt.RightButton
              property point lastPos
              property real wheelpos
-             onPressed:
+             onPressed: (mouse)=> {
                  if (mouse.buttons == Qt.LeftButton) //rotate with left mouse button pressed
                     lastPos = Qt.point(mouse.x, mouse.y);
                  else if (mouse.modifiers & Qt.ControlModifier) //toggle dimension with right mb and control pressed
                     GamePlay.activeDimension += 1
-
-             onPositionChanged:
+             }
+             onPositionChanged: (mouse)=> {
                  if (mouse.buttons == Qt.LeftButton) {
                      sceneRoot.eulerRotation.x -= mouse.y - lastPos.y
                      sceneRoot.eulerRotation.y += mouse.x - lastPos.x
                      lastPos = Qt.point(mouse.x, mouse.y);
                  }
-             onWheel:
+             }
+             onWheel: (wheel)=> {
                 if (wheel.modifiers & Qt.ControlModifier)
                 {
                      wheelpos += wheel.angleDelta.y/120
@@ -143,6 +143,7 @@ Item {
                     fZoom += wheel.angleDelta.y / 50
                     pcCamera.position.z = fZoom
                  }
+             }
         }
     }
     RowLayout {

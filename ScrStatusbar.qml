@@ -64,6 +64,74 @@ RowLayout {
             elide: Text.ElideRight
         }
     }
+    Rectangle {
+        id: statGameplay
+        Layout.preferredHeight: tbHeight
+        Layout.preferredWidth: statText.width
+        Layout.margins: 1
+        border.color: config.myPalette.mid
+        color: config.myPalette.window
+        Text {
+            id: statText
+            leftPadding: 4
+            rightPadding: 4
+            height: parent.height
+            color: config.myPalette.windowText
+            text: GamePlay.statInfo //TODO: statusbar: detailled gamestate
+            verticalAlignment: Text.AlignVCenter
+        }
+        ToolTip {
+            id: statTip
+            onVisibleChanged: text = GamePlay.allStat()
+            visible: statMouseArea.containsMouse
+            delay: 1000
+            timeout: 5000
+        }
+        ActionGroup {
+            id: statActionGroup
+            exclusive: true
+            Action {
+                id: acLetters
+                checkable: true
+                checked: true
+                text: qsTr("Letters left")
+                onTriggered: GamePlay.statInfoType(0)
+            }
+            Action {
+                id: acScore
+                checkable: true
+                text: qsTr("Game score")
+                onTriggered: GamePlay.statInfoType(1)
+            }
+            Action {
+                id: acTime
+                checkable: true
+                text: qsTr("Time left")
+                onTriggered: GamePlay.statInfoType(2)
+            }
+        }
+        Menu {
+            id: statContextMenu
+            MenuItem { action: acLetters; checked: true }
+            MenuItem { action: acScore }
+            MenuItem { action: acTime }
+        }
+        MouseArea {
+            id: statMouseArea
+            anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onClicked: (mouse) => {
+                if (mouse.button === Qt.RightButton)
+                    statContextMenu.popup()
+            }
+            onPressAndHold: (mouse) => {
+                if (mouse.source === Qt.MouseEventNotSynthesized)
+                    statContextMenu.popup()
+            }
+        }
+    }
+
     Repeater {
         id: statPlayers
         model: GamePlay.numberOfPlayers

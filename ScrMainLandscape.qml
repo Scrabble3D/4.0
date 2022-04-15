@@ -111,7 +111,7 @@ ColumnLayout {
                     Layout.fillWidth: true
                     currentIndex: tabs.currentIndex
                     ScrMessages { id: messages }
-                    ScrStatistics { id: statistics }
+                    ScrGameCourse { id: statistics }
                 }
                 TabBar {
                     id: tabs

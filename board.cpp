@@ -24,6 +24,7 @@ board::board()
         m_Fieldtypes.append( static_cast<FieldType>(ft[i]) );
         m_Letters.append( EmptyLetter );
     }
+    m_bIs3D = false;
     m_nBoardSize = qSqrt(sizeof(ft)/sizeof(int));
     m_nActivePosition = 0;
     m_eActiveDimension = dmAbscissa;
@@ -35,7 +36,8 @@ void board::initialize(const QVariantList fieldTypeArray, const bool Is3D)
     m_nActivePosition = 0;
 
     m_nFieldSize = fieldTypeArray.count();
-    if (Is3D)
+    m_bIs3D = Is3D;
+    if (m_bIs3D)
         m_nBoardSize = round(cbrt(m_nFieldSize));
     else
         m_nBoardSize = round(sqrt(m_nFieldSize));
@@ -59,6 +61,7 @@ void board::initialize(const board *aParentBoard)
     m_Fieldtypes.append(aParentBoard->m_Fieldtypes);
     m_eActiveDimension = aParentBoard->m_eActiveDimension;
     m_nActivePosition = aParentBoard->m_nActivePosition;
+    m_bIs3D = aParentBoard->m_bIs3D;
 }
 
 FieldType board::getFieldtype(const int index)
@@ -67,7 +70,7 @@ FieldType board::getFieldtype(const int index)
         return m_Fieldtypes[index];
     else
     {
-        qWarning() << "Field index" << index << "out of bounds" << "(" << m_Fieldtypes.count() << ")";
+        qFatal( "Field index %d out of bounds (%llu)", index, m_Fieldtypes.count() ); //"%l64u" on windows?
         return ftDefault;
     }
 }
@@ -84,7 +87,7 @@ Letter board::getLetter(const int index)
         return m_Letters[index];
     else
     {
-        qWarning() << "Letter index" << index << "out of bounds" << "(" << m_Letters.count() << ")";
+        qFatal( "Letter index %d out of bounds (%llu)", index, m_Letters.count());
         return EmptyLetter;
     }
 }
@@ -112,7 +115,7 @@ void board::removeLetter(const int aLetterIndex)
     if ( aLetterIndex < m_Letters.count() )
         m_Letters[aLetterIndex] = EmptyLetter;
     else
-        qWarning() << "Remove index" << aLetterIndex << "out of bounds" << "(" << m_Letters.count() << ")";
+        qFatal( "Remove index %d out of bounds (%llu)", aLetterIndex, m_Letters.count());
 }
 
 int board::pointToWhere(const Point3D nPoint)
@@ -132,7 +135,7 @@ int board::pointToPlane(const Point3D nPoint)
       case dmApplicate:
         return nPoint.x() + nPoint.z() * m_nBoardSize;
       default:
-        qCritical("Dimension not defined");
+        qFatal("Dimension not defined");
     }
 }
 
@@ -153,7 +156,7 @@ Point3D board::pos3D(int nIndex2D)
       case dmApplicate:
         return Point3D(nIndex2D % m_nBoardSize, m_nActivePosition, nIndex2D / m_nBoardSize);
       default:
-        qCritical("Dimension not defined");
+        qFatal("Dimension not defined");
     }
 }
 
@@ -174,10 +177,112 @@ int board::index2D(Point3D aPoint3D)
     return aIndex;
 }
 
+QString board::getWordsAt(const int index)
+{
+    Point3D aPoint;
+    Letter aLetter;
+    QString sWordAbscissa;
+    QString sWordOrdinate;
+    QString sWordApplicate;
+
+    // abscissa
+    aPoint = pos3D(index);
+    aLetter = getLetter(aPoint);
+    if (aLetter.IsEmpty()) //no letter at empty field
+        return "";
+
+    while (!aLetter.IsEmpty()) {
+        sWordAbscissa = aLetter.What + sWordAbscissa;
+        if (aPoint.x() == 0) break;
+        aPoint.setX( aPoint.x() - 1 );
+        aLetter = getLetter(aPoint);
+    }
+    aPoint = pos3D(index);
+    aPoint.setX( aPoint.x() + 1);
+    if (aPoint.x() < m_nBoardSize)
+        aLetter = getLetter(aPoint);
+    else
+        aLetter = EmptyLetter;
+    while (!aLetter.IsEmpty()) {
+        sWordAbscissa = sWordAbscissa + aLetter.What;
+        if (aPoint.x() == m_nBoardSize - 1) break;
+        aPoint.setX( aPoint.x() + 1 );
+        aLetter = getLetter(aPoint);
+    }
+    if (sWordAbscissa.length() == 1) //nothing connected; TODO: board: enhance and show single letters too
+        sWordAbscissa.clear();
+
+    // ordinate
+    aPoint = pos3D(index);
+    aLetter = getLetter(aPoint);
+    while (!aLetter.IsEmpty()) {
+        sWordOrdinate = aLetter.What + sWordOrdinate;
+        if (aPoint.y() == 0) break;
+        aPoint.setY( aPoint.y() - 1 );
+        aLetter = getLetter(aPoint);
+    }
+    aPoint = pos3D(index);
+    aPoint.setY( aPoint.y() + 1);
+    if (aPoint.y() < m_nBoardSize)
+        aLetter = getLetter(aPoint);
+    else
+        aLetter = EmptyLetter;
+    while (!aLetter.IsEmpty()) {
+        sWordOrdinate = sWordOrdinate + aLetter.What;
+        if (aPoint.y() == m_nBoardSize - 1) break;
+        aPoint.setY( aPoint.y() + 1 );
+        aLetter = getLetter(aPoint);
+    }
+    if (sWordOrdinate.length() == 1) //nothing connected
+        sWordOrdinate.clear();
+
+    //applicate
+    if (m_bIs3D) {
+        aPoint = pos3D(index);
+        aLetter = getLetter(aPoint);
+        while (!aLetter.IsEmpty()) {
+            sWordApplicate = aLetter.What + sWordApplicate;
+            if (aPoint.z() == 0) break;
+            aPoint.setZ( aPoint.z() - 1 );
+            aLetter = getLetter(aPoint);
+        }
+        aPoint = pos3D(index);
+        aPoint.setZ( aPoint.z() + 1);
+        if (aPoint.z() < m_nBoardSize)
+            aLetter = getLetter(aPoint);
+        else
+            aLetter = EmptyLetter;
+        while (!aLetter.IsEmpty()) {
+            sWordApplicate = sWordApplicate + aLetter.What;
+            if (aPoint.z() == m_nBoardSize - 1) break;
+            aPoint.setZ( aPoint.z() + 1 );
+            aLetter = getLetter(aPoint);
+        }
+        if (sWordApplicate.length() == 1) //nothing connected
+            sWordApplicate.clear();
+    }
+
+    QString sWord;
+    if (!sWordAbscissa.isEmpty())
+        sWord = sWordAbscissa;
+    if (!sWordOrdinate.isEmpty()) {
+        if (!sWord.isEmpty())
+            sWord += ",";
+        sWord += sWordOrdinate;
+    }
+    if (!sWordApplicate.isEmpty()) {
+        if (!sWord.isEmpty())
+            sWord += ",";
+        sWord += sWordApplicate;
+    }
+
+    return sWord;
+}
+
 void board::setJokerLetter(const int aLetterIndex, const QString aWhat)
 {
     if (aLetterIndex < m_Letters.count())
         m_Letters[aLetterIndex].What = aWhat;
     else
-        qWarning() << "Joker index at " << aLetterIndex << "out of bounds" << "(" << m_Letters.count() << ")";
+        qFatal( "Joker index at %d out of bounds (%llu)", aLetterIndex, m_Letters.count());
 }

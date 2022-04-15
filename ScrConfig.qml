@@ -17,8 +17,12 @@ Window {
     property bool bColoredPlayers: true //ScrConfigBoard::cbPlayerColors.checked
     property bool bIs3D: false //ScrConfigBoard::rb3D.checked
 
-    property int nNumberOfLettersOnRack: 7 //ScrConfigLetter::sbPieces.value
-    property int nNumberOfJokers: 2 // ScrConfigLetter::sbJoker.value
+    property int numberOfLettersOnRack: 7 //ScrConfigLetter::sbPieces.value
+    property int numberOfJokers: 2 // set in onValueChange of ScrConfigLetter::sbJoker.value
+    property int numberOfPasses: 3 // set in onValueChange of ScrConfigRules::sbPasses
+    property int timeControl: 0 // set in onToggled of ScrConfigRules::rbNoLimit/rbPerMove/rbPerGame
+    property int timeControlValue: 10 // set in onToggled of ScrConfigRules::rbNoLimit/rbPerMove/rbPerGame
+    property int bingoBonus: 50 // set in onToggled of ScrConfigRules::sbBingo
 
     property TableModel letterSet // ScrConfigLetter::tvLetterSet.model
     property alias colors: scrColors
@@ -79,6 +83,7 @@ Window {
         configData["sbPenaltyPoints"] = configRules.sbPenaltyPoints.value
         configData["sbPenaltyCount"] = configRules.sbPenaltyCount.value
         configData["cbGameEnd"] = configRules.cbGameEnd.checked
+        configData["sbPasses"] = configRules.sbPasses.value
         //dictionary
         configData["dictionary"] = GamePlay.currentDicName()
         var aCat = []
@@ -119,7 +124,9 @@ Window {
         if (scrColors.count === aColors.length) {
             for (var i = 0; i < scrColors.count; ++i)
                 scrColors.setProperty(i,"itemColor",Qt.color(aColors[i].trim()));
-        } else console.warn("Unexpected number of colors in configuration")
+        } else
+            console.warn("Unexpected number of colors in configuration")
+
         aColors = getConfigValue("playercolors","#ff0000,#00ff00,#0000ff,#a77a00").split(",")
         if (scrPlayerColors.count === aColors.length) {
             for (i = 0; i < scrPlayerColors.count; ++i)
@@ -148,14 +155,18 @@ Window {
         configRules.sbPenaltyPoints.value = getConfigValue("sbPenaltyPoints", 10)
         configRules.sbPenaltyCount.value = getConfigValue("sbPenaltyCount", 10)
         configRules.cbGameEnd.checked = getConfigValue("cbGameEnd", "true") === "true"
+        configRules.sbPasses.value = getConfigValue("sbPasses", 3)
 
         // dictionary
-        configDictionary.loadFromName(getConfigValue("dictionary",""))
-        var aCat = getConfigValue("categories","").split(",")
-        if (configDictionary.categoriesRepeater.count == aCat.length+1) {
-            for (i = 0; i < aCat.length; ++i)
-                configDictionary.categoriesRepeater.itemAt(i+1).checked = (aCat[i] === "true")
-        } else console.warn("Unexpected number of category items in configuration")
+        var aFileName = getConfigValue("dictionary","")
+        if (configDictionary.loadFromName(aFileName)) {
+            var aCat = getConfigValue("categories","").split(",")
+            if (configDictionary.categoriesRepeater.count == aCat.length+1) {
+                for (i = 0; i < aCat.length; ++i)
+                    configDictionary.categoriesRepeater.itemAt(i+1).checked = (aCat[i] === "true")
+            } else
+                console.warn("Unexpected number of category items in configuration")
+        }
     }
 
     ListModel {
@@ -326,12 +337,14 @@ Window {
             Button {
                 id: btnLoad
                 action: acLoadConfig
+                icon.width: 16; icon.height: 16 //needed on macOS
                 anchors.leftMargin: 10
                 anchors.verticalCenter: parent.verticalCenter
             }
             Button {
                 id: btnSave
                 action: acSaveConfig
+                icon.width: 16; icon.height: 16
                 anchors.left: btnLoad.right
                 anchors.leftMargin: 3
                 anchors.verticalCenter: parent.verticalCenter
@@ -339,7 +352,10 @@ Window {
             Button {
                 id: btnReset
                 action: acResetConfig
+                icon.width: 16; icon.height: 16
                 display: AbstractButton.IconOnly
+                height: btnSave.height
+                width: height
                 anchors.left: btnSave.right
                 anchors.leftMargin: 3
                 anchors.verticalCenter: parent.verticalCenter
@@ -353,6 +369,7 @@ Window {
             Button {
                 id: btnClose
                 action: acClose
+                icon.width: 16; icon.height: 16
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.rightMargin: 10

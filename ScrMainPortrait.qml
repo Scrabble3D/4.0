@@ -28,7 +28,7 @@ ColumnLayout {
             visible: GamePlay.is3D
         }
         ScrMessages { id: messages }
-        ScrStatistics { id: statistics }
+        ScrGameCourse { id: statistics }
     }
 
     Image {

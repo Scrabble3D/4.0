@@ -55,7 +55,7 @@ QVariant cubemodel::data(const QModelIndex &index, int role) const
 
     switch (role) {
       case WhatRole:
-        return aLetter.What;
+        return replaceLetter.value(aLetter.What,aLetter.What);
         break;
       case WhoRole:
         return aLetter.Who;

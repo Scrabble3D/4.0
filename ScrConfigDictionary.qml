@@ -13,7 +13,9 @@ GridLayout {
     property alias acLoadDictionary: acLoadDictionary
     property alias categoriesRepeater: categoriesRepeater
 
-    property string dictionaryName: GamePlay.dicListModel.data(GamePlay.dicListModel.index(configDictionary.selectedDic,0))
+    property string dictionaryName: configDictionary.selectedDic > -1
+                                    ? GamePlay.dicListModel.data(GamePlay.dicListModel.index(configDictionary.selectedDic,0))
+                                    : ""
 
     property int selectedDic: -1 // -1 = nothing selected
     property int loadedDic: -1
@@ -25,8 +27,9 @@ GridLayout {
                 configDictionary.selectedDic = i
                 dictSelect.select(m.index(i,0), ItemSelectionModel.ClearAndSelect | ItemSelectionModel.Rows)
                 acLoadDictionary.trigger()
-                break;
+                return true;
         }
+        return false;
     }
 
     function updateInfo() {
@@ -52,7 +55,7 @@ GridLayout {
             var fileName = GamePlay.dicListModel.data(GamePlay.dicListModel.index(configDictionary.selectedDic,2))
             var dicName = GamePlay.dicListModel.data(GamePlay.dicListModel.index(configDictionary.selectedDic,0))
             if (GamePlay.loadDictionary(fileName)) {
-                GamePlay.addMessage(qsTr("Dictionary %1 successfully loaded.").arg("dicName"))
+                GamePlay.addMessage(qsTr("Dictionary \"%1\" successfully loaded.").arg(dicName))
                 updateInfo() //categries
                 loadedDic = selectedDic
             }

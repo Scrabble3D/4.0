@@ -18,6 +18,8 @@ public:
 
     // returns the word at index, if category is enabled
     QString getWord(const uint index);
+    // return the meaning of the word
+    QString getMeanings(const QString aWords);
     // returns word, meaning, category, and excluded for index
     QVariantMap wordByIndex(const uint index);
     // returns index of word
@@ -35,6 +37,7 @@ public:
     QString categoryNames();
     void setCategoryChecked(const QString catName, const bool isChecked);
     bool getCategoryChecked(const QString catName) const;
+
 private:
     struct CatInfo {
         QString name;
@@ -47,7 +50,7 @@ private:
     QList<CatInfo> m_CategoryNames;
     //emit progress
     QObject* m_pParent;
-    //all different chars contained in the dictionary
+    //all different chars A..Z etc. contained in the dictionary
     QString m_sChars;
     QString m_sFileName;
     //iterate over words to collect the m_sChars

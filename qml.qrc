@@ -18,7 +18,7 @@
         <file>resources/applicate.png</file>
         <file>resources/app.ico</file>
         <file>ScrMessages.qml</file>
-        <file>ScrStatistics.qml</file>
+        <file>ScrGameCourse.qml</file>
         <file>resources/dictionary.png</file>
         <file>ScrStatusbar.qml</file>
         <file>ShadowText.qml</file>

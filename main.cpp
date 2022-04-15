@@ -1,5 +1,7 @@
 #include <QApplication>
 #include <QIcon>
+#include <QQmlApplicationEngine>
+#include <QQmlContext>
 #include <gameplay.h>
 
 #ifdef _WIN32

@@ -26,8 +26,9 @@ public:
     int rowCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
     void updateSquare(Point3D aPos);
     void updateAllSquares();
+    void updateAllSquares2();
     void updateAllFields();
-    void reset();
+    void reset(); //TODO: boardmodel: does nothing?
 
 protected:
     QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;

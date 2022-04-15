@@ -43,11 +43,13 @@ public:
     Point3D whereToPoint(const int aWhere); //converts x,y,z coord into index
     Point3D pos3D(int nIndex2D); //converts x,y aka 2D index into true x,y,z point depending on active dimension/position
     int index2D(Point3D aPoint3D);
-
+    bool is3D() { return m_bIs3D; }
     Dimension getActiveDimension() { return m_eActiveDimension; }
     void setActiveDimension(Dimension aDimension) { m_eActiveDimension = aDimension; }
     int getActivePosition() { return m_nActivePosition; } //2D plane in 3D; always zero in 2D games
     void setActivePosition(int aPosition) { m_nActivePosition = aPosition; }
+
+    QString getWordsAt(const int index); //comma delimited list of words (abscissa, ordinate, applicate) at this position
 
 private:
     QList<Letter> m_Letters; //initialized with EmptyLetter
@@ -56,4 +58,5 @@ private:
     int m_nFieldSize; //total size, ie. fieldTypeArray.length
     Dimension m_eActiveDimension;
     int m_nActivePosition;
+    bool m_bIs3D;
 };

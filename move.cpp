@@ -1,12 +1,11 @@
 #include "move.h"
 #include "gameplay.h"
 
-move::move(const bool IsFirstMove, const bool Is3D, board* aBoard)
+move::move(const bool IsFirstMove, board* aBoard)
     : m_PlacedLetters(0),
       m_Value(0),
       m_Bonus(0),
       m_IsFirstMove(IsFirstMove),
-      m_Is3D(Is3D),
       m_pBoard(aBoard)
 {
     m_IsScrabble = false;
@@ -84,7 +83,7 @@ bool move::checkMove()
                 else if ((aboveOf(aPoint).State == LetterState::lsPlaced) ||
                          (belowOf(aPoint).State == LetterState::lsPlaced))
                     m_Dimension = dmOrdinate;
-                else if (m_Is3D &&
+                else if (m_pBoard->is3D() &&
                          ((behindOf(aPoint).State == LetterState::lsPlaced) ||
                           (infrontOf(aPoint).State == LetterState::lsPlaced)))
                     m_Dimension = dmApplicate;
@@ -119,7 +118,7 @@ void move::setJokerLetter(const QString aWhat)
 
 bool move::checkFirstMove()
 {
-    for (unsigned int i=0; i<qPow(m_pBoard->getBoardSize(), m_Is3D ? 3 : 2); i++)
+    for (unsigned int i=0; i<qPow(m_pBoard->getBoardSize(), m_pBoard->is3D() ? 3 : 2); i++)
         if ((m_pBoard->getFieldtype(i) == FieldType::ftStart) &&
             (m_pBoard->getLetter(i).State != LetterState::lsEmpty))
            return true;
@@ -302,7 +301,7 @@ bool move::checkConnection()
             }
             bHasConnection = true;
         }
-        if (m_Is3D &&
+        if (m_pBoard->is3D() &&
             ((behindOf(aPoint).State == LetterState::lsPlaced) ||
              (infrontOf(aPoint).State == LetterState::lsPlaced)))
         {

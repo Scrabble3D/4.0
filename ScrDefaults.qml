@@ -895,7 +895,7 @@ Item {
         property int numberOfPasses: 3                 //how often every player is allowed to pass in sequence
         property int limitExchange: 7                  //number of tiles that have to be left in bag for exchanging tiles on rack
         property int endBonus: 0                       //bonus for the player who ends the game
-        property int scrabbleBonus: 50                //bonus when all tiles have been placed
+        property int scrabbleBonus: 50                 //bonus when all tiles have been placed
         property var letters: TableModel {
             TableModelColumn { display: "letter" }
             TableModelColumn { display: "value" }

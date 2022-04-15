@@ -70,7 +70,7 @@ ColumnLayout {
         clip: true
         columnWidthProvider: function(column) { return colwidths[column] } //follows the statHeader column width
         ScrollBar.vertical: ScrollBar { }
-        model: GamePlay.statModel
+        model: GamePlay.gamecourseModel
         columnSpacing: 1
         rowSpacing: 1
         delegate: Rectangle {

@@ -14,7 +14,8 @@ bool sortByValue(move* aMove, move* bMove) {
     return aMove->Value() > bMove->Value();
 }
 
-void computemove::run(const bool isFirstMove, const bool is3D)
+//TODO: compute: no letter found -> exchange
+void computemove::run(const bool isFirstMove)
 {
     //clear previously calculated moves and disable spin edit in UI via emit=0
     clear();
@@ -33,14 +34,14 @@ void computemove::run(const bool isFirstMove, const bool is3D)
     Letter aLetter;
     QString sBoard;
     double nTotalProgress = 2 * m_pBoard->getBoardSize();
-    if (is3D)
+    if (m_pBoard->is3D())
         nTotalProgress *= 3 * m_pBoard->getBoardSize();
     double nCurrentProgress = 0;
 
     for (int nDimension = 0; nDimension < 3; nDimension++) { //dx, dy, dz
         for (int nPlane = 0; nPlane < m_pBoard->getBoardSize(); nPlane++) { //plane per dimension
             //dont try if just 2D
-            if (!is3D && ((nDimension > 0) || (nPlane > 0)))
+            if (!m_pBoard->is3D() && ((nDimension > 0) || (nPlane > 0)))
                 continue;
             //set plane at 3d board
 
@@ -81,13 +82,14 @@ void computemove::run(const bool isFirstMove, const bool is3D)
                                 //reset temporary board
                                 aBoard->initialize(m_pBoard);
                                 //create new move with reference to the temporary board
-                                move* aMove = new move(isFirstMove, is3D, aBoard);
+                                move* aMove = new move(isFirstMove, aBoard);
                                 //reset rack temporary letters
                                 for (int nRackPos=0; nRackPos<m_pRack->rackSize(); nRackPos++)
                                     aRackLetter.append(m_pRack->getLetter(nRackPos));
                                 //check whether placing the word is possible
                                 canPlace = canPlaceWord(sWords[nWordPos], nBoardPos, nColRow, nOrientation, aMove, aBoard, aRackLetter);
-                                //                 canPlace = canPlace ? (aMove->letterCount() > 0) : false;
+                                //no letters placed meaning word consists only of previously placed letters
+                                canPlace = canPlace ? (aMove->letterCount() > 0) : false;
                                 //check whether placed letters comply with all rules
                                 canPlace = canPlace ? aMove->checkMove() : false;
                                 //check whether placed and connected words are known
@@ -110,6 +112,28 @@ void computemove::run(const bool isFirstMove, const bool is3D)
     }
     std::sort(m_pMoves.begin(),m_pMoves.end(), sortByValue);
     delete aBoard;
+}
+
+void computemove::markLettersForExchange()
+{
+    int nExchange = 0;
+    // mark multiple letters for exchange
+    for (int i=0; i<m_pRack->rackSize()-1; i++) {
+        Letter aLetter = m_pRack->getLetter(i);
+        if (!aLetter.IsEmpty())
+            for (int j=i+1; j<m_pRack->rackSize(); j++) {
+                Letter bLetter = m_pRack->getLetter(j);
+                if ((aLetter.What == bLetter.What) && (!bLetter.IsExchange)) {
+                    m_pRack->toggleExchangeFlag(j);
+                    nExchange++;
+                }
+            }
+    }
+    // otherwise exchange all
+    if (nExchange == 0) {
+        for (int i=0; i<m_pRack->rackSize(); i++)
+            m_pRack->toggleExchangeFlag(i);
+    }
 }
 
 int computemove::getRackLetter(QVector<Letter> aRackLetter, const QString aChar)
