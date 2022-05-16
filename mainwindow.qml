@@ -1,17 +1,24 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Dialogs
-import Qt.labs.platform //Snative dialog
-//import Qt5Compat.GraphicalEffects
+//import QtQuick.Dialogs
+import Qt.labs.platform //native dialog
+//import Qt.labs.settings //TODO: main: save window position
 
 ApplicationWindow {
-    id: app
+    id: app //TODO: main: rename app
     width: 1024 //TODO: mainform: use system default for app size
     height: 800
     visible: true
     title: qsTr("Scrabble3D")
-
+/*
+    Settings {
+        property alias x: app.x
+        property alias y: app.y
+        property alias width: app.width
+        property alias height: app.height
+    }
+*/
     property alias main: mainLoader.item
 
     property color iconColor: isDark(config.myPalette.window) ? "white" : "black"
@@ -52,7 +59,7 @@ ApplicationWindow {
         id: acConfiguration
         text: qsTr("Configuration")
         shortcut: StandardKey.Preferences
-        onTriggered: (mainLoader.state === "portrait")
+        onTriggered: Qt.platform.os === "android"
                      ? config.showFullScreen()
                      : config.show()
     }
@@ -60,6 +67,7 @@ ApplicationWindow {
         id: acSaveGame
         text: qsTr("Save As...")
         shortcut: StandardKey.SaveAs
+        enabled: Qt.platform.os !== "android" && GamePlay.isRunning //TODO: main: filedialog on Android
         onTriggered: {
             fileDialog.acceptLabel = qsTr("Save")
             fileDialog.fileMode = FileDialog.SaveFile
@@ -71,6 +79,7 @@ ApplicationWindow {
         id: acLoadGame
         text: qsTr("Load From...")
         shortcut: StandardKey.Open
+        enabled: Qt.platform.os !== "android"
         onTriggered: {
             fileDialog.acceptLabel = qsTr("Open")
             fileDialog.fileMode = FileDialog.OpenFile
@@ -83,18 +92,23 @@ ApplicationWindow {
         text: qsTr("Compute Move")
         shortcut: StandardKey.Find
         property string tip: text
-        enabled: GamePlay.isRunning && GamePlay.bestMoveCount === 0 //TODO: action: && currentplayer
+        enabled: GamePlay.isRunning && GamePlay.bestMoveCount === 0
         icon.source: "qrc:///resources/wheelchair.png"
         icon.color: iconColor
         onTriggered: GamePlay.computeMove()
     }
     ActionGroup {
         id: acViewType
-        //TODO: mainform: show mobile/desktop action as radiobuttons; ExclusiveGroup?
         exclusive: true
         Action {
-            id: acLandscapeView
+            id: acAutomaticView
             checked: true
+            checkable: true
+            text: qsTr("Automatic")
+        }
+        Action {
+            id: acLandscapeView
+            checked: false
             checkable: true
             text: qsTr("Desktop")
             onCheckedChanged: if (acLandscapeView.checked) mainLoader.state = "landscape"
@@ -133,21 +147,27 @@ ApplicationWindow {
         nameFilters: [qsTr("Scrabble3D savegame (*.ssg)"), qsTr("All files (*)")]
         defaultSuffix: "ssg"
         onAccepted: fileMode == FileDialog.OpenFile ?
-                      doLoad(currentFile)
-                    : GamePlay.saveGame(currentFile)
+                      doLoad(file)
+                    : GamePlay.saveGame(file)
     }
 
-    ScrDefaults { id: defaults }
-    ScrNewGame  { id: newgame }
-    ScrWordSearch {id: dictionary }
-    ScrConfig   { id: config }
-    ScrAbout    { id: about }
+    ScrDefaults   { id: defaults }
+    ScrNewGame    { id: newgame }
+    ScrWordSearch { id: dictionary }
+    ScrConfig     { id: config }
+    ScrAbout      { id: about }
+
+    onWidthChanged: if (acAutomaticView.checked) {
+        height > width
+            ? mainLoader.state = "portrait"
+            : mainLoader.state = "landscape"
+    }
 
     Loader {
         id: mainLoader
         anchors.fill: parent
         asynchronous: true
-        state: "landscape"
+        state: "landscape"//"portrait"//
         onLoaded: {
             main.board.updateFieldSize() //changing the number of fields should result in resizing
         }

@@ -135,7 +135,7 @@ int board::pointToPlane(const Point3D nPoint)
       case dmApplicate:
         return nPoint.x() + nPoint.z() * m_nBoardSize;
       default:
-        qFatal("Dimension not defined");
+        qFatal( "Dimension not defined" );
     }
 }
 
@@ -156,7 +156,7 @@ Point3D board::pos3D(int nIndex2D)
       case dmApplicate:
         return Point3D(nIndex2D % m_nBoardSize, m_nActivePosition, nIndex2D / m_nBoardSize);
       default:
-        qFatal("Dimension not defined");
+        qFatal( "Dimension not defined" );
     }
 }
 
@@ -209,7 +209,7 @@ QString board::getWordsAt(const int index)
         aPoint.setX( aPoint.x() + 1 );
         aLetter = getLetter(aPoint);
     }
-    if (sWordAbscissa.length() == 1) //nothing connected; TODO: board: enhance and show single letters too
+    if (sWordAbscissa.length() == 1) //nothing connected
         sWordAbscissa.clear();
 
     // ordinate

@@ -24,11 +24,11 @@ public:
 
     QVariant data(const QModelIndex &index, int role) const Q_DECL_OVERRIDE;
     int rowCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
-    void updateSquare(Point3D aPos);
-    void updateAllSquares();
-    void updateAllSquares2();
-    void updateAllFields();
-    void reset(); //TODO: boardmodel: does nothing?
+
+    void update(); //resetmodel() -> after initialization of board the boardmodel needs to be updated
+    void updateSquare(Point3D aPos); // after dropletter -> WhatRole ... IsPlacedRole
+    void updateAllSquares(); //after placeletters() -> WhatRole ... IsPlacedRole
+    void updateAllFields(); //after setdimension() -> WhatRole ... IsPlacedRole, FieldTypeRole ... BonusRole
 
 protected:
     QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;

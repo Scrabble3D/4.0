@@ -17,8 +17,8 @@ GamePlay::GamePlay(QObject *parent)
 
     //TODO: download: check all files for updates
     m_pDownloadManager = new DownloadManager(this);
-    if (!QFileInfo::exists(dictionaryPath().path() + "/Scrabble3D.conf"))
-        download("Binaries/raw/main/Scrabble3D.conf.zip");
+    if (m_pDownloadManager->lastChecked() > 7)
+        download("Binaries/raw/main/Scrabble3D.conf");
 
     m_pBoard = new board();
     m_pRackModel = new rackmodel(this);
@@ -28,6 +28,19 @@ GamePlay::GamePlay(QObject *parent)
     m_pGameCourseModel = new gamecoursemodel(this);
     m_pDicListModel = new dicList(this);
     m_pComputeMove = new computemove(this, m_pBoard, m_pRackModel, m_pDicListModel->dictionary);
+
+#ifdef Q_OS_ANDROID
+    QString fileName = configPath().path() +"/debug.ssg";
+    loadGame(QUrl::fromLocalFile(fileName));
+#endif
+
+}
+
+void GamePlay::confDownloadFinished(const QString aFileName)
+{
+    Q_UNUSED(aFileName);
+    m_pDownloadManager->checkUpdates();
+    m_pDicListModel->updateList();
 }
 
 rackmodel *GamePlay::rackModel()
@@ -100,14 +113,13 @@ void GamePlay::startNewGame(QStringList PlayerNames,
     emit numberOfPlayersChanged();
 
     m_pBoard->initialize(FieldTypeArray, is3D);
-    m_pBoardModel->reset();
+    m_pBoardModel->update();
     if (is3D) m_pCubeModel->reset();
     emit boardSizeChanged();
     emit is3DChanged();
     m_nPlayerCount = m_lPlayerNames.count();
     m_nCurrentPlayer = 0;
     m_pRackModel->initialize(m_nPlayerCount, RackSize);
-    //TODO: newgame: letters per players
     m_lBag.clear();
     QString sChars;
     for (int i=0; i<LetterList.count(); i+=3) {
@@ -564,8 +576,11 @@ void GamePlay::saveConfig(QString fileName, QVariantMap configData)
 {
     if (fileName.isEmpty()) //new game
         fileName = configPath().path() + "/Scrabble3D.ini";
+//FIXME: gameplay: Android cannot access content:// urls; native filedialog not yet implemented
+#ifndef Q_OS_ANDROID
     else
         fileName = QUrl(fileName).toLocalFile();
+#endif
     QSettings settings(fileName, QSettings::IniFormat);
 
     settings.beginGroup("config");
@@ -578,8 +593,10 @@ QVariantMap GamePlay::loadConfig(QString fileName)
 {
     if (fileName.isEmpty()) //new game
         fileName = configPath().path() + "/Scrabble3D.ini";
+#ifndef Q_OS_ANDROID
     else
         fileName = QUrl(fileName).toLocalFile();
+#endif
 
     QSettings settings(fileName, QSettings::IniFormat);
 
@@ -739,7 +756,7 @@ void GamePlay::loadGame(const QUrl &fileName)
         QVariantList aList;
         aList = settings.value("fieldtypes").toList();
         m_pBoard->initialize(aList, bIs3D);
-        m_pBoardModel->reset();
+        m_pBoardModel->update();
         if (bIs3D) m_pCubeModel->reset();
         emit boardSizeChanged();
         emit is3DChanged();

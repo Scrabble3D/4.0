@@ -37,6 +37,8 @@ ColumnLayout {
         Menu {
             id: helpMenu
             title: qsTr("&Help")
+            //TODO: mainform: view type actions as true radiobuttons; menuitemgroup doesnt work
+            MenuItem { action: acAutomaticView }
             MenuItem { action: acLandscapeView }
             MenuItem { action: acPortraitView }
             MenuSeparator { }
@@ -116,7 +118,7 @@ ColumnLayout {
                 TabBar {
                     id: tabs
                     TabButton { text: qsTr("Messages") }
-                    TabButton { text: qsTr("Statistics") }
+                    TabButton { text: qsTr("Game course") }
                 }
             }
         }

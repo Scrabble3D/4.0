@@ -38,6 +38,9 @@ public:
     void setCategoryChecked(const QString catName, const bool isChecked);
     bool getCategoryChecked(const QString catName) const;
 
+    QVariantList getLetterDistribution(QVariantList currentDistribution);
+    void clear();
+
 private:
     struct CatInfo {
         QString name;
@@ -48,6 +51,7 @@ private:
     QStringList m_Meanings;
     QList<int> m_Categories;
     QList<CatInfo> m_CategoryNames;
+    QVariantMap m_LetterDistribution;
     //emit progress
     QObject* m_pParent;
     //all different chars A..Z etc. contained in the dictionary
@@ -59,6 +63,21 @@ private:
     //otherwise index of partially words is returned,
     //eg. 100="Foo" returns 100 but false for "Fo"
     bool isWordInDictionary(QString sWord, int *index);
+};
+
+struct dicListData {
+    QString NativeName;
+    QString EnglishName;
+    int InstalledVersionNumber;
+    int AvailableVersionNumber;
+    QString InstalledVersion;
+    QString AvailableVersion;
+    QString FileName;
+    QString Author;
+    QString StandardCategory;
+    QString License;
+    QString Release;
+    QString Comment;
 };
 
 class dicList : public QAbstractTableModel
@@ -77,35 +96,24 @@ public:
     int rowCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
     int columnCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
     bool loadFrom(QString fileName);
+    bool deleteDic(QString fileName);
+
     dicFile *dictionary;
     QString currentDicName() const;
     QVariantMap selectedDicInfo(const int index) const;
     void setCategory(const QString catName, const bool isChecked) {dictionary->setCategoryChecked(catName, isChecked);}
     bool getCategory(const QString catName) const {return dictionary->getCategoryChecked(catName); }
     void updateList();
+    static void getInfo(dicListData *aData); //used also in downloadmanager::update()
+    static int stringToVersion(const QString aVersion);
 
 protected:
     QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
 
 private:
-
-    struct dicListData {
-        QString NativeName;
-        QString EnglishName;
-        int InstalledVersionNumber;
-        QString InstalledVersion;
-        QString AvailableVersion;
-        QString FileName;
-        QString Author;
-        QString StandardCategory;
-        QString License;
-        QString Release;
-        QString Comment;
-    };
-
-    QString versionToString(const int aValue);
+    static QString versionToString(const int aValue);
+    int indexOf(QString fileName);
     QObject* m_pParent;
     int m_nCurrentDictionary; //index of currently active dic
-    void getInfo(dicListData *aData);
     QList<dicListData> m_Dictionaries;
 };

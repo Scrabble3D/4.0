@@ -18,6 +18,7 @@ dicFile::dicFile(QObject* parent)
 {
 }
 
+
 QString decrypt(QString aLine, QString aKey)
 {
     if (aKey == "")
@@ -33,6 +34,19 @@ QString decrypt(QString aLine, QString aKey)
     return QString::fromStdString(aByteData.toStdString());
 }
 
+void dicFile::clear()
+{
+    m_CategoryNames.clear();
+    m_Words.clear();
+    m_Meanings.clear();
+    m_Categories.clear();
+    m_LetterDistribution.clear();
+    m_sChars.clear();
+    replaceLetter.clear(); //letter.h
+    m_sFileName.clear();
+}
+
+
 bool dicFile::loadDictionary(const QString fileName)
 {
     QDir aPath = dictionaryPath();
@@ -43,14 +57,9 @@ bool dicFile::loadDictionary(const QString fileName)
     double totSize = inputFile.size();
     if (inputFile.open(QIODevice::ReadOnly))
     {
-        m_sFileName = fileName;
         //clear previous data
-        m_CategoryNames.clear();
-        m_Words.clear();
-        m_Meanings.clear();
-        m_Categories.clear();
-        m_sChars.clear();
-        replaceLetter.clear(); //letter.h
+        clear();
+        m_sFileName = fileName;
         QTextStream in(&inputFile);
         QString sKey="";
         QString sLine; //<word>=<meaning>;<category>
@@ -91,6 +100,24 @@ bool dicFile::loadDictionary(const QString fileName)
                     if (sLine.startsWith("Key")) {
                         nEqual = sLine.indexOf("=");
                         sKey = sLine.last(sLine.length()-nEqual-1);
+                    }
+                    if (sLine.startsWith("Letters")) {
+                        nEqual = sLine.indexOf("=");
+                        QString sValue = sLine.last(sLine.length()-nEqual-1);
+                        if (!sValue.isEmpty())
+                            m_LetterDistribution.insert("letters", sValue);
+                    }
+                    if (sLine.startsWith("Values")) {
+                        nEqual = sLine.indexOf("=");
+                        QString sValue = sLine.last(sLine.length()-nEqual-1);
+                        if (!sValue.isEmpty())
+                            m_LetterDistribution.insert( "values", sValue);
+                    }
+                    if (sLine.startsWith("Count")) {
+                        nEqual = sLine.indexOf("=");
+                        QString sValue = sLine.last(sLine.length()-nEqual-1);
+                        if (!sValue.isEmpty())
+                            m_LetterDistribution.insert( "count", sValue);
                     }
                     break;
                 case scCategory: {
@@ -134,8 +161,9 @@ bool dicFile::loadDictionary(const QString fileName)
     {
         QMessageBox msgBox;
         msgBox.setWindowTitle("Scrabble3D");
+        //FIXME: dictionary: localization QString() -> tr()
         msgBox.setText( QString("Dictionary %1 is not yet available locally.").arg(fileName) );
-        msgBox.setInformativeText( QString("Do you want to download now?") );
+        msgBox.setInformativeText( QString("Do you want to download it now?") );
         msgBox.setIcon(QMessageBox::Question);
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
         if (msgBox.exec() == QMessageBox::Yes)
@@ -220,7 +248,6 @@ QString dicFile::variation(const QString aChars)
             {
                 s = s + letterSet[i];
                 us = s;
-                //               qDebug() << "i=" << i << "j" << j << "z=" << z << us << ":";
                 if ( isWordInDictionary(us, &index) )
                     sResults.append(us);
                 //TODO: dictionary: can index be larger than count?
@@ -272,7 +299,7 @@ QString dicFile::variation(const QString aChars)
 
 QString dicFile::getWord(const uint index)
 {
-    if (index < m_Words.count())
+    if (qsizetype(index) < m_Words.count())
         return m_Words[index];
     else
     {
@@ -327,7 +354,7 @@ QStringList dicFile::checkWords(const QString sPlacedWord, QString sConnectedWor
 QVariantMap dicFile::wordByIndex(const uint index)
 {
     QVariantMap dicEntry;
-    if (index < m_Words.count()) {
+    if (qsizetype(index) < m_Words.count()) {
         dicEntry["word"] = m_Words[index];
         dicEntry["category"] = m_CategoryNames[m_Categories.at(index)].name;
         dicEntry["meaning"] = m_Meanings[index];
@@ -368,6 +395,40 @@ bool dicFile::getCategoryChecked(const QString catName) const
         }
 
     return true;
+}
+
+QVariantList dicFile::getLetterDistribution(QVariantList currentDistribution)
+{
+    QVariantList aResult;
+    if (m_LetterDistribution.isEmpty())
+        return aResult;
+
+    QStringList aLetters = m_LetterDistribution["letters"].toString().split(",");
+    QStringList aValues = m_LetterDistribution["values"].toString().split(",");
+    QStringList aCount = m_LetterDistribution["count"].toString().split(",");
+
+    if ((aLetters.count() == aValues.count()) &&
+        (aLetters.count() == aCount.count())) {
+        for (int i=0; i < aLetters.count(); i++) {
+            aResult.append(aLetters[i]);
+            aResult.append(aValues[i].toInt());
+            aResult.append(aCount[i].toInt());
+        }
+        if (aResult != currentDistribution) {
+            QMessageBox msgBox;
+            //FIXME: dictionary: localization QString() -> tr()
+            msgBox.setWindowTitle(QString("Letter Distribution"));
+            msgBox.setText( QString("Letter distribution in dictionary does not match the current configuration.") );
+            msgBox.setInformativeText(QString("Do you want to update the letter set?"));
+            msgBox.setIcon(QMessageBox::Question);
+            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+            if (msgBox.exec() == QMessageBox::No)
+                aResult.clear();
+        } else
+            aResult.clear();
+    }
+
+    return aResult;
 }
 
 //*******************************************************//
@@ -428,7 +489,6 @@ QVariant dicList::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
     dicListData aData = m_Dictionaries[index.row()];
-
     switch (role)
     {
     case Qt::DisplayRole: {
@@ -449,12 +509,10 @@ QVariant dicList::data(const QModelIndex &index, int role) const
         break;
     }
     case AuthorRole: if (index.row() == m_nCurrentDictionary) {
-        qDebug() << index.row() << ":"  << index.column();
-        return "Hello World"; //TODO: dictionary dummy
+        return "Hello World"; //TODO: dictionary dummy for author and license; currently done per selectedDicInfo()
         break;
     }
     case LicenseRole: if (index.row() == m_nCurrentDictionary) {
-        qDebug() << index.row() << "="  << index.column();
         return "GNU Public License v3";
         break;
     }
@@ -469,33 +527,28 @@ void dicList::updateList()
 
     m_Dictionaries.clear();
 
+    beginResetModel();
     if ( file.open(QIODevice::ReadOnly) )
     {
-        QXmlStreamReader reader;
-        reader.setDevice(&file);
-
-        while (reader.readNextStartElement())
+        QXmlStreamReader xmlReader;
+        xmlReader.setDevice(&file);
+        while (!xmlReader.atEnd())
         {
-            if (reader.name().toString() == "Dictionaries")
+            xmlReader.readNext();
+
+            if (xmlReader.isStartElement() &&
+               (xmlReader.name().toString() == "dictionary"))
             {
-                while(reader.readNextStartElement())
-                {
-                    if (reader.name().toString() == "Dictionary")
-                    {
-                        dicListData aData;
-                        aData.NativeName=reader.attributes().value("Native").toString();
-                        aData.EnglishName=reader.attributes().value("English").toString();
-                        aData.AvailableVersion=reader.attributes().value("RemoteVersion").toString();
-                        aData.InstalledVersion=reader.attributes().value("LocalVersion").toString();
-                        aData.FileName=reader.attributes().value("FileName").toString();
-                        getInfo(&aData);
-                        m_Dictionaries.append(aData);
-                    } else
-                        reader.skipCurrentElement();
-                }
-                break;
-            } //Dictionaries
-        } //start
+                dicListData aData;
+                aData.NativeName=xmlReader.attributes().value("Native").toString();
+                aData.EnglishName=xmlReader.attributes().value("English").toString();
+                aData.AvailableVersion=xmlReader.attributes().value("RemoteVersion").toString();
+                aData.FileName=xmlReader.attributes().value("FileName").toString();
+                getInfo(&aData);
+                m_Dictionaries.append(aData);
+             }
+        }
+        file.close();
     }
 
     //local files
@@ -518,10 +571,7 @@ void dicList::updateList()
             m_Dictionaries.append(aData);
         }
     }
-
-    emit dataChanged(this->index( 0, 0 ),
-                     this->index( m_Dictionaries.count()-1, 4),
-                     { Qt::DisplayRole } );
+    endResetModel();
 }
 
 void dicList::getInfo(dicListData *aData)
@@ -542,11 +592,14 @@ void dicList::getInfo(dicListData *aData)
         aData->Release = settings.value("Header/Release").toString();
         aData->Comment = settings.value("Header/Comment").toString();
     }
-    else
+    else {
         aData->InstalledVersion = "";
+        aData->InstalledVersionNumber = -1;
+    }
+    aData->AvailableVersionNumber = stringToVersion(aData->AvailableVersion);
 }
 
-bool dicList::loadFrom(QString fileName)
+int dicList::indexOf(QString fileName)
 {
     int aIndex = -1;
     for (int i=0; i<dicList::m_Dictionaries.count(); i++)
@@ -554,13 +607,20 @@ bool dicList::loadFrom(QString fileName)
             aIndex = i;
             break;
         }
+    return aIndex;
+}
+
+
+bool dicList::loadFrom(QString fileName)
+{
+    const int aIndex = indexOf(fileName);
     if ((aIndex > -1) && (m_nCurrentDictionary != aIndex))
     {
         //update model and clear
         QModelIndex indexTL = this->index( m_nCurrentDictionary, 0 );
         QModelIndex indexBR = this->index( m_nCurrentDictionary, 4 );
-//TODO: dictionary: check why m_nCurrentDictionary is set before loading succeeded
-//        emit dataChanged(indexTL, indexBR, { IsLoadedRole } );
+        m_nCurrentDictionary = -1;
+        emit dataChanged(indexTL, indexBR, { IsLoadedRole } );
 
         if (!dictionary->loadDictionary(fileName))
             return false;
@@ -572,6 +632,35 @@ bool dicList::loadFrom(QString fileName)
         return true;
     } else
         return false;
+}
+
+bool dicList::deleteDic(QString fileName)
+{
+    const bool bResult = QFile::remove(dictionaryPath().path() + "/" + fileName);
+    if (bResult) {
+        const int nIndex = indexOf(fileName);
+
+        //clear info
+        dicListData *aData = &m_Dictionaries[nIndex];
+        aData->InstalledVersionNumber = -1;
+        aData->InstalledVersion = "";
+        aData->Author = "";
+        aData->License = "";
+        aData->Release = "";
+        aData->Comment = "";
+
+        //currently loaded
+        if (m_nCurrentDictionary == nIndex) {
+            dictionary->clear();
+            m_nCurrentDictionary = -1;
+        }
+
+        //update qml table
+        QModelIndex indexTL = this->index( nIndex, 0 );
+        QModelIndex indexBR = this->index( nIndex, 4 );
+        emit dataChanged(indexTL, indexBR, { Qt::DisplayRole, IsLoadedRole } );
+    }
+    return bResult;
 }
 
 QString dicList::currentDicName() const
@@ -615,4 +704,19 @@ QString dicList::versionToString(const int aValue)
     temp = temp-aMinor*1000;
     aBuild = temp;
     return QString::number(aMajor)+'.'+QString::number(aMinor)+'.'+QString::number(aBuild);
+}
+
+int dicList::stringToVersion(const QString aVersion)
+{
+    int aMajor, aMinor, aBuild;
+    QString temp;
+    int pos1 = aVersion.indexOf(".");
+    int pos2 = aVersion.indexOf(".", pos1 + 1);
+    temp = aVersion.left( pos1);
+    aMajor = temp.toInt();
+    temp = aVersion.mid(pos1 + 1, pos2 - (pos1 + 1));
+    aMinor = temp.toInt();
+    temp = aVersion.last( aVersion.length() - (pos2 + 1));
+    aBuild = temp.toInt();
+    return aMajor * 100000 + aMinor * 1000 + aBuild;
 }

@@ -10,6 +10,7 @@ RowLayout {
         Layout.preferredHeight: tbHeight
         Layout.preferredWidth: 100
         Layout.margins: 1
+        Layout.fillWidth: mainLoader.state === "portrait" //messages are hidden in portrait mode
         border.color: config.myPalette.mid
         color: config.myPalette.window
         Column {
@@ -49,6 +50,7 @@ RowLayout {
     }
     Rectangle {
         id: statMessages
+        visible: mainLoader.state === "landscape"
         Layout.preferredHeight: tbHeight
         Layout.fillWidth: true
         Layout.margins: 1
@@ -125,10 +127,7 @@ RowLayout {
                 if (mouse.button === Qt.RightButton)
                     statContextMenu.popup()
             }
-            onPressAndHold: (mouse) => {
-                if (mouse.source === Qt.MouseEventNotSynthesized)
-                    statContextMenu.popup()
-            }
+            onPressAndHold: statContextMenu.popup()
         }
     }
 

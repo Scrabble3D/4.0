@@ -17,13 +17,13 @@ GridLayout {
     rowSpacing: 8
     function checkDefault() {
         var comp = JSON.stringify(config.board)
-        if (comp == JSON.stringify(defaults.boardClassicScrabble))
+        if (comp === JSON.stringify(defaults.boardClassicScrabble))
             cbDefaultBoard.currentIndex = 0
-        else if (comp == JSON.stringify(defaults.boardSuperScrabble))
+        else if (comp === JSON.stringify(defaults.boardSuperScrabble))
             cbDefaultBoard.currentIndex = 1
-        else if (comp == JSON.stringify(defaults.boardClassicScrabble3D))
+        else if (comp === JSON.stringify(defaults.boardClassicScrabble3D))
             cbDefaultBoard.currentIndex = 2
-        else if (comp == JSON.stringify(defaults.boardSuperScrabble3D))
+        else if (comp === JSON.stringify(defaults.boardSuperScrabble3D))
             cbDefaultBoard.currentIndex = 3
         else
             cbDefaultBoard.currentIndex = 4;
@@ -110,7 +110,7 @@ GridLayout {
                 for (i=0; i<sbSize.value; i++)
                     for (j=0; j<sbSize.value; j++)
                         for (k=0; k<sbSize.value; k++) {
-                            z = i*lastSize*lastSize+j*lastSize+k  //TODO: configboard: doesnt work?
+                            z = i*lastSize*lastSize+j*lastSize+k
                             v = i*sbSize.value*sbSize.value+j*sbSize.value+k
                             if (isNaN(config.board[z]))
                                 tmp[v] = 1

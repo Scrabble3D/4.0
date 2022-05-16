@@ -41,5 +41,11 @@
         <file>LinkText.qml</file>
         <file>resources/bingo.png</file>
         <file>ToolbarButton.qml</file>
+        <file>resources/optdic.png</file>
+        <file>resources/optrules.png</file>
+        <file>resources/optletters.png</file>
+        <file>resources/optlang.png</file>
+        <file>resources/optboard.png</file>
+        <file>resources/dictionarydown.png</file>
     </qresource>
 </RCC>

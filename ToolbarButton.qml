@@ -10,13 +10,14 @@ T.ToolButton {
         colorGroup: enabled ? SystemPalette.Active : SystemPalette.Disabled
     }
 
-    implicitWidth: 28
-    implicitHeight: 28
+    property int size: 28
+    implicitWidth: size
+    implicitHeight: size
 
     padding: 4
 
-    icon.width: 22
-    icon.height: 22
+    icon.width: size - 6
+    icon.height: size - 6
     icon.color: Color.transparent(isDark(myPalette.base)
                                   ? "white"
                                   : "black", enabled ? 1.0 : 0.2)

@@ -44,8 +44,6 @@ void msgmodel::addMessage(const QString aWhat, const int aWho)
 {
     Message aMessage;
     aMessage.What = aWhat;
-    //TODO: messages: true emoticons QString::fromUtf8("\xD83D\xDE00"));
-    aMessage.What.replace(":-)", "☺");
     aMessage.Who = aWho;
     aMessage.When = QTime().currentTime();
     const int i = m_msglist.count();

@@ -1,18 +1,106 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
-//TODO: mobile: shadow on roundbutton
-import Qt5Compat.GraphicalEffects
 
 ColumnLayout {
     property alias board: board
     property alias messages: messages
+    property alias cube: cube
 
     anchors.fill: parent
-    spacing: 0
 
-//    MenuBar { id: menuBar; visible: false }
-//    ToolBar { id: toolBar; visible: false }
+    ToolBar {
+        id: toolBar
+        Layout.margins: 6
+        Layout.fillWidth: true
+        background: Rectangle { color: "transparent" }
+        RowLayout {
+            spacing: 12
+            anchors.fill: parent
+            ToolbarButton {
+                id: btnNewGame
+                action: acNewGame
+                size: 38
+            }
+            ToolbarButton {
+                id: btnNextPlayer
+                action: acNextPlayer
+                size: 38
+            }
+            ToolbarButton {
+                id: btnComputeMove
+                action: acComputeMove
+                size: 38
+            }
+            Row {
+                id: spinner // Spinbox font color is invisible on Android
+                property int max: GamePlay.bestMoveCount
+                onMaxChanged: value = 0
+                property int value: 0
+                onValueChanged: GamePlay.placeBestMove(spinner.value)
+
+                ToolbarButton {
+                    id: tbSpinBoxDown
+                    size: 38
+                    enabled: lbSpinBox.enabled && spinner.value > 0
+                    onClicked: spinner.value--
+                    icon.source: "qrc:///resources/down.png"
+                }
+                Label {
+                    id: lbSpinBox
+                    enabled: spinner.max > 0
+                    width: 50
+                    height: 38
+                    font.pixelSize: 20
+                    font.weight: Font.Bold
+                    color: tbSpinBoxDown.icon.color
+                    text: spinner.value
+                    horizontalAlignment: Qt.AlignHCenter
+                    verticalAlignment: Qt.AlignVCenter
+                }
+                ToolbarButton {
+                    id: tbSpinBoxUp
+                    size: 38
+                    enabled: lbSpinBox.enabled && spinner.value < spinner.max
+                    onClicked: spinner.value++
+                    icon.source: "qrc:///resources/up.png"
+                }
+            }
+
+            Rectangle { //dummy spacer
+                Layout.fillWidth: true
+                color: "transparent"
+            }
+            ToolbarButton {
+                size: 38
+                icon.source: "qrc:///resources/hamburger.png"
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        contextMenu.popup()
+                    }
+                    Menu {
+                        id: contextMenu
+                        MenuItem { action: acNewGame }
+                        MenuItem { action: acNextPlayer }
+                        MenuItem { action: acComputeMove }
+                        MenuSeparator { }
+                        MenuItem { action: acSaveGame }
+                        MenuItem { action: acLoadGame }
+                        MenuItem { action: acConfiguration }
+                        MenuSeparator { }
+                        MenuItem { action: acAutomaticView }
+                        MenuItem { action: acLandscapeView }
+                        MenuItem { action: acPortraitView }
+                        MenuSeparator { }
+                        MenuItem { action: acAbout }
+                        MenuSeparator { }
+                        MenuItem { action: acExitApp }
+                    }
+                }
+            }
+        }
+    }
 
     SwipeView {
         id: swipeView
@@ -31,72 +119,6 @@ ColumnLayout {
         ScrGameCourse { id: statistics }
     }
 
-    Image {
-        id: imHamburger
-        Layout.alignment: Qt.AlignRight | Qt.AlignTop
-        Layout.topMargin: -swipeView.height + 16
-        Layout.rightMargin: 16
-
-        source: "qrc:///resources/hamburger.png"
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {
-                contextMenu.popup()
-            }
-            Menu {
-                id: contextMenu
-                MenuItem { action: acNewGame }
-                MenuItem { action: acNextPlayer }
-                MenuItem { action: acComputeMove }
-                MenuSeparator { }
-                MenuItem { action: acConfiguration }
-                MenuSeparator { }
-                MenuItem { action: acLandscapeView }
-                MenuItem { action: acPortraitView }
-                MenuSeparator { }
-                MenuItem { action: acAbout }
-                MenuSeparator { }
-                MenuItem { action: acExitApp }
-            }
-        }
-    }
-    RoundButton {
-        id: rbActionButton
-        implicitWidth: 50
-        implicitHeight: 50
-
-        Layout.alignment: Qt.AlignRight | Qt.AlignBottom
-        Layout.bottomMargin: 24
-        Layout.rightMargin: 16
-
-        action: GamePlay.isRunning ? acNextPlayer : acNewGame
-        icon.color: "white"
-
-        display: AbstractButton.IconOnly
-        background: Rectangle {
-            anchors.fill: parent
-            radius: width / 2
-            gradient: Gradient {
-                GradientStop { position: 0.0; color: rbActionButton.action.enabled ? "darkgreen" : "darkgrey"}
-                GradientStop { position: 1.0; color: rbActionButton.action.enabled ? "limegreen" : "lightgrey"}
-            }
-        }
-        ToolTip {
-            text: rbActionButton.action.tip
-            visible: text.length === 0 ? false : rbActionButton.hovered
-            delay: 1000
-            timeout: 5000
-        }
-/*        layer.enabled: true
-        layer.effect: DropShadow {
-            transparentBorder: true
-            color: rbActionButton.down ? "transparent" : "darkgrey"
-            horizontalOffset: 3
-            verticalOffset: 3
-            radius: 10
-        } */
-    }
-
     TabBar {
         id: footerBar
         Layout.fillWidth: true
@@ -109,7 +131,8 @@ ColumnLayout {
             width: visible ? undefined : 0 //non-visible keeps empty space
         }
         TabButton { text: qsTr("Messages") }
-        TabButton { text: qsTr("Statistics") }
+        TabButton { text: qsTr("Game course") }
+        //TODO: main views: add statistics
     }
-
+    ScrStatusbar { id: footerBarPt }
 }

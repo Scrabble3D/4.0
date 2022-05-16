@@ -3,17 +3,10 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <gameplay.h>
-
-#ifdef _WIN32
-#include <QQuickWindow>
-#endif
+//use "set QT_D3D_ADAPTER_INDEX=1" on Windows
 
 int main(int argc, char *argv[])
 {
-#ifdef _WIN32
-    QQuickWindow::setSceneGraphBackend("software");
-#endif
-
     QApplication app(argc, argv);
 
     app.setWindowIcon(QIcon(":/resources/app.ico"));

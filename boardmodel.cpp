@@ -13,7 +13,7 @@ int boardmodel::rowCount(const QModelIndex &parent) const
     return m_pBoard->getBoardSize() * m_pBoard->getBoardSize();
 }
 
-void boardmodel::reset()
+void boardmodel::update()
 {
     beginResetModel();
     endResetModel();
@@ -37,23 +37,12 @@ void boardmodel::updateAllSquares()
      }
 }
 
-void boardmodel::updateAllSquares2()
+void boardmodel::updateAllFields()
 {
     QModelIndex aIndex;
     int z = m_pBoard->getBoardSize();
     for (int i=0; i<z; i++)
      for (int j=0; j<z; j++)
-     {
-         aIndex = this->index( i * m_pBoard->getBoardSize() + j );
-         emit dataChanged(aIndex, aIndex, { IsPlacedRole } );
-     }
-}
-
-void boardmodel::updateAllFields()
-{
-    QModelIndex aIndex;
-    for (int i=0; i<m_pBoard->getBoardSize(); i++)
-     for (int j=0; j<m_pBoard->getBoardSize(); j++)
      {
          aIndex = this->index( i * m_pBoard->getBoardSize() + j );
          emit dataChanged(aIndex, aIndex, { WhatRole, ValueRole, WhoRole, WhenRole, IsPlacedRole, FieldTypeRole, BonusTopRole, BonusBottomRole, BonusLeftRole, BonusRightRole } );

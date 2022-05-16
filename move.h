@@ -23,7 +23,6 @@ public:
     bool isScrabble() { return m_IsScrabble; }
     int activePosition() { return getPosition(); }
     Dimension activeDimension() { return m_Dimension; }
-    QVariantList exportPlacedLetters();
     void setJokerLetter(const QString aWhat);//set Letter.What for Letter.IsJoker of m_PlacedLetters.last()
 
 private:

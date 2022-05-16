@@ -1,14 +1,13 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Dialogs
+//import QtQuick.Dialogs
 import Qt.labs.qmlmodels //TableModel
 import Qt.labs.platform //Standardpath, native dialog
 
 Window {
     visible: false //show per action acConfiguration
     modality: Qt.ApplicationModal
-    flags: Qt.Dialog
     title: qsTr("Configuration")
     width: 680
     height: 540
@@ -32,8 +31,8 @@ Window {
     property alias myPalette: myPalette
 
     property string boardName: configBoard.boardName
-    property string lettersetName: configLetter.lettersetName
-    property string dictionaryName: configDictionary.dictionaryName
+    property string lettersetName: configLetter.getLetterSetName()
+    property string dictionaryName: configDictionary.getDictionaryName()
     Component.onCompleted: {
         //fill color names with random color values and reset later to the default
         var cNames = [qsTr("Start"), qsTr("Default"),qsTr("2x letter"),qsTr("3x letter"),
@@ -50,6 +49,32 @@ Window {
         loadConfig("")
     }
 
+    function getLetterSet(index) {
+        var letterlist = [];
+        var aLetterSet;
+        if (index === -1) //current set = -1
+            aLetterSet = letterSet
+        else
+            aLetterSet = defaults.languages[index].letters;
+
+        for (var i=0; i<aLetterSet.rowCount; i++) {
+            letterlist.push(aLetterSet.getRow(i).letter);
+            letterlist.push(aLetterSet.getRow(i).value);
+            letterlist.push(aLetterSet.getRow(i).count);
+        }
+        return letterlist;
+    }
+    function setLetterSet(letterlist) {
+        letterSet.clear();
+        for (var i=0; i<letterlist.length; i+=3)
+            config.letterSet.appendRow( {
+                letter: letterlist[i + 0],
+                value:  letterlist[i + 1],
+                count:  letterlist[i + 2],})
+        configLetter.cbLetterSet.currentIndex = -1
+    }
+
+    //FIXME: config: save config/game fails on Android
     function saveConfig(fileName)
     {
         var configData = {}
@@ -68,6 +93,8 @@ Window {
         configData["cbPlayerColors"] = configBoard.cbPlayerColors.checked
         //letter
         configData["cbLetterSet"] = configLetter.cbLetterSet.currentIndex
+        if (configLetter.cbLetterSet.currentIndex === -1)
+            configData["cbLetterSetData"] = getLetterSet(-1).toString()
         configData["sbJokers"] = configLetter.sbJoker.value
         configData["sbPieces"] = configLetter.sbPieces.value
         configData["sbRandoms"] = configLetter.sbRandoms.value
@@ -138,6 +165,14 @@ Window {
         //letters
         configLetter.cbLetterSet.currentIndex = -1
         configLetter.cbLetterSet.currentIndex = getConfigValue("cbLetterSet", 0)
+        //load letter set before dictionary to suppress warning of different letter sets
+        if (configLetter.cbLetterSet.currentIndex === -1) {
+            var aLetters = []
+            aLetters = getConfigValue("cbLetterSetData","").split(",")
+            if (aLetters.length > 0)
+               setLetterSet(aLetters)
+        }
+
         configLetter.sbJoker.value = getConfigValue("sbJokers", 2)
         configLetter.sbPieces.value = getConfigValue("sbPieces", 7)
         configLetter.sbRandoms.value = getConfigValue("sbRandoms", 0)
@@ -161,7 +196,7 @@ Window {
         var aFileName = getConfigValue("dictionary","")
         if (configDictionary.loadFromName(aFileName)) {
             var aCat = getConfigValue("categories","").split(",")
-            if (configDictionary.categoriesRepeater.count == aCat.length+1) {
+            if (configDictionary.categoriesRepeater.count === aCat.length+1) {
                 for (i = 0; i < aCat.length; ++i)
                     configDictionary.categoriesRepeater.itemAt(i+1).checked = (aCat[i] === "true")
             } else
@@ -183,9 +218,10 @@ Window {
         folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
         nameFilters: [qsTr("Scrabble3D configuration (*.ssc)"), qsTr("All files (*)")]
         defaultSuffix: "ssc"
-        onAccepted: fileMode == FileDialog.OpenFile
-                    ? loadConfig(currentFile)
-                    : saveConfig(currentFile)
+        onAccepted:
+            fileMode === FileDialog.OpenFile
+                    ? loadConfig(file)
+                    : saveConfig(file)
     }
 
     Action {
@@ -227,12 +263,48 @@ Window {
 
     color: myPalette.base
 
+    ListModel {
+        id: lmCategories
+        ListElement { name: qsTr("Board"); imgname: "optboard.png" }
+        ListElement { name: qsTr("Letters"); imgname: "optletters.png" }
+        ListElement { name: qsTr("Rules"); imgname: "optrules.png" }
+        ListElement { name: qsTr("Dictionary"); imgname: "optdic.png" }
+    }
+    Component {
+        id: lViewDelegates
+        Rectangle {
+            width: parent.width
+            height: 48 + 12
+            color: ListView.isCurrentItem ? myPalette.highlight : "transparent"
+            Image {
+                id: delegateImage
+                source: "qrc:///resources/" + imgname
+                anchors.verticalCenter: parent.verticalCenter
+            }
+            Text {
+                id: delegateText
+                text: name
+                leftPadding: 8
+                anchors.left: delegateImage.right
+                anchors.verticalCenter: parent.verticalCenter
+                color: lView.currentIndex === index ? myPalette.highlightedText : myPalette.windowText
+            }
+            MouseArea {
+                anchors.fill: parent
+                onClicked: lView.currentIndex = index
+            }
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 12
 
         SplitView {
             id: splitView
+            orientation: Qt.platform.os !== "android"
+                         ? Qt.Horizontal
+                         : Qt.Vertical
 
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -242,6 +314,7 @@ Window {
 
             Rectangle {
                 id: leftPane
+                visible: Qt.platform.os !== "android"
                 SplitView.preferredWidth: parent.width * 1/4
                 SplitView.minimumWidth: 50
                 color: myPalette.window
@@ -249,36 +322,17 @@ Window {
                     id: lView
                     anchors.fill: parent
                     anchors.margins: 10
-                    Component {
-                        id: lViewDelegates
-                        Rectangle {
-                            width: parent.width
-                            height: 32
-                            color: ListView.isCurrentItem ? myPalette.highlight : "transparent"
-                            Text {
-                                id: delegateText
-                                text: name
-                                leftPadding: 8
-                                anchors.verticalCenter: parent.verticalCenter
-                                color: lView.currentIndex == index ? myPalette.highlightedText : myPalette.windowText
-                            }
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: lView.currentIndex = index
-                            }
-                        }
-                    }
-
-                    model: ListModel {
-                        ListElement { name: qsTr("Board") }
-                        ListElement { name: qsTr("Letters") }
-                        ListElement { name: qsTr("Rules") }
-                        ListElement { name: qsTr("Dictionary") }
-                    }
+                    model: lmCategories
                     delegate: lViewDelegates
                 }
             }
-
+            ComboBox {
+                id: catSelector
+                visible: Qt.platform.os === "android"
+                model: lmCategories
+                textRole: "name"
+                onCurrentIndexChanged: lView.currentIndex = currentIndex
+            }
             Rectangle {
                 id: rightPane
                 SplitView.minimumWidth: 100
@@ -291,7 +345,7 @@ Window {
                     clip: true
                     ScrConfigBoard {
                         id: configBoard
-                        visible: lView.currentIndex == 0
+                        visible: lView.currentIndex === 0
                         onVisibleChanged: { heightChanged() }
                         onHeightChanged: if (visible) {
                             scrollView.contentHeight = configBoard.height
@@ -300,7 +354,7 @@ Window {
                     }
                     ScrConfigLetter {
                         id: configLetter
-                        visible: lView.currentIndex == 1
+                        visible: lView.currentIndex === 1
                         onVisibleChanged: {
                             scrollView.contentHeight = configLetter.height
                             scrollView.contentWidth = configLetter.width
@@ -308,7 +362,7 @@ Window {
                     }
                     ScrConfigRules {
                         id: configRules
-                        visible: lView.currentIndex == 2
+                        visible: lView.currentIndex === 2
                         defaultLetterSet: configLetter.cbLetterSet.currentIndex > -1
                                           ? configLetter.cbLetterSet.currentIndex
                                           : defaultLetterSet
@@ -319,7 +373,7 @@ Window {
                     }
                     ScrConfigDictionary {
                         id: configDictionary
-                        visible: lView.currentIndex == 3
+                        visible: lView.currentIndex === 3
                         onVisibleChanged: {
                             scrollView.contentHeight = configDictionary.height + 50 //some space for categories
                             scrollView.contentWidth = configDictionary.width
@@ -331,12 +385,13 @@ Window {
 
         Rectangle {
             id: configFooter
-            height: btnClose.height+12
+            Layout.minimumHeight: btnClose.height+12
             Layout.fillWidth: true
             color: "transparent"
             Button {
                 id: btnLoad
                 action: acLoadConfig
+                enabled: Qt.platform.os !== "android" //TODO: config filedialog on Android
                 icon.width: 16; icon.height: 16 //needed on macOS
                 anchors.leftMargin: 10
                 anchors.verticalCenter: parent.verticalCenter
@@ -344,6 +399,7 @@ Window {
             Button {
                 id: btnSave
                 action: acSaveConfig
+                enabled: Qt.platform.os !== "android"
                 icon.width: 16; icon.height: 16
                 anchors.left: btnLoad.right
                 anchors.leftMargin: 3
@@ -375,7 +431,5 @@ Window {
                 anchors.rightMargin: 10
             }
         }
-
     }
-
 }

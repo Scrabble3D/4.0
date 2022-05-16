@@ -11,6 +11,8 @@ class DownloadManager: public QObject
 public:
     DownloadManager(QObject* parent);
     void download(const QString fileName);
+    int lastChecked(); //days between now and last check (inf when never)
+    void checkUpdates();
 
 public slots:
     void downloadFinished(QNetworkReply *reply);

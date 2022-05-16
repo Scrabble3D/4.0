@@ -16,6 +16,7 @@
 #include "gamecoursemodel.h"
 #include "computemove.h"
 #include "downloadmanager.h"
+#include "version.h"
 
 enum WordCheckMode {wcAsk=0,
                     wcPoll=1,
@@ -49,7 +50,8 @@ class GamePlay : public QObject
     Q_PROPERTY(QString statInfo READ getStatInfo NOTIFY statInfoChanged)
 
     Q_PROPERTY(QString addMsg WRITE addMessage CONSTANT);
-    Q_PROPERTY(QString dicDownloadFinsihed WRITE dicDownloadFinsihed CONSTANT);
+    Q_PROPERTY(QString dicDownloadFinished WRITE dicDownloadFinished CONSTANT);
+    Q_PROPERTY(QString confDownloadFinished WRITE confDownloadFinished CONSTANT);
     Q_PROPERTY(QString downloadFile WRITE download CONSTANT);
     //compute move
     Q_PROPERTY(int computeProgress READ getComputeProgress WRITE setComputeProgress NOTIFY computeProgressChanged)
@@ -90,10 +92,12 @@ public:
     Q_INVOKABLE void loadGame(const QUrl &fileName);
 
     Q_INVOKABLE bool loadDictionary(const QString fileName) { const bool result = m_pDicListModel->loadFrom(fileName); emit dicWordCountChanged(); return result; }
+    Q_INVOKABLE bool deleteDictionary(const QString fileName) { return m_pDicListModel->deleteDic(fileName); }
     Q_INVOKABLE QString currentDicName() const { return m_pDicListModel->currentDicName(); }
     Q_INVOKABLE QVariantMap selectedDicInfo(const int index) const { return m_pDicListModel->selectedDicInfo(index); }
     Q_INVOKABLE void setCategory(const QString catName, const bool isChecked) { m_pDicListModel->setCategory(catName,isChecked); }
     Q_INVOKABLE bool getCategory(const QString catName) const { return m_pDicListModel->getCategory(catName); }
+    Q_INVOKABLE QVariantList getLetterDistribution(QVariantList currentDistribution) const { return m_pDicListModel->dictionary->getLetterDistribution(currentDistribution); }
 
     Q_INVOKABLE void computeMove();
     Q_INVOKABLE void placeBestMove(const int index);
@@ -107,6 +111,7 @@ public:
     Q_INVOKABLE void download(QString fileName) { m_pDownloadManager->download(fileName); }
     Q_INVOKABLE void statInfoType(const int aType) { m_nStatInfoType = aType; emit statInfoChanged(); }
     Q_INVOKABLE QString allStat() { return getAllStat(); }
+    Q_INVOKABLE QString version() { return versionString(); }
 
     rackmodel* rackModel();
     boardmodel* boardModel();
@@ -151,7 +156,8 @@ public slots: // slots are public methods available in QML
     void removeLetter(const uint boardIndex);
     void removeLetter(Letter aLetter);
     void setJokerLetter(const uint boardIndex, const QString aWhat);
-    void dicDownloadFinsihed(const QString aFileName) {m_pDicListModel->updateList(); if (!aFileName.isEmpty()) loadDictionary(aFileName); }
+    void dicDownloadFinished(const QString aFileName) {m_pDicListModel->updateList(); if (!aFileName.isEmpty()) loadDictionary(aFileName); }
+    void confDownloadFinished(const QString aFileName);
 
 protected:
     void timerEvent(QTimerEvent *event) override;

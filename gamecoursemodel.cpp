@@ -1,5 +1,4 @@
 #include "gamecoursemodel.h"
-#include <QDebug>
 #include <QDateTime>
 
 gamecoursemodel::gamecoursemodel(QObject *parent)

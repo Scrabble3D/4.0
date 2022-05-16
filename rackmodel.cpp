@@ -34,7 +34,7 @@ void rackmodel::setLetter(const Letter aLetter, const bool bSilent, int nPlayer)
     if (nPlayer == -1)
         nPlayer = m_nActivePlayer;
     if (nPlayer > m_nPlayerCount-1) {
-        qFatal("Setting letter failed"); //TODO: rackmodel: make fatal just a warning
+        qFatal("Setting letter failed"); //WARNING: rackmodel: make fatal just a warning
         return;
 }
     if ( (nIndex >= 0) && (nIndex < m_nRackSize) &&
@@ -58,21 +58,18 @@ void rackmodel::placeLetter(const int index, const bool bVisible)
 
 void rackmodel::toggleExchangeFlag(const int index)
 {
-    beginResetModel();
     m_lPieces[m_nActivePlayer][index].IsExchange = !m_lPieces[m_nActivePlayer][index].IsExchange;
-    endResetModel();
+    QModelIndex aIndex = this->index( index );
+    emit dataChanged(aIndex, aIndex, { IsExchangeRole } );
 }
 
 void rackmodel::move(const uint fromIndex, const uint toIndex)
 {
-//    beginMoveRows(QModelIndex(),fromIndex,fromIndex,QModelIndex(),toIndex);
     beginResetModel();
     m_lPieces[m_nActivePlayer][fromIndex].RackPos = toIndex;
     m_lPieces[m_nActivePlayer][toIndex].RackPos = fromIndex;
-//TODO: rackmodel: QML(?) move piece not reliably working
-    m_lPieces[m_nActivePlayer].move(fromIndex, toIndex);
+    m_lPieces[m_nActivePlayer].swapItemsAt(fromIndex, toIndex);
     endResetModel();
-    //    endMoveRows();
 }
 
 Letter rackmodel::getLetter(const int nRackIndex, int nPlayer) const

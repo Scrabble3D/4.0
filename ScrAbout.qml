@@ -7,8 +7,8 @@ Dialog {
     title: qsTr("About Scrabble3D")
     standardButtons: Dialog.Ok
     modal: true
-    width: contentWidth + 48
-    height: contentHeight + 96
+    width: Math.min(contentWidth + 48, app.width)
+    height: Math.min(contentHeight + 128, app.height)
     x: (app.width - about.width) / 2
     y: (app.height - about.height) / 2
 
@@ -17,12 +17,16 @@ Dialog {
         Image {
             Layout.leftMargin: 24
             Layout.topMargin: 24
+            Layout.preferredWidth: Math.min(width, app.width - colLayout.width)
+            Layout.minimumWidth: 50
+            fillMode: Image.PreserveAspectFit
             source: "qrc:///resources/about.png"
         }
         ColumnLayout {
+            id: colLayout
             Layout.topMargin: 24
             Layout.alignment: Qt.AlignTop
-            Text { color: config.myPalette.windowText; text: "<b>"+qsTr("Version:") + "</b> 4.0 (alpha)" }
+            Text { color: config.myPalette.windowText; text: "<b>"+qsTr("Version:") + "</b> " + GamePlay.version() + " / 2022-05-23"}
             Text { color: config.myPalette.windowText; text: "<b>"+qsTr("Author:")  + "</b> Heiko Tietze" }
             LinkText { text: "<b>"+qsTr("Manual:") + "</b> <a href=\"http://scrabble.sourceforge.net/wiki/\">Wiki</a> (outdated)" }
             LinkText { text: "<b>"+qsTr("License:") + "</b> <a href=\"https://www.gnu.org/licenses/gpl-3.0.html\">GNU General Public License v3</a>" }

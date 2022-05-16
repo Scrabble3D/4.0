@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 
-//FIXME: board: move-nr. - 1 highlight
 Item {
     anchors.fill: parent
 
@@ -11,7 +10,7 @@ Item {
     function updateFieldSize() {
         fieldSize = height < width
                   ? height / (GamePlay.boardSize+2.5)
-                  : width / (GamePlay.boardSize+2.5)
+                  : width / (GamePlay.boardSize+1.5)
     }
     onWidthChanged: updateFieldSize();
     onHeightChanged: updateFieldSize();
@@ -124,7 +123,7 @@ Item {
             bonusRight:  config.bMarkers && (bonusright>0)  ? config.colors.get(bonusright).itemColor : "transparent"
             bonusBottom: config.bMarkers && (bonusbottom>0) ? config.colors.get(bonusbottom).itemColor : "transparent"
 
-            ToolTip { //TODO: board: suppress empty tooltips
+            ToolTip {
                 id: tipMeaning
                 visible: maBoard.containsMouse && (text !== "<html>\n</html>") && (text !== "")
                 delay: 1000
@@ -133,9 +132,8 @@ Item {
 
             DropArea {
                 anchors.fill: parent
-                onEntered: (drag)=> { drag.source.dragAccept = GamePlay.canDrop(index); }
-                // TODO: scrboard: droparea exit?
-//                onExited: drag.source.dragAccept = false
+                onEntered: (drag)=> { drag.source.dragAccept = GamePlay.canDrop(index) }
+                onExited:  drag.source.dragAccept = false
                 onDropped: (drag)=> {
                     GamePlay.dropLetter(drag.source.rackIndex, index)
                     if (drag.source.pieceIsJoker) {
@@ -164,8 +162,9 @@ Item {
                             GamePlay.removeLetter(index);
                         if (mouse.button === Qt.LeftButton) {
                             GamePlay.removeLetter(index)
-                            Drag.source = rackList.itemAtIndex(0)
-                            Drag.active = true
+//FIXME: board: drag on board
+//                            drag.source = rackList.itemAtIndex(index)
+//                            Drag.active = true
                          }
                      }
                  }
@@ -207,15 +206,14 @@ Item {
             pieceIsJoker: isJoker
 
             property bool dragAccept: false
-            property point dragStartedAt
+            property point dragStartedAt: Qt.point(0,0)
             Drag.active: maRack.drag.active
 
             DropArea {
                 anchors.fill: parent
-                onEntered: parent.dragAccept = true
-                // todo
-                onExited: parent.dragAccept = false
-                onDropped: GamePlay.dropLetterRack(drag.source.rackIndex, index)
+                onEntered: (drag)=> { drag.source.dragAccept = true }
+                onExited: drag.source.dragAccept = false
+                onDropped: (drag)=> GamePlay.dropLetterRack(drag.source.rackIndex, index)
             }
 
             MouseArea {
@@ -225,20 +223,21 @@ Item {
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                 onPressed: (mouse) => {
                     if (mouse.button === Qt.RightButton) {
+                       rcPiece.dragStartedAt = Qt.point(0,0) //block back animation on release
                        GamePlay.exchangeLetter(index)
                     } else
                     if ((mouse.button === Qt.LeftButton) && GamePlay.canDrag()) {
                        drag.target = parent
-                       rcPiece.dragStartedAt = Qt.point(rcPiece.x, rcPiece.y);
+                       rcPiece.dragStartedAt = Qt.point(rcPiece.x, rcPiece.y)
                        rcPiece.z = Infinity //topmost z-order
                     }
                 }
-                onReleased: if (rcPiece.dragAccept) {
+                onReleased: (drag) => {
                     rcPiece.z = rackIndex //original z-order
-                    if (dragAccept) {
+                    if (rcPiece.dragAccept) {
                         rcPiece.Drag.drop()
                     } else
-                    {
+                    if (dragStartedAt !== Qt.point(0,0)) {
                         backAnimX.from = rcPiece.x;
                         backAnimX.to = dragStartedAt.x;
                         backAnimY.from = rcPiece.y;

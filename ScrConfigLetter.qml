@@ -3,10 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 GridLayout {
-    columns: 2
-    columnSpacing: 8
-    rowSpacing: 8
-
     property alias cbLetterSet: cbLetterSet
     property alias sbJoker: sbJoker
     property alias sbPieces: sbPieces
@@ -14,25 +10,42 @@ GridLayout {
     property alias rbReadingDirectionLTR: rbReadingDirectionLTR
     property alias rbReadingDirectionRTL: rbReadingDirectionRTL
 
-    property string lettersetName: cbLetterSet.currentText
+    function getLetterSetName() {
+        var sResult = cbLetterSet.currentText
+        if (sResult === "") sResult = qsTr("Special")
+        return sResult
+    }
 
-    RowLayout {
-        id: layoutCenteredPreset
-        Layout.columnSpan: 2
-        Layout.fillWidth: parent
-        Layout.alignment: Qt.AlignRight
-        Layout.bottomMargin: 12
-        Label {
-            id: lbLetterSet
-            text: qsTr("Letter set:")
+    function checkDefault() {
+        var comp = JSON.stringify(config.getLetterSet(-1))
+        for (var i=0; i<defaults.languages.length; i++) {
+           if (comp === JSON.stringify(config.getLetterSet(i))) {
+               cbLetterSet.currentIndex = i
+               return
+           }
         }
-        ComboBox {
-            id: cbLetterSet
-            Layout.minimumWidth: 200
-            Layout.preferredWidth: 300
-            model: defaults.languages
-            textRole: "nativeName"
-            onCurrentIndexChanged: if ( currentIndex >= 0 ) {
+        cbLetterSet.currentIndex = -1
+    }
+
+    columns: 2
+    columnSpacing: 8
+    rowSpacing: 8
+
+    width: scrollView.width - 10
+    height: scrollView.height - 10
+
+    Label {
+        id: lbLetterSet
+        Layout.alignment: Qt.AlignRight
+        text: qsTr("Letter set:")
+    }
+    ComboBox {
+        id: cbLetterSet
+        Layout.preferredWidth: tvLetterSet.width - sbLetterSet.width
+        model: defaults.languages
+        textRole: "nativeName"
+        onCurrentIndexChanged:
+            if ( currentIndex >= 0 ) {
                 config.letterSet = defaults.languages[currentIndex].letters
                 sbJoker.value = defaults.languages[currentIndex].numberOfJokers
                 sbPieces.value = defaults.languages[currentIndex].numberOfLetters
@@ -40,7 +53,6 @@ GridLayout {
                 rbReadingDirectionLTR.checked = defaults.languages[currentIndex].readingDirection === Qt.LeftToRight
                 rbReadingDirectionRTL.checked = defaults.languages[currentIndex].readingDirection === Qt.RightToLeft
             }
-        }
     }
     Label {
         id: lbLetterDistribution
@@ -50,18 +62,12 @@ GridLayout {
     }
     ColumnLayout {
         id: layoutLetterSet
-        Layout.leftMargin: 8
-        //TODO: configletter: check fillHeight does not work?
-        Layout.fillHeight: true
         HorizontalHeaderView {
             id: horizontalHeader
             syncView: tvLetterSet
-            implicitWidth: syncView ? syncView.width : 0
-            implicitHeight: contentHeight
-
             model: [qsTr("Letter"), qsTr("Points"), qsTr("Count")]
             delegate: Rectangle {
-                implicitWidth: text.implicitWidth + 4
+                implicitWidth: text.implicitWidth
                 implicitHeight: Math.max(horizontalHeader.height,
                                          text.implicitHeight + 4)
                 color: myPalette.mid
@@ -98,6 +104,7 @@ GridLayout {
                 }
             }
             onModelChanged: {
+                checkDefault()
                 var z = 0
                 if (model)
                     for (var i=0; i<model.rowCount; i++)
@@ -111,7 +118,6 @@ GridLayout {
     }
     Label {
         id: lbJoker
-        Layout.leftMargin: 8
         Layout.alignment: Qt.AlignRight
         text: qsTr("Number of blank tiles:")
     }
@@ -121,7 +127,6 @@ GridLayout {
     }
     Label {
         id: lbPieces
-        Layout.leftMargin: 8
         Layout.alignment: Qt.AlignRight
         text: qsTr("Number of letters on rack:")
     }
@@ -131,7 +136,6 @@ GridLayout {
     }
     Label {
         id: lbRandoms
-        Layout.leftMargin: 8
         Layout.alignment: Qt.AlignRight
         text: qsTr("Number of random letters:")
     }
@@ -140,23 +144,18 @@ GridLayout {
     }
     Label {
         id: lbReadingDirection
-        Layout.leftMargin: 8
         Layout.alignment: Qt.AlignRight
         text: qsTr("Reading direction:")
     }
     RowLayout {
         id: layoutReadingDirection
-        Label {
+        RadioButton {
+            id: rbReadingDirectionLTR
             text: qsTr("left to right")
         }
         RadioButton {
-            id: rbReadingDirectionLTR
-        }
-        Label {
-            text: qsTr("right to left")
-        }
-        RadioButton {
             id: rbReadingDirectionRTL
+            text: qsTr("right to left")
         }
     }
 }

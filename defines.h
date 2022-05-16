@@ -10,7 +10,7 @@
 
 // desktop
 static const QDir dictionaryPath() { return QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation); }
-// /home/<user>.config/QScrabble
+// /home/<user>.config/Scrabble3D
 static const QDir appPath() { return QCoreApplication::applicationDirPath(); }
 // .<exe>
 static const QDir configPath() { return dictionaryPath(); }

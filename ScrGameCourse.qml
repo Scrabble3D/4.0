@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Controls.Universal
 
 ColumnLayout {
     Layout.fillHeight: true
@@ -33,12 +32,6 @@ ColumnLayout {
 
                 Rectangle {
                     anchors.fill: parent
-                    border.width: 1
-//                    border.color: config.myPalette.midDark
-                    anchors.leftMargin: -border.width //hide all borders but the right as indicator for the resize function
-                    anchors.topMargin:  -border.width
-                    anchors.bottomMargin: -border.width
-                    //NOTE: statistics: use system palette instead of universal
                     color: config.myPalette.button
                     Text {
                         id: text

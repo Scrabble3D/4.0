@@ -43,7 +43,9 @@ HEADERS += \
 RESOURCES += \
         qml.qrc
 
-QML_IMPORT_NAME = Scrabble
+TARGET = Scrabble3D
+
+QML_IMPORT_NAME = Scrabble3D
 QML_IMPORT_MAJOR_VERSION = 4
 QML_IMPORT_MINOR_VERSION = 0
 QML_IMPORT_PATH = $$PWD
@@ -67,4 +69,17 @@ contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
         /opt/Android/android_openssl/latest/x86/libssl_1_1.so \
         /opt/Android/android_openssl/latest/x86_64/libcrypto_1_1.so \
         /opt/Android/android_openssl/latest/x86_64/libssl_1_1.so
+
+    ANDROID_PACKAGE_SOURCE_DIR = \
+        $$PWD/android
 }
+
+DISTFILES += \
+    android/AndroidManifest.xml \
+    android/build.gradle \
+    android/gradle.properties \
+    android/gradle/wrapper/gradle-wrapper.jar \
+    android/gradle/wrapper/gradle-wrapper.properties \
+    android/gradlew \
+    android/gradlew.bat \
+    android/res/values/libs.xml

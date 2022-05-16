@@ -29,7 +29,7 @@ TableView {
                : config.myPalette.window
         Text {
             id: msgText
-            text: display
+            text: display //TODO: messages: emoticons :-) = U+1F600
             width: delegateRect.width
             wrapMode: (model.column === 1)
                ? Text.WordWrap //wrap only the message

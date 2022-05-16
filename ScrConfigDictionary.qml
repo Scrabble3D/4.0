@@ -3,23 +3,28 @@ import QtQuick.Controls
 import QtQuick.Layouts
 //TODO: dictionary rework from ground; QTreeView or QConcatenateTablesProxyModel
 GridLayout {
-    id: configDictionary
     columns: 2
 
     width: scrollView.width
     height: scrollView.height
     onWidthChanged: dictTable.forceLayout()
 
-    property alias acLoadDictionary: acLoadDictionary
     property alias categoriesRepeater: categoriesRepeater
 
-    property string dictionaryName: configDictionary.selectedDic > -1
-                                    ? GamePlay.dicListModel.data(GamePlay.dicListModel.index(configDictionary.selectedDic,0))
-                                    : ""
+    function getDictionaryName() {
+        var sResult = ""
+        if (configDictionary.loadedDic > -1) {
+            sResult = GamePlay.dicListModel.data(GamePlay.dicListModel.index(configDictionary.loadedDic,0))
+            if (sResult === "") //local dictionary have no "NativeName" role and take the file name
+                sResult = GamePlay.dicListModel.data(GamePlay.dicListModel.index(configDictionary.loadedDic,2))
+        }
+        return sResult
+    }
 
     property int selectedDic: -1 // -1 = nothing selected
     property int loadedDic: -1
 
+    //called from ScrConfig when loading a configuration
     function loadFromName(fileName) {
         var m = GamePlay.dicListModel
         for (var i=0; i<m.rowCount(); i++)
@@ -49,16 +54,43 @@ GridLayout {
             }
     }
 
+    function updateLetterDistribution() {
+        var letterlist = [];
+        letterlist = GamePlay.getLetterDistribution( config.getLetterSet(-1) )
+        if (letterlist.length > 0)
+            config.setLetterSet(letterlist)
+    }
+
     Action {
         id: acLoadDictionary
+        enabled: loadedDic != selectedDic
+        text: GamePlay.dicListModel.data(GamePlay.dicListModel.index(selectedDic,4)) === ""
+                  ? qsTr("Download Dictionary")
+                  : qsTr("Load Dictionary")
         onTriggered: {
-            var fileName = GamePlay.dicListModel.data(GamePlay.dicListModel.index(configDictionary.selectedDic,2))
-            var dicName = GamePlay.dicListModel.data(GamePlay.dicListModel.index(configDictionary.selectedDic,0))
+            var fileName = GamePlay.dicListModel.data(GamePlay.dicListModel.index(selectedDic,2))
+            var dicName = GamePlay.dicListModel.data(GamePlay.dicListModel.index(selectedDic,0))
             if (GamePlay.loadDictionary(fileName)) {
-                GamePlay.addMessage(qsTr("Dictionary \"%1\" successfully loaded.").arg(dicName))
+                GamePlay.addMessage(qsTr("Dictionary \"%1\" successfully loaded.").arg(fileName))
+                //FIXME: configdic/dictionary: downloading dic is finsihed, leading to update before subsequent loading -> distribution not applied
                 updateInfo() //categries
+                updateLetterDistribution();
                 loadedDic = selectedDic
             }
+        }
+    }
+    Action {
+        id: acDeleteDictionary
+        text: qsTr("Delete Dictionary")
+        enabled: GamePlay.dicListModel.data(GamePlay.dicListModel.index(selectedDic,4)) !== ""
+        onTriggered: {
+            var fileName = GamePlay.dicListModel.data(GamePlay.dicListModel.index(selectedDic,2))
+            if (GamePlay.deleteDictionary(fileName)) {
+                GamePlay.addMessage(qsTr("Dictionary \"%1\" successfully deleted.").arg(fileName))
+                if (loadedDic == selectedDic) loadedDic = -1;
+                updateInfo() //categries
+            } else
+                GamePlay.addMessage(qsTr("Deletion of \"%1\" failed.").arg(fileName))
         }
     }
 
@@ -87,6 +119,12 @@ GridLayout {
 
     }
 
+    Menu {
+        id: dictContextMenu
+        MenuItem { action: acLoadDictionary }
+        MenuItem { action: acDeleteDictionary }
+    }
+
     TableView {
         id: dictTable
         Layout.fillHeight: true
@@ -113,8 +151,8 @@ GridLayout {
             implicitWidth: parent.width
             implicitHeight: delText.height + 2
             color: isLoaded ? myPalette.highlight
-                              : selected ? Qt.lighter(myPalette.highlight)
-                                         : myPalette.light
+                            : selected ? Qt.lighter(myPalette.highlight)
+                                       : myPalette.light
             border.color: myPalette.midlight
 
             Text {
@@ -128,12 +166,18 @@ GridLayout {
             }
             MouseArea {
                 anchors.fill: parent
-                onDoubleClicked:
-                    acLoadDictionary.trigger()
-                onClicked: {
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                onDoubleClicked: acLoadDictionary.trigger()
+                onPressed: {
                     configDictionary.selectedDic = model.row
-                    dictSelect.select(GamePlay.dicListModel.index(model.row,0),ItemSelectionModel.ClearAndSelect | ItemSelectionModel.Rows)
+                    dictSelect.select(GamePlay.dicListModel.index(model.row,0),
+                                      ItemSelectionModel.ClearAndSelect | ItemSelectionModel.Rows)
                 }
+                onClicked: (mouse)=> {
+                    if (mouse.button === Qt.RightButton)
+                        dictContextMenu.popup()
+                }
+                onPressAndHold: dictContextMenu.popup()
             }
         }
     }
@@ -146,10 +190,15 @@ GridLayout {
         Layout.row: 2
         Layout.alignment: Qt.AlignRight
         Layout.topMargin: -25 //overlapping with dictTable
-        Layout.rightMargin: 25
+        Layout.rightMargin: 50
         enabled: loadedDic != selectedDic
         display: AbstractButton.IconOnly
-        icon.source: "qrc:///resources/dictionary.png"
+        icon.width: 32
+        icon.height: 32
+        icon.source: GamePlay.dicListModel.data(
+                         GamePlay.dicListModel.index(configDictionary.selectedDic,4)) !== ""
+                         ? "qrc:///resources/dictionary.png"
+                         : "qrc:///resources/dictionarydown.png"
         background: Rectangle {
             anchors.fill: parent
             radius: width / 2

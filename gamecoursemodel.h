@@ -29,7 +29,7 @@ public:
                  int moveTime);
     void getScores(QList<int>& result);
     int timeTotalPerPlayer(const uint nPlayer);
-    int timePerMove(const uint nMove) { if (nMove < m_lData.count()) return m_lData[nMove].time; else return 0; }
+    int timePerMove(const int nMove) { if (nMove < m_lData.count()) return m_lData[nMove].time; else return 0; }
     void clear();
 
 protected:

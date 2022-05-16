@@ -5,7 +5,6 @@ import QtQuick.Layouts
 Dialog {
     title: qsTr("Search for words")
     standardButtons: Dialog.Close
-//    width: 500 //TODO: wordsearch: hard-coded width to solve Binding loop detected for property "implicitWidth"
     x: (parent.width - width) / 2
     y: (parent.height - height) / 2
 
@@ -47,6 +46,8 @@ Dialog {
             Label {
                 text: qsTr("Word:")
             }
+            //TODO: wordsearch: misplaced text for Farsi
+            //TODO: wordsearch: digraph replacement not working for eg. Spanish
             TextField {
                 id: dicWord
                 property string bgcolor: config.myPalette.light
@@ -88,7 +89,7 @@ Dialog {
                 id: dicMeaning
                 Layout.preferredHeight: 100
                 Layout.preferredWidth: 150
-                wrapMode: Text.WordWrap
+                wrapMode: Text.Wrap
                 verticalAlignment: Text.AlignTop
             }
         }
