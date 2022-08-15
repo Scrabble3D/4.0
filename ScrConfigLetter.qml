@@ -15,7 +15,7 @@ GridLayout {
         if (sResult === "") sResult = qsTr("Special")
         return sResult
     }
-
+    //FIXME!: configletter: if letterset are identical eg English US/GB the first one is taken ending up in a loop
     function checkDefault() {
         var comp = JSON.stringify(config.getLetterSet(-1))
         for (var i=0; i<defaults.languages.length; i++) {

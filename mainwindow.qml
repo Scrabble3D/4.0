@@ -10,7 +10,7 @@ ApplicationWindow {
     width: 1024 //TODO: mainform: use system default for app size
     height: 800
     visible: true
-    title: qsTr("Scrabble3D")
+    title: "Scrabble3D"
 /*
     Settings {
         property alias x: app.x
@@ -30,6 +30,20 @@ ApplicationWindow {
         return temp.a > 0 && a >= 0.3
     }
 
+    Connections {
+        target: GamePlay
+        function onShowRemoteGames() {
+            remotegames.open() }
+        function onNewGame(isLoading) {
+            newgame.open()
+            if (isLoading) newgame.accept()
+        }
+        function onApplyConfig(configData) {
+            config.applyConfig(configData)
+            newgame.setPlayers(configData)
+        }
+    }
+
     Action {
         id: acNewGame
         text: qsTr("New Game")
@@ -37,7 +51,9 @@ ApplicationWindow {
         shortcut: StandardKey.New
         icon.source: "qrc:///resources/newgame.png"
         icon.color: iconColor
-        onTriggered: newgame.open()
+        onTriggered: GamePlay.isConnected
+                     ? GamePlay.syncNewGame(config.getConfigData(false))
+                     : newgame.open()
     }
     Action {
         id: acNextPlayer
@@ -47,11 +63,13 @@ ApplicationWindow {
         property string tip: enabled ? text : GamePlay.getLastError()
         icon.source: "qrc:///resources/nextplayer.png"
         icon.color: iconColor
-        onTriggered: GamePlay.execNextPlayer()
+        onTriggered: GamePlay.isConnected
+                     ? GamePlay.syncNextPlayer()
+                     : GamePlay.nextPlayer()
     }
     Action {
         id: acExitApp
-        text: qsTr("E&xit")
+        text: qsTr("Exit")
         shortcut: StandardKey.Quit
         onTriggered: Qt.quit();
     }
@@ -67,7 +85,11 @@ ApplicationWindow {
         id: acSaveGame
         text: qsTr("Save As...")
         shortcut: StandardKey.SaveAs
-        enabled: Qt.platform.os !== "android" && GamePlay.isRunning //TODO: main: filedialog on Android
+        //TODO: main: filedialog on Android
+        // https://www.volkerkrause.eu/2019/02/16/qt-open-files-on-android.html
+        // https://forum.qt.io/topic/113328/how-to-convert-android-content-url-and-use-it-to-open-file/5
+        // https://forum.qt.io/topic/113335/qfiledialog-getopenfilename-always-returns-empty-string-on-android/15
+        enabled: Qt.platform.os !== "android" && GamePlay.isInitialized
         onTriggered: {
             fileDialog.acceptLabel = qsTr("Save")
             fileDialog.fileMode = FileDialog.SaveFile
@@ -75,19 +97,22 @@ ApplicationWindow {
             fileDialog.open()
         }
     }
+    function showLocalGames() {
+        fileDialog.acceptLabel = qsTr("Open")
+        fileDialog.fileMode = FileDialog.OpenFile
+        fileDialog.title = qsTr("Load game")
+        fileDialog.open()
+    }
     Action {
         id: acLoadGame
         text: qsTr("Load From...")
         shortcut: StandardKey.Open
-        enabled: Qt.platform.os !== "android"
-        onTriggered: {
-            fileDialog.acceptLabel = qsTr("Open")
-            fileDialog.fileMode = FileDialog.OpenFile
-            fileDialog.title = qsTr("Load game")
-            fileDialog.open()
-        }
+        enabled: Qt.platform.os !== "android" || GamePlay.isConnected
+        onTriggered: GamePlay.isConnected
+            ? GamePlay.getRemoteGames()
+            : showLocalGames()
     }
-    Action {
+    Action { //FIXME!: mainform disable compute action when not localplayer; check the various emits
         id: acComputeMove
         text: qsTr("Compute Move")
         shortcut: StandardKey.Find
@@ -97,6 +122,23 @@ ApplicationWindow {
         icon.color: iconColor
         onTriggered: GamePlay.computeMove()
     }
+    Action {
+        id: acLocalize
+        text: qsTr("Localize")
+        onTriggered: GamePlay.localize("german.qm")
+    }
+    Action {
+        id: acNetwork
+        checked: GamePlay.isConnected
+        checkable: true
+        text: qsTr("Network")
+        //TODO: main: update network icons
+        icon.source: checked ? "qrc:///resources/netw_disco.png"
+                             : "qrc:///resources/netw_connect.png"
+        icon.color: iconColor
+        onToggled: checked ? network.open() : GamePlay.disconnect()
+    }
+
     ActionGroup {
         id: acViewType
         exclusive: true
@@ -143,19 +185,23 @@ ApplicationWindow {
 
     FileDialog {
         id: fileDialog
-        folder: GamePlay.documentPath() // StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
+        folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
+        //TODO: main: clean-up
+//            GamePlay.documentPath() // StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
         nameFilters: [qsTr("Scrabble3D savegame (*.ssg)"), qsTr("All files (*)")]
         defaultSuffix: "ssg"
-        onAccepted: fileMode == FileDialog.OpenFile ?
-                      doLoad(file)
-                    : GamePlay.saveGame(file)
-    }
+        onAccepted: fileMode === FileDialog.OpenFile
+                        ? doLoad(file)
+                        : GamePlay.saveGame(file)}
 
-    ScrDefaults   { id: defaults }
-    ScrNewGame    { id: newgame }
-    ScrWordSearch { id: dictionary }
-    ScrConfig     { id: config }
-    ScrAbout      { id: about }
+    ScrDefaults    { id: defaults }
+    ScrNewGame     { id: newgame }
+    ScrWordSearch  { id: dictionary }
+    ScrConfig      { id: config }
+    ScrAbout       { id: about }
+    ScrNetwork     { id: network }
+//    ScrPoll        { id: poll }
+    ScrRemoteGames { id: remotegames}
 
     onWidthChanged: if (acAutomaticView.checked) {
         height > width

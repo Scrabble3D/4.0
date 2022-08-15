@@ -12,6 +12,7 @@ void rackmodel::initialize(const int nPlayerCount, const int nRackSize)
 {
     m_nPlayerCount = nPlayerCount;
     m_nActivePlayer = 0;
+    m_nLocalPlayer = 0;
     m_nRackSize = nRackSize;
 
     beginResetModel();
@@ -36,7 +37,7 @@ void rackmodel::setLetter(const Letter aLetter, const bool bSilent, int nPlayer)
     if (nPlayer > m_nPlayerCount-1) {
         qFatal("Setting letter failed"); //WARNING: rackmodel: make fatal just a warning
         return;
-}
+    }
     if ( (nIndex >= 0) && (nIndex < m_nRackSize) &&
          (m_lPieces[nPlayer][nIndex].IsEmpty()) )
     {
@@ -85,7 +86,7 @@ Letter rackmodel::getLetter(const int nRackIndex, int nPlayer) const
     }
 }
 
-void rackmodel::activePlayer(const int nPlayer)
+void rackmodel::setActivePlayer(const int nPlayer)
 {
     if (nPlayer<m_nPlayerCount) {
         beginResetModel();
@@ -94,6 +95,42 @@ void rackmodel::activePlayer(const int nPlayer)
     }
     else
         qFatal("Active player cannot be set");
+}
+
+void rackmodel::setLocalPlayer(const int nPlayer)
+{
+    if (nPlayer<m_nPlayerCount) {
+        if (nPlayer != m_nLocalPlayer) {
+            beginResetModel();
+            m_nLocalPlayer = nPlayer;
+            endResetModel();
+        }
+    }
+    else
+        qFatal("Local player cannot be set");
+}
+
+bool rackmodel::isRackEmpty()
+{
+    Letter aLetter;
+    for (int i = 0; i < m_nRackSize; i++) {
+        aLetter = m_lPieces[m_nActivePlayer][i];
+        if (!aLetter.IsEmpty())
+            return false;
+    }
+    return true;
+}
+
+int rackmodel::exchangeNumber()
+{
+    int result = 0;
+    Letter aLetter;
+    for (int i = 0; i < m_nRackSize; i++) {
+        aLetter = m_lPieces[m_nActivePlayer][i];
+        if (aLetter.IsExchange)
+            result++;
+    }
+    return result;
 }
 
 QHash<int, QByteArray> rackmodel::roleNames() const
@@ -109,12 +146,12 @@ QHash<int, QByteArray> rackmodel::roleNames() const
 
 QVariant rackmodel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid() || (m_nActivePlayer>m_nPlayerCount)) {
+    if (!index.isValid() || (m_nLocalPlayer>m_nPlayerCount)) {
         qFatal("Invalid rackmodel request");
         return QVariant();
     }
 
-    const Letter aLetter = m_lPieces[m_nActivePlayer][index.row()];
+    const Letter aLetter = m_lPieces[m_nLocalPlayer][index.row()];
     switch (role) {
       case WhatRole: return replaceLetter.value(aLetter.What, aLetter.What); break;
       case ValueRole: return aLetter.Value; break;

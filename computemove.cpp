@@ -146,7 +146,7 @@ int computemove::getRackLetter(QVector<Letter> aRackLetter, const QString aChar)
 
 bool computemove::isAtStart(const uint pos, const uint colrow)
 {
-    int nIndex;
+    int nIndex = 0;
     const int aBoardSize(m_pBoard->getBoardSize());
     for (int i = 0; i < aBoardSize; i++) {
         switch (colrow) {
@@ -247,7 +247,7 @@ bool computemove::canPlaceWord(const QString sWord, const uint nBoardPos,
                 aRackLetter[nRack] = EmptyLetter;
                 aMove->addLetter(aLetter, false); //false = don't check the move now
                 if (aMove->letterCount() == aRackLetter.count())
-                    aMove->setBonus( 50, true ); //add some bonus for sorting; the real value is done in gameplay::dropletter
+                    aMove->setBonus( 50, move::btScrabble ); //add some bonus for sorting; the real value is done in gameplay::dropletter
             }
             else
                 return false;

@@ -5,8 +5,13 @@ import QtQuick.Layouts
 Dialog {
     id: newgame
     title: qsTr("Start a new game")
-    standardButtons: Dialog.Cancel | Dialog.Ok
     modal: true
+    footer: DialogButtonBox {
+        id: buttons
+        standardButtons: Dialog.Ok | Dialog.Cancel
+    }
+
+    property alias playerNames: playerNames //used at poll
 
     padding: mainLoader.state === "landscape" ? 12 : 0
 
@@ -14,29 +19,52 @@ Dialog {
     y: (app.height - newgame.height) / 2
 
     property int rbIndex: 1
+    property int seed: -1
+
+    function setPlayers(configData) {
+        playerNames.clear()
+        rbIndex = configData["playerCount"] || 1
+        playerNames.append({"playerName": configData["player1"] || qsTr("1st Player"),
+                               "isChecked": rbIndex === 1,
+                               "isComputer": false})
+        playerNames.append({"playerName": configData["player2"] || qsTr("2nd Player"),
+                               "isChecked": rbIndex === 2,
+                               "isComputer": false})
+        playerNames.append({"playerName": configData["player3"] || qsTr("3rd Player"),
+                               "isChecked": rbIndex === 3,
+                               "isComputer": false})
+        playerNames.append({"playerName": configData["player4"] || qsTr("4th Player"),
+                               "isChecked": rbIndex === 4,
+                               "isComputer": false})
+        seed = configData["seed"] || -1
+        cbRandomized.checked = true
+    }
 
     ListModel {
         id: playerNames
         dynamicRoles: true
     }
     onAboutToShow: {
-        var configData = {}
-        configData = GamePlay.loadConfig("")
-        rbIndex = configData["playerCount"] || 1
-        playerNames.clear()
-        playerNames.append({"playerName": configData["player1"] || qsTr("1st Player"),
-                               "isChecked": rbIndex === 1,
-                               "isComputer": false})
-        playerNames.append({"playerName": configData["player2"] || qsTr("2nd Player"),
-                               "isChecked": rbIndex === 2,
-                               "isComputer": configData["comp2"] === "true" || false})
-        playerNames.append({"playerName": configData["player3"] || qsTr("3rd Player"),
-                               "isChecked": rbIndex === 3,
-                               "isComputer": configData["comp3"] === "true" || false})
-        playerNames.append({"playerName": configData["player4"] || qsTr("4th Player"),
-                               "isChecked": rbIndex === 4,
-                               "isComputer": configData["comp4"] === "true" || false})
-        cbRandomized.checked = configData["randomized"] === "true" || false
+        if (!GamePlay.isConnected) {
+            var configData = {}
+            configData = GamePlay.loadConfig("")
+            rbIndex = configData["playerCount"] || 1
+            playerNames.clear()
+            playerNames.append({"playerName": configData["player1"] || qsTr("1st Player"),
+                                   "isChecked": rbIndex === 1,
+                                   "isComputer": false})
+            playerNames.append({"playerName": configData["player2"] || qsTr("2nd Player"),
+                                   "isChecked": rbIndex === 2,
+                                   "isComputer": configData["comp2"] === "true" || false})
+            playerNames.append({"playerName": configData["player3"] || qsTr("3rd Player"),
+                                   "isChecked": rbIndex === 3,
+                                   "isComputer": configData["comp3"] === "true" || false})
+            playerNames.append({"playerName": configData["player4"] || qsTr("4th Player"),
+                                   "isChecked": rbIndex === 4,
+                                   "isComputer": configData["comp4"] === "true" || false})
+            cbRandomized.checked = configData["randomized"] === "true" || false
+        }
+        buttons.enabled = true //disabled on okay while waiting on network poll
         newgame.focus = true
     }
 
@@ -59,6 +87,7 @@ Dialog {
                     id: rbPlayerCount
                     text: (index + 1)
                     checked: isChecked
+                    enabled: !GamePlay.isConnected
                     onCheckedChanged: rbIndex = index + 1
                     ButtonGroup.group: radioGroup
                     topPadding: tiName.topPadding
@@ -71,6 +100,7 @@ Dialog {
                         bottomPadding: topPadding
                         text: playerName
                         enabled: (rbIndex > index) && (!cbComputer.checked)
+                        readOnly: GamePlay.isConnected
                         background: Rectangle {
                             color: tiName.enabled
                                    ? (tiName.text === "Computer")
@@ -93,7 +123,7 @@ Dialog {
                         leftPadding: 0
                         onClicked: playerNames.setProperty(index,"isComputer",checked)
                         visible: index > 0 //at least one human player should be in the game
-                        enabled: (rbIndex > index)
+                        enabled: (rbIndex > index) && (!GamePlay.isConnected)
                     }
                 }
             }
@@ -124,6 +154,7 @@ Dialog {
                         id: cbRandomized
                         text: "Randomized order"
                         focus: false
+                        enabled: !GamePlay.isConnected
                     }
                 }
                 GridLayout {
@@ -158,6 +189,8 @@ Dialog {
             return sRet
         }
         onAccepted: {
+            buttons.enabled = false //disabled as feedback while poll is active in network mode
+            //TODO: newgame: add random letters
             GamePlay.startNewGame(getNames(),                             //PlayerNames
                                   config.numberOfLettersOnRack,           //RackSize
                                   config.bIs3D,                           //is3D
@@ -165,17 +198,17 @@ Dialog {
                                   config.getLetterSet(-1),                //Letters[letter,value,count]
                                   config.numberOfJokers,                  //NumberOfJokers
                                   true,                                   //CanJokerExchange
-                                  50,                                     //GameEndBonus
+                                  config.gameEndBonus,                    //GameEndBonus
                                   config.numberOfPasses,                  //NumberOfPasses
-                                  10,                                     //JokerPenalty
-                                  true,                                   //ChangeIsPass
+                                  config.jokerPenalty,                    //JokerPenalty
+                                  config.changeIsPass,                    //ChangeIsPass
                                   config.timeControl,                     //TimeControl
                                   config.timeControlValue,                //TimeControlValue
                                   3,                                      //LimitedExchange
                                   false,                                  //CambioSecco
                                   false,                                  //Whatif
-                                  true,                                   //Add
-                                  true,                                   //Substract
+                                  config.addLetters,                      //Add
+                                  config.substractLetters,                //Substract
                                   0,                                      //TimePenaltyValue
                                   10,                                     //TimePenaltyCount
                                   true,                                   //TimeGameLost
@@ -185,27 +218,33 @@ Dialog {
                                   10,                                     //WordCheckBonus
                                   config.bingoBonus,                      //ScrabbleBonus
                                   false,                                  //isCLABBERS
-                                  cbRandomized.checked);                  //RandomSequence
+                                  cbRandomized.checked,                   //RandomSequence
+                                  seed)                                   // -1 = generate
 
             main.board.jokerPicker.updatePickerModel() //use current letterlist for joker picker
             main.board.updateLabelsModel() //redraw labels on x/y axis
             main.board.updateFieldSize() //changing the number of fields should result in resizing
             if (config.bIs3D) main.cube.updateCubeModel()
 
-            var configData = {}
-            configData = GamePlay.loadConfig("")
-            configData["player1"] = playerNames.get(0).playerName
-            configData["player2"] = playerNames.get(1).playerName
-            configData["player3"] = playerNames.get(2).playerName
-            configData["player4"] = playerNames.get(3).playerName
-            configData["comp1"] = playerNames.get(0).isComputer
-            configData["comp2"] = playerNames.get(1).isComputer
-            configData["comp3"] = playerNames.get(2).isComputer
-            configData["comp4"] = playerNames.get(3).isComputer
-            configData["playerCount"] = rbIndex
-            configData["randomized"] = cbRandomized.checked
-            GamePlay.saveConfig("", configData)
+            //save last game settings except when in network mode
+            if (!GamePlay.isConnected) {
+                var configData = {}
+    //            configData = GamePlay.loadConfig("")
+                configData["player1"] = playerNames.get(0).playerName
+                configData["player2"] = playerNames.get(1).playerName
+                configData["player3"] = playerNames.get(2).playerName
+                configData["player4"] = playerNames.get(3).playerName
+                configData["comp1"] = playerNames.get(0).isComputer
+                configData["comp2"] = playerNames.get(1).isComputer
+                configData["comp3"] = playerNames.get(2).isComputer
+                configData["comp4"] = playerNames.get(3).isComputer
+                configData["playerCount"] = rbIndex
+                configData["randomized"] = cbRandomized.checked
+                GamePlay.saveConfig("", configData)
 
-            config.saveConfig( "" )
+                config.saveConfig("")
+            }
+
         }
+        onRejected: GamePlay.rejectNewGame()
     }

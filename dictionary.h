@@ -82,6 +82,7 @@ struct dicListData {
 
 class dicList : public QAbstractTableModel
 {
+    Q_OBJECT
 public:
     enum ModelRoles {
         IsLoadedRole = Qt::UserRole + 1,
@@ -105,13 +106,11 @@ public:
     bool getCategory(const QString catName) const {return dictionary->getCategoryChecked(catName); }
     void updateList();
     static void getInfo(dicListData *aData); //used also in downloadmanager::update()
-    static int stringToVersion(const QString aVersion);
 
 protected:
     QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
 
 private:
-    static QString versionToString(const int aValue);
     int indexOf(QString fileName);
     QObject* m_pParent;
     int m_nCurrentDictionary; //index of currently active dic

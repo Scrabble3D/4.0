@@ -61,7 +61,7 @@ struct Letter
     Point3D Point = Point3D(0,0,0);
     LetterState::State State = LetterState::lsEmpty;
 
-    QVariantList toString()
+    QVariantList toVariant()
     {
         QVariantList aList;
         aList.append(What);

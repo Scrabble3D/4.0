@@ -60,6 +60,7 @@ RowLayout {
             leftPadding: 4
             width: parent.width
             height: parent.height
+            color: config.myPalette.windowText
             text: GamePlay.lastError
             verticalAlignment: Text.AlignVCenter
             clip: true

@@ -98,6 +98,8 @@ QHash<int, QByteArray> gamecoursemodel::roleNames() const
 void gamecoursemodel::clear()
 {
     beginResetModel();
+    for (int i=0; i<MaxPlayers; i++)
+        m_Total[i] = 0;
     m_lData.clear();
     endResetModel();
 }
@@ -108,6 +110,7 @@ void gamecoursemodel::addMove(QString PlacedWord, QString ConnectedWords, uint W
     aData.placedWord = PlacedWord;
     aData.connectedWords = ConnectedWords;
     aData.who = Who;
+    m_Total[Who] += value;
     aData.value = value;
     aData.bestValue = bestValue;
     aData.isScrabble = IsScrabble;
@@ -119,10 +122,14 @@ void gamecoursemodel::addMove(QString PlacedWord, QString ConnectedWords, uint W
     endInsertRows();
 }
 
-void gamecoursemodel::getScores(QList<int>& result)
+void gamecoursemodel::addBonus(int player, int value)
 {
-    for (int i = 0; i < m_lData.count(); i++)
-        result[m_lData[i].who] += m_lData[i].value;
+    m_Total[player] += value;
+}
+
+int gamecoursemodel::getScore(const int nPlayer)
+{
+    return m_Total[nPlayer];
 }
 
 int gamecoursemodel::timeTotalPerPlayer(const uint nPlayer)
@@ -132,4 +139,38 @@ int gamecoursemodel::timeTotalPerPlayer(const uint nPlayer)
         if (m_lData[i].who == nPlayer)
             nResult += m_lData[i].time;
     return nResult;
+}
+
+struct Winner {
+    int player;
+    int value;
+};
+
+bool sortByValue(Winner &p1, Winner &p2) {
+    return p1.value > p2.value;
+}
+
+void gamecoursemodel::getWinner(QList<int> &result)
+{
+    QList<Winner> lWinner;
+    Winner aWinner;
+    for (int i=0; i<MaxPlayers; i++) {
+        aWinner.player = i;
+        aWinner.value = m_Total[i];
+        if (aWinner.value > 0)
+            lWinner.append(aWinner);
+    }
+    std::sort(lWinner.begin(),lWinner.end(),sortByValue);
+
+    if (lWinner.count()>0)
+        result.append(lWinner[0].player);
+
+    //draw?
+    if (lWinner.count()>1) {
+        int i=1;
+        while ((lWinner[i].value == lWinner[0].value) && (i<MaxPlayers)) {
+            result.append(lWinner[i].player);
+            i++;
+        }
+    }
 }

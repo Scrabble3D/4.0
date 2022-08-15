@@ -26,6 +26,7 @@ board::board()
     }
     m_bIs3D = false;
     m_nBoardSize = qSqrt(sizeof(ft)/sizeof(int));
+    m_nFieldSize = m_Fieldtypes.count();
     m_nActivePosition = 0;
     m_eActiveDimension = dmAbscissa;
 }
@@ -162,7 +163,7 @@ Point3D board::pos3D(int nIndex2D)
 
 int board::index2D(Point3D aPoint3D)
 {
-    int aIndex;
+    int aIndex = 0;
     switch (m_eActiveDimension) {
       case dmAbscissa:
         aIndex = aPoint3D.y()*m_nBoardSize + aPoint3D.x();

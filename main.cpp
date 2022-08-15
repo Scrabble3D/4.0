@@ -2,9 +2,11 @@
 #include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
-#include <gameplay.h>
-//use "set QT_D3D_ADAPTER_INDEX=1" on Windows
 
+#include <gameplay.h>
+
+// https://bugreports.qt.io/browse/QTBUG-102634
+// use "set QT_D3D_ADAPTER_INDEX=1" on Windows
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
@@ -13,8 +15,8 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
 
-    GamePlay* gamePlay = new GamePlay();
-    engine.rootContext()->setContextProperty("GamePlay", gamePlay);
+    GamePlay* _GamePlay = new GamePlay(&engine);
+    engine.rootContext()->setContextProperty("GamePlay", _GamePlay);
 
     const QUrl url(QStringLiteral("qrc:/mainwindow.qml"));
 

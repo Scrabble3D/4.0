@@ -5,7 +5,9 @@
 #include <QMessageBox>
 #include <QCoreApplication>
 #include <QSettings>
-#include "defines.h"
+#include <QDir>
+#include <QStandardPaths>
+
 #include "zip.h" //https://github.com/kuba--/zip
 #include "dictionary.h"
 #include "version.h"
@@ -38,7 +40,8 @@ void DownloadManager::download(const QString fileName)
 int DownloadManager::lastChecked()
 {
     QDateTime dtChecked(QDate(1970,1,1),QTime(0,0));
-    QSettings settings(configPath().path() + "/Scrabble3D.ini", QSettings::IniFormat);
+    const QDir aPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+    QSettings settings(aPath.path() + "/Scrabble3D.ini", QSettings::IniFormat);
 
     settings.beginGroup("program");
     QString sLastUpdate = settings.value("lastupdate","").toString();
@@ -58,7 +61,8 @@ void DownloadManager::checkUpdates() {
     bool bCanUpdate = false;
 
     //read remote info and add local data
-    QFile rFile(configPath().path() + "/Scrabble3D.conf");
+    const QDir aPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+    QFile rFile(aPath.path() + "/Scrabble3D.conf");
     if ( rFile.open(QIODevice::ReadOnly) )
     {
         QXmlStreamReader xmlReader;
@@ -88,7 +92,7 @@ void DownloadManager::checkUpdates() {
                                                aData.AvailableVersion));
                     bCanUpdate = bCanUpdate || (aData.InstalledVersionNumber < aData.AvailableVersionNumber);
                 }
-                dicList::stringToVersion(aData.AvailableVersion);
+                stringToVersion(aData.AvailableVersion);
                 lDictionaries.append(aData);
             } //Dictionaries
 
@@ -96,8 +100,8 @@ void DownloadManager::checkUpdates() {
                (xmlReader.name().toString() == "version"))
             {
                 QString sRemoteVersion = xmlReader.readElementText();
-                int nRemoteVersion = dicList::stringToVersion( sRemoteVersion );
-                int nLocalVersion = dicList::stringToVersion( versionString() );
+                int nRemoteVersion = stringToVersion( sRemoteVersion );
+                int nLocalVersion = stringToVersion( versionString() );
                 m_pParent->setProperty("addMsg", tr("Program version: %1 %2 %3").arg(
                                            sRemoteVersion,
                                            nRemoteVersion > nLocalVersion
@@ -124,7 +128,7 @@ void DownloadManager::checkUpdates() {
     }
 
     //last update
-    QSettings settings(configPath().path() + "/Scrabble3D.ini", QSettings::IniFormat);
+    QSettings settings(aPath.path() + "/Scrabble3D.ini", QSettings::IniFormat);
     settings.beginGroup("program");
     settings.setValue("lastupdate",QDateTime::currentDateTime().toString(Qt::ISODate));//"yyyyMMddhhmm"));
     settings.endGroup();
@@ -138,8 +142,9 @@ void DownloadManager::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 bool DownloadManager::saveToDisk(const QString &filename, QIODevice *data)
 {
 #ifdef Q_OS_MACOS
-    if (!dictionaryPath().exists())
-        QDir().mkdir(dictionaryPath().path());
+    const QDir aPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+    if (!aPath.exists())
+        QDir().mkdir(aPath.path());
 #endif
 
     QFile file(filename);
@@ -176,9 +181,10 @@ void DownloadManager::downloadFinished(QNetworkReply *reply)
     //special handling for Scrabble3D.conf, the only uncompressed file
     //not extracted and saved directly at the config path
     const bool isCompressed = url.fileName().endsWith("zip", Qt::CaseInsensitive);
-
-    const QString tmpFile = isCompressed ? tempPath().path() + "/" + url.fileName()
-                                         : dictionaryPath().path() + "/" + url.fileName();
+    const QDir aConfigPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+    const QDir aTempPath = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+    const QString tmpFile = isCompressed ? aTempPath.path() + "/" + url.fileName()
+                                         : aConfigPath.path() + "/" + url.fileName();
     if (reply->error()) {
         m_pParent->setProperty("addMsg",reply->errorString() );
     } else
@@ -191,7 +197,7 @@ void DownloadManager::downloadFinished(QNetworkReply *reply)
         if ( isCompressed ) {
             int arg = 2;
             zip_extract(tmpFile.toUtf8(),
-                        dictionaryPath().path().toUtf8(),
+                        aConfigPath.path().toUtf8(),
                         nullptr, &arg );
             aFileName = url.fileName().left( url.fileName().length() - 4 );
         } else

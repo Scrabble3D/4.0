@@ -7,7 +7,7 @@ struct Message
 {
     QTime When;
     QString What;
-    int Who; //-1 for system messages, 0..3 players
+    QString Who; //empty for system messages, otherwise player names
 };
 
 class msgmodel: public QAbstractTableModel
@@ -23,13 +23,16 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     int rowCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
     int columnCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
-
-    void addMessage(const QString aWhat, const int aWho = -1);
+    void playerNames(const QStringList names);
     void clear();
+
+public slots:
+    void addMessage(const QString aWhat, const QString aWho = "");
 
 protected:
     QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
 
 private:
     QVector<Message> m_msglist;
+    QStringList m_lPlayerNames;
 };

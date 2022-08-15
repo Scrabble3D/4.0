@@ -4,6 +4,7 @@
 
 class gamecoursemodel : public QAbstractTableModel
 {
+    Q_OBJECT
 
 public:
     enum ModelRoles {
@@ -27,15 +28,19 @@ public:
                  int bestValue,
                  bool IsScrabble,
                  int moveTime);
-    void getScores(QList<int>& result);
+    void addBonus(int player, int value);
+    int getScore(const int nPlayer);
     int timeTotalPerPlayer(const uint nPlayer);
     int timePerMove(const int nMove) { if (nMove < m_lData.count()) return m_lData[nMove].time; else return 0; }
+    void getWinner(QList<int> &result);
     void clear();
 
 protected:
     QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
 
 private:
+    static const int MaxPlayers = 4;
+
     struct ModelData {
       QString placedWord;
       QString connectedWords;
@@ -47,4 +52,5 @@ private:
     };
 
     QList<ModelData> m_lData;
+    int m_Total[MaxPlayers];
 };

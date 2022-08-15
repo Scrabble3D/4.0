@@ -3,8 +3,6 @@ QT += quick widgets
 CONFIG += c++17
 CONFIG += qmltypes
 
-# You can make your code fail to compile if it uses deprecated APIs.
-# In order to do so, uncomment the following line.
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.2.0
 
 ICON = resources/Scrabble3D.icns
@@ -21,6 +19,8 @@ SOURCES += \
         main.cpp \
         gameplay.cpp \
         msgmodel.cpp \
+        network.cpp \
+        playersmodel.cpp \
         rackmodel.cpp \
         zip.c
 
@@ -29,7 +29,6 @@ HEADERS += \
         boardmodel.h \
         computemove.h \
         cubemodel.h \
-        defines.h \
         dictionary.h \
         downloadmanager.h \
         gamecoursemodel.h \
@@ -37,7 +36,10 @@ HEADERS += \
         gameplay.h \
         letter.h \
         msgmodel.h \
+        network.h \
+        playersmodel.h \
         rackmodel.h \
+        version.h \
         zip.h
 
 RESOURCES += \

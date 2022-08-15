@@ -3,9 +3,10 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 TableView {
-    id: messages
     Layout.fillHeight: true
     Layout.fillWidth: true
+
+    property bool newMessage: false
 
     TextMetrics {
         id: textMetrics
@@ -21,6 +22,7 @@ TableView {
 
     ScrollBar.vertical: ScrollBar { }
     model: GamePlay.msgModel
+
     delegate: Rectangle {
         id: delegateRect
         implicitHeight: msgText.height + 2
@@ -34,12 +36,15 @@ TableView {
             wrapMode: (model.column === 1)
                ? Text.WordWrap //wrap only the message
                : Text.NoWrap
-            color: isDark(parent.color) //isDark() in mainwindow.qml
+            color: isDark(parent.color) //isDark() in mainwindow.qmlx
                ? "white"
                : "black"
         }
     }
-
+    //FIXME: messages: contentheight signal not emitted in portrait mode
+    onContentHeightChanged: {
+        newMessage = !visible
+     }
     //FIXME: messages: forecLayout() works but throws warnings while loading
     onWidthChanged: {
         forceLayout() //needed to ensure wordwrap on app resizing

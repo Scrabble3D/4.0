@@ -105,7 +105,7 @@ Item {
 
             pieceColor: aWhat == String.fromCharCode(0) //empty?
                         ? config.colors.get(fieldtype).itemColor //use field color when empty
-                        : isPlaced && config.bColoredPlayers && (GamePlay.currentMove - when - 1) < GamePlay.numberOfPlayers
+                        : isPlaced && config.bColoredPlayers && (GamePlay.currentMove - when) < GamePlay.numberOfPlayers
                           ? Qt.lighter(config.playercolors.get(who).itemColor, 1.75) //use (lighter) player color for the last move, if set in config
                           : when === GamePlay.currentMove
                             ? config.colors.get(8).itemColor //use (yellow) field color for non-empty squares
@@ -132,7 +132,7 @@ Item {
 
             DropArea {
                 anchors.fill: parent
-                onEntered: (drag)=> { drag.source.dragAccept = GamePlay.canDrop(index) }
+                onEntered: (drag)=> { drag.source.dragAccept = GamePlay.canDrop(index)}
                 onExited:  drag.source.dragAccept = false
                 onDropped: (drag)=> {
                     GamePlay.dropLetter(drag.source.rackIndex, index)
@@ -197,8 +197,9 @@ Item {
             width: fieldSize
             height: fieldSize
             border.color: Qt.darker(color)
-            pieceColor: isExchange ? config.colors.get(0).itemColor //start
-                                   : config.colors.get(8).itemColor //piece
+            pieceColor: (!GamePlay.isLocalPlayer) || isExchange
+                            ? config.colors.get(0).itemColor //start
+                            : config.colors.get(8).itemColor //piece
 
             visible: isVisible // LetterState::lsRack
             pieceLabel: what

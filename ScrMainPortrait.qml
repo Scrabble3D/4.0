@@ -89,6 +89,8 @@ ColumnLayout {
                         MenuItem { action: acLoadGame }
                         MenuItem { action: acConfiguration }
                         MenuSeparator { }
+                        MenuItem { action: acNetwork; icon.source: "" }
+                        MenuSeparator { }
                         MenuItem { action: acAutomaticView }
                         MenuItem { action: acLandscapeView }
                         MenuItem { action: acPortraitView }
@@ -111,28 +113,52 @@ ColumnLayout {
         currentIndex: footerBar.currentIndex
         interactive: false //touch-move should rotate the cube
         Item { ScrBoard { id: board } }
-        ScrCube {
-            id: cube
-            visible: GamePlay.is3D
-        }
+        ScrCube { id: cube; visible: GamePlay.is3D }
         ScrMessages { id: messages }
         ScrGameCourse { id: statistics }
+        ScrPlayers { id: players; visible: GamePlay.isConnected }
     }
-
     TabBar {
         id: footerBar
         Layout.fillWidth: true
         currentIndex: swipeView.currentIndex
-
-        TabButton { text: qsTr("Board") }
+        onCurrentIndexChanged: if (currentIndex < 3) // Board=0/Cube=1/Messages=2
+                                   messages.newMessage = false
+        TabButton {
+            text: qsTr("Board")
+            width: contentItem.implicitWidth + leftPadding + rightPadding
+        }
         TabButton {
             text: qsTr("Cube")
             visible: GamePlay.is3D
-            width: visible ? undefined : 0 //non-visible keeps empty space
+            width: visible ? contentItem.implicitWidth + leftPadding + rightPadding
+                           : 0 //non-visible keeps empty space
         }
-        TabButton { text: qsTr("Messages") }
-        TabButton { text: qsTr("Game course") }
+        TabButton {
+            text: qsTr("Messages")
+            width: contentItem.implicitWidth + leftPadding + 2*rightPadding
+            indicator: Rectangle {
+                property int size: 5
+                width: size; height: size; radius: size
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.rightMargin: 2
+                anchors.topMargin: 2
+                color: "#FF0000" //config.myPalette.highlight
+                visible: messages.newMessage
+            }
+        }
+        TabButton {
+            text: qsTr("Game course")
+            width: contentItem.implicitWidth + leftPadding + rightPadding
+        }
+        TabButton {
+            text: qsTr("Players")
+            width: contentItem.implicitWidth + leftPadding + rightPadding
+            visible: GamePlay.isConnected
+        }
         //TODO: main views: add statistics
     }
+
     ScrStatusbar { id: footerBarPt }
 }

@@ -27,7 +27,11 @@ public:
     void move(const uint fromIndex, const uint toIndex);
     Letter getLetter(const int nRackIndex, int nPlayer = -1) const;
     int rackSize() {return m_nRackSize; }
-    void activePlayer(const int nPlayer); // set via gameplay.execnextplayer()
+    void setActivePlayer(const int nPlayer); // set via gameplay.nextPlayer()
+    void setLocalPlayer(const int nPlayer);
+    bool isLocalIsActive() {return m_nActivePlayer == m_nLocalPlayer; }
+    bool isRackEmpty(); //returns true if all rack pieces are empty
+    int exchangeNumber(); //returns true if at least one letter is marked for exchange
 
 protected:
     QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
@@ -36,4 +40,5 @@ protected:
     int m_nRackSize;
     int m_nPlayerCount;
     int m_nActivePlayer;
+    int m_nLocalPlayer;
 };

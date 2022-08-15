@@ -9,6 +9,10 @@ Item {
         //TODO: cube: feeback on init
         cube.model = GamePlay.cubeModel //assign model not until it is used to avoid delay on app start
     }
+    TextMetrics {
+        id: textMetrics
+        text: "10" //avoid jumping UI when label goes from one to two digits
+    }
 
     View3D {
         id: view
@@ -167,7 +171,8 @@ Item {
             stepSize: 1
         }
         Label {
-            text: pos3D.value + 1
+            text: pos3D.value
+            Layout.preferredWidth: textMetrics.width
         }
         Label {
             Layout.leftMargin: 16

@@ -21,7 +21,7 @@ QVariant msgmodel::data(const QModelIndex &index, int role) const
             return m_msglist[i].What;
         break;
       case WhoRole:
-        return m_msglist[i].Who;
+        return m_lPlayerNames.indexOf(m_msglist[i].Who);
         break;
     }
 
@@ -40,7 +40,13 @@ int msgmodel::columnCount(const QModelIndex &parent) const
     return 2;
 }
 
-void msgmodel::addMessage(const QString aWhat, const int aWho)
+void msgmodel::playerNames(const QStringList names)
+{
+   m_lPlayerNames.clear();
+   m_lPlayerNames << names;
+}
+
+void msgmodel::addMessage(const QString aWhat, const QString aWho)
 {
     Message aMessage;
     aMessage.What = aWhat;

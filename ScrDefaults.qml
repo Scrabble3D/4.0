@@ -270,6 +270,7 @@ Item {
         1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
         6,1,1,2,1,1,1,6,1,1,1,2,1,1,6]
 
+    //make fails? try to disable QT Quick Compiler
     property var boardSuperScrabble3D:
        [7,1,1,1,1,1,1,2,1,1,7,1,1,2,1,1,1,1,1,1,7,
         1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,
@@ -1271,7 +1272,7 @@ Item {
         property int jokerPenalty: 0
         property int numberOfPasses: 2              //page 12, point 5.1
         property int limitExchange:7                //page 9, point 3.2.1
-        property int endBonus:0
+        property int endBonus: 0
         property int scrabbleBonus:50
         property var letters: TableModel {
             TableModelColumn { display: "letter" }

@@ -1,14 +1,13 @@
 #include "move.h"
-#include "gameplay.h"
 
 move::move(const bool IsFirstMove, board* aBoard)
     : m_PlacedLetters(0),
       m_Value(0),
-      m_Bonus(0),
+      m_nBonusValue(0),
+      m_eBonusType(btNone),
       m_IsFirstMove(IsFirstMove),
       m_pBoard(aBoard)
 {
-    m_IsScrabble = false;
 }
 
 bool move::addLetter(Letter aLetter, const bool doCheck)
@@ -405,14 +404,25 @@ QString move::getResults(const Dimension eDimension, const Point3D nStart)
 
 int move::getPosition()
 {
-    if (m_PlacedLetters.length() == 0)
-        return 0;
-    switch (m_Dimension) {
-    case dmAbscissa:
-        return m_PlacedLetters[0].Point.z();
-    case dmOrdinate:
-        return m_PlacedLetters[0].Point.x();
-    case dmApplicate:
-        return m_PlacedLetters[0].Point.y();
-    }
+    int aResult = 0;
+
+    if (m_PlacedLetters.length() > 0) {
+        switch (m_Dimension) {
+        case dmAbscissa:
+            aResult = m_PlacedLetters[0].Point.z();
+            break;
+        case dmOrdinate:
+            aResult = m_PlacedLetters[0].Point.x();
+            break;
+        case dmApplicate:
+            aResult = m_PlacedLetters[0].Point.y();
+            break;
+        default:
+            qWarning() << "Unexpected dimension in getPosition()";
+            break;
+        }
+     } else
+        qWarning() << "No position for empty moves";
+
+    return aResult;
 }

@@ -23,13 +23,13 @@ ColumnLayout {
         }
         Menu {
             id: editMenu
-            title: qsTr("&Game")
+            title: qsTr("Game")
             MenuItem { action: acNewGame }
             MenuItem { action: acNextPlayer }
         }
         Menu {
             id: viewMenu
-            title: qsTr("&Configuration")
+            title: qsTr("Configuration")
             MenuItem { action: acConfiguration }
             MenuSeparator { }
             MenuItem { action: acDictionary }
@@ -41,6 +41,10 @@ ColumnLayout {
             MenuItem { action: acAutomaticView }
             MenuItem { action: acLandscapeView }
             MenuItem { action: acPortraitView }
+            MenuSeparator { }
+//            MenuItem { action: acLocalize } //TODO: mainwindow localize
+            MenuSeparator { }
+            MenuItem { action: acNetwork; icon.source: "" }
             MenuSeparator { }
             MenuItem { action: acAbout }
         }
@@ -85,6 +89,10 @@ ColumnLayout {
                 onValueChanged: GamePlay.placeBestMove(value)
                 onToChanged: value = 0
             }
+            ToolbarButton {
+                id: btnNetwork
+                action: acNetwork
+            }
         }
     }
 
@@ -109,16 +117,42 @@ ColumnLayout {
             ColumnLayout {
                 StackLayout {
                     id: infostack
+                    onWidthChanged:
+                        if (players.visible) players.treeview.forceLayout() //update delegate width
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     currentIndex: tabs.currentIndex
                     ScrMessages { id: messages }
                     ScrGameCourse { id: statistics }
+                    ScrPlayers { id: players; visible: GamePlay.isConnected }
                 }
                 TabBar {
                     id: tabs
-                    TabButton { text: qsTr("Messages") }
-                    TabButton { text: qsTr("Game course") }
+                    onCurrentIndexChanged:
+                        if (currentIndex === 0) messages.newMessage = false
+                    TabButton {
+                        text: qsTr("Messages")
+                        width: contentItem.implicitWidth + leftPadding + 2*rightPadding
+                        indicator: Rectangle {
+                            property int size: 5
+                            width: size; height: size; radius: size
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.rightMargin: 2
+                            anchors.topMargin: 2
+                            color: "#FF0000" //config.myPalette.highlight
+                            visible: messages.newMessage
+                        }
+                    }
+                    TabButton {
+                        text: qsTr("Game course")
+                        width: contentItem.implicitWidth + leftPadding + rightPadding
+                    }
+                    TabButton {
+                        text: qsTr("Players")
+                        width: contentItem.implicitWidth + leftPadding + rightPadding
+                        visible: GamePlay.isConnected
+                    }
                 }
             }
         }

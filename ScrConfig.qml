@@ -18,10 +18,15 @@ Window {
 
     property int numberOfLettersOnRack: 7 //ScrConfigLetter::sbPieces.value
     property int numberOfJokers: 2 // set in onValueChange of ScrConfigLetter::sbJoker.value
-    property int numberOfPasses: 3 // set in onValueChange of ScrConfigRules::sbPasses
-    property int timeControl: 0 // set in onToggled of ScrConfigRules::rbNoLimit/rbPerMove/rbPerGame
-    property int timeControlValue: 10 // set in onToggled of ScrConfigRules::rbNoLimit/rbPerMove/rbPerGame
-    property int bingoBonus: 50 // set in onToggled of ScrConfigRules::sbBingo
+    property int numberOfPasses: 3 // set in onValueChange of ScrConfigTime::sbPasses
+    property int timeControl: 0 // set in onToggled of ScrConfigTime::rbNoLimit/rbPerMove/rbPerGame
+    property int timeControlValue: 10 // set in onToggled of ScrConfigTime::rbNoLimit/rbPerMove/rbPerGame
+    property int bingoBonus: 50 // set in onValueChange of ScrConfigRules::sbBingo
+    property int gameEndBonus: 0 // set in onValueChange of ScrConfigRules::sbGameEnd
+    property bool addLetters: true // set in onToggled of ScrConfigRules::sbGameEnd
+    property bool substractLetters: true // set in onToggled of ScrConfigRules::sbGameEnd
+    property int jokerPenalty: 0 // set in onValueChange of ScrConfigRules::sbJokerPanelty
+    property bool changeIsPass: false // set in onToggled of ScrConfigRules::cbChangeIsPass
 
     property TableModel letterSet // ScrConfigLetter::tvLetterSet.model
     property alias colors: scrColors
@@ -56,6 +61,7 @@ Window {
             aLetterSet = letterSet
         else
             aLetterSet = defaults.languages[index].letters;
+        if (aLetterSet === null) return
 
         for (var i=0; i<aLetterSet.rowCount; i++) {
             letterlist.push(aLetterSet.getRow(i).letter);
@@ -74,23 +80,23 @@ Window {
         configLetter.cbLetterSet.currentIndex = -1
     }
 
-    //FIXME: config: save config/game fails on Android
-    function saveConfig(fileName)
-    {
+    function getConfigData(bComplete = true) {
         var configData = {}
         //board
-        configData["cbMarkers"] = configBoard.cbMarkers.checked
+        if (bComplete) configData["cbMarkers"] = configBoard.cbMarkers.checked
         configData["rb3D"] = configBoard.rb3D.checked
         configData["board"] = board.toString()
-        var aColors=[]
-        for (var i = 0; i < scrColors.count; ++i)
-            aColors.push(scrColors.get(i).itemColor.toString())
-        configData["colors"] = aColors.toString()
-        aColors=[]
-        for (i = 0; i < scrPlayerColors.count; ++i)
-            aColors.push(scrPlayerColors.get(i).itemColor.toString())
-        configData["playercolors"] = aColors.toString()
-        configData["cbPlayerColors"] = configBoard.cbPlayerColors.checked
+        if (bComplete) {
+            var aColors=[]
+            for (var i = 0; i < scrColors.count; ++i)
+                aColors.push(scrColors.get(i).itemColor.toString())
+            configData["colors"] = aColors.toString()
+            aColors=[]
+            for (i = 0; i < scrPlayerColors.count; ++i)
+                aColors.push(scrPlayerColors.get(i).itemColor.toString())
+            configData["playercolors"] = aColors.toString()
+            configData["cbPlayerColors"] = configBoard.cbPlayerColors.checked
+        }
         //letter
         configData["cbLetterSet"] = configLetter.cbLetterSet.currentIndex
         if (configLetter.cbLetterSet.currentIndex === -1)
@@ -98,27 +104,40 @@ Window {
         configData["sbJokers"] = configLetter.sbJoker.value
         configData["sbPieces"] = configLetter.sbPieces.value
         configData["sbRandoms"] = configLetter.sbRandoms.value
-        configData["rbReadingDirectionLTR"] = configLetter.rbReadingDirectionLTR.checked
+        if (bComplete) configData["rbReadingDirectionLTR"] = configLetter.rbReadingDirectionLTR.checked
+        //configTime
+        configData["rbNoLimit"] = configTime.rbNoLimit.checked
+        configData["rbPerMove"] = configTime.rbPerMove.checked
+        configData["tiPerMove"] = configTime.tiPerMove.text
+        configData["rbPerGame"] = configTime.rbPerGame.checked
+        configData["tiPerGame"] = configTime.tiPerGame.text
+        configData["rbGameEnd"] = configTime.rbGameEnd.checked
+        configData["rbPenalty"] = configTime.rbPenalty.checked
+        configData["sbPenaltyPoints"] = configTime.sbPenaltyPoints.value
+        configData["sbPenaltyCount"] = configTime.sbPenaltyCount.value
+        configData["cbGameEnd"] = configTime.cbGameEnd.checked
         //configRules
-        configData["rbNoLimit"] = configRules.rbNoLimit.checked
-        configData["rbPerMove"] = configRules.rbPerMove.checked
-        configData["tiPerMove"] = configRules.tiPerMove.text
-        configData["rbPerGame"] = configRules.rbPerGame.checked
-        configData["tiPerGame"] = configRules.tiPerGame.text
-        configData["rbGameEnd"] = configRules.rbGameEnd.checked
-        configData["rbPenalty"] = configRules.rbPenalty.checked
-        configData["sbPenaltyPoints"] = configRules.sbPenaltyPoints.value
-        configData["sbPenaltyCount"] = configRules.sbPenaltyCount.value
-        configData["cbGameEnd"] = configRules.cbGameEnd.checked
         configData["sbPasses"] = configRules.sbPasses.value
+        configData["sbBingo"] = configRules.sbBingo.value
+        configData["sbGameEnd"] = configRules.sbGameEnd.value
+        configData["sbJokerPenalty"] = configRules.sbJokerPenalty.value
+        configData["cbAddLetters"] = configRules.cbAddLetters.checked
+        configData["cbSubstractLetters"] = configRules.cbSubstractLetters.checked
+        configData["cbChangeIsPass"] = configRules.cbChangeIsPass.checked
+
         //dictionary
         configData["dictionary"] = GamePlay.currentDicName()
         var aCat = []
         for (i = 1; i < configDictionary.categoriesRepeater.count; ++i)
             aCat.push(configDictionary.categoriesRepeater.itemAt(i).checked)
         configData["categories"] = aCat.toString()
+        return configData;
+    }
 
-        GamePlay.saveConfig(fileName, configData)
+    //FIXME: config: save config/game fails on Android
+    function saveConfig(fileName)
+    {
+        GamePlay.saveConfig(fileName, getConfigData())
     }
     function loadConfig(fileName)
     {
@@ -179,18 +198,26 @@ Window {
         configLetter.rbReadingDirectionLTR.checked = getConfigValue("rbReadingDirectionLTR", "true") === "true"
         configLetter.rbReadingDirectionRTL.checked = getConfigValue("rbReadingDirectionLTR", "true") !== "true"
 
+        //time
+        configTime.rbNoLimit.checked = getConfigValue("rbNoLimit", "false") === "true"
+        configTime.rbPerMove.checked = getConfigValue("rbPerMove", "false") === "true"
+        configTime.tiPerMove.text = getConfigValue("tiPerMove", "0:01:00")
+        configTime.rbPerGame.checked = getConfigValue("rbPerGame", "true") === "true"
+        configTime.tiPerGame.text = getConfigValue("tiPerGame", "0:50:00")
+        configTime.rbGameEnd.checked = getConfigValue("rbGameEnd", "false") === "true"
+        configTime.rbPenalty.checked = getConfigValue("rbPenalty", "true") === "true"
+        configTime.sbPenaltyPoints.value = getConfigValue("sbPenaltyPoints", 10)
+        configTime.sbPenaltyCount.value = getConfigValue("sbPenaltyCount", 10)
+        configTime.cbGameEnd.checked = getConfigValue("cbGameEnd", "true") === "true"
+
         //rules
-        configRules.rbNoLimit.checked = getConfigValue("rbNoLimit", "false") === "true"
-        configRules.rbPerMove.checked = getConfigValue("rbPerMove", "false") === "true"
-        configRules.tiPerMove.text = getConfigValue("tiPerMove", "0:01:00")
-        configRules.rbPerGame.checked = getConfigValue("rbPerGame", "true") === "true"
-        configRules.tiPerGame.text = getConfigValue("tiPerGame", "0:50:00")
-        configRules.rbGameEnd.checked = getConfigValue("rbGameEnd", "false") === "true"
-        configRules.rbPenalty.checked = getConfigValue("rbPenalty", "true") === "true"
-        configRules.sbPenaltyPoints.value = getConfigValue("sbPenaltyPoints", 10)
-        configRules.sbPenaltyCount.value = getConfigValue("sbPenaltyCount", 10)
-        configRules.cbGameEnd.checked = getConfigValue("cbGameEnd", "true") === "true"
         configRules.sbPasses.value = getConfigValue("sbPasses", 3)
+        configRules.sbBingo.value = getConfigValue("sbBingo", 50)
+        configRules.sbGameEnd.value = getConfigValue("sbGameEnd", 0)
+        configRules.sbJokerPenalty.value = getConfigValue("sbJokerPenalty", 0)
+        configRules.cbAddLetters.checked = getConfigValue("cbAddLetters", "true") === "true"
+        configRules.cbSubstractLetters.checked = getConfigValue("cbSubstractLetters", "true") === "true"
+        configRules.cbChangeIsPass.checked = getConfigValue("cbChangeIsPass", "false") === "true"
 
         // dictionary
         var aFileName = getConfigValue("dictionary","")
@@ -267,6 +294,7 @@ Window {
         id: lmCategories
         ListElement { name: qsTr("Board"); imgname: "optboard.png" }
         ListElement { name: qsTr("Letters"); imgname: "optletters.png" }
+        ListElement { name: qsTr("Time Control"); imgname: "opttime.png" }
         ListElement { name: qsTr("Rules"); imgname: "optrules.png" }
         ListElement { name: qsTr("Dictionary"); imgname: "optdic.png" }
     }
@@ -360,9 +388,21 @@ Window {
                             scrollView.contentWidth = configLetter.width
                         }
                     }
+                    ScrConfigTime {
+                        id: configTime
+                        visible: lView.currentIndex === 2
+                        defaultLetterSet: configLetter.cbLetterSet.currentIndex > -1
+                                          ? configLetter.cbLetterSet.currentIndex
+                                          : defaultLetterSet
+                        onVisibleChanged: {
+                            scrollView.contentHeight = configRules.height
+                            scrollView.contentWidth = configRules.width
+                        }
+                    }
+
                     ScrConfigRules {
                         id: configRules
-                        visible: lView.currentIndex === 2
+                        visible: lView.currentIndex === 3
                         defaultLetterSet: configLetter.cbLetterSet.currentIndex > -1
                                           ? configLetter.cbLetterSet.currentIndex
                                           : defaultLetterSet
@@ -373,7 +413,7 @@ Window {
                     }
                     ScrConfigDictionary {
                         id: configDictionary
-                        visible: lView.currentIndex === 3
+                        visible: lView.currentIndex === 4
                         onVisibleChanged: {
                             scrollView.contentHeight = configDictionary.height + 50 //some space for categories
                             scrollView.contentWidth = configDictionary.width

@@ -1,10 +1,15 @@
 #include "dictionary.h"
 #include "letter.h" //jokerchar
-#include "defines.h"
+#include "version.h" //version to string converter
 
+#ifdef QT_DEBUG
 #include <QDebug>
+#endif
+
 #include <QFile>
 #include <QFileInfo>
+#include <QStandardPaths>
+#include <QDir>
 #include <QXmlStreamReader>
 #include <QSettings>
 #include <QCoreApplication>
@@ -46,10 +51,9 @@ void dicFile::clear()
     m_sFileName.clear();
 }
 
-
 bool dicFile::loadDictionary(const QString fileName)
 {
-    QDir aPath = dictionaryPath();
+    const QDir aPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
     QFile inputFile(aPath.path() + "/" + fileName);
 
     bool bHasStandardCategory = false;
@@ -76,7 +80,6 @@ bool dicFile::loadDictionary(const QString fileName)
 
             if (sLine == "[Header]")
                 aSection=scHeader;
-            //TODO: dictionaries: read chars
             else if (sLine == "[Categories]")
                 aSection=scCategory;
             else if (sLine == "[Replace]")
@@ -145,7 +148,7 @@ bool dicFile::loadDictionary(const QString fileName)
                     m_Categories.append(nSemicolon>-1 ? sLine.last(sLine.length()-nSemicolon-1).toInt() : 0);
                 }; //scWords
                 break;
-                }; //switch
+                }; //aSection
         };//while infile
         inputFile.close();
         m_pParent->setProperty("computeProgress",0);
@@ -153,7 +156,7 @@ bool dicFile::loadDictionary(const QString fileName)
         if (!bHasStandardCategory) {
             CatInfo aCatInfo;
             aCatInfo.value = -1;
-            aCatInfo.name = "Standard"; //TODO: dictionary: translate
+            aCatInfo.name = QObject::tr("Standard");
             aCatInfo.enabled = true;
             m_CategoryNames.insert(0, aCatInfo);
         }
@@ -161,9 +164,8 @@ bool dicFile::loadDictionary(const QString fileName)
     {
         QMessageBox msgBox;
         msgBox.setWindowTitle("Scrabble3D");
-        //FIXME: dictionary: localization QString() -> tr()
-        msgBox.setText( QString("Dictionary %1 is not yet available locally.").arg(fileName) );
-        msgBox.setInformativeText( QString("Do you want to download it now?") );
+        msgBox.setText( QObject::tr("Dictionary %1 is not locally available.").arg(fileName) );
+        msgBox.setInformativeText( QObject::tr("Do you want to download it now?") );
         msgBox.setIcon(QMessageBox::Question);
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
         if (msgBox.exec() == QMessageBox::Yes)
@@ -171,7 +173,9 @@ bool dicFile::loadDictionary(const QString fileName)
         return false;
     }
 
+#ifdef QT_DEBUG
     qDebug() << "Successfully read" << m_Words.count() << "words from" << fileName;
+#endif
 
     return true;
 }
@@ -211,7 +215,10 @@ void dicFile::charsFromWords()
         chars.sort();
         m_sChars = chars.join("");
     }
+
+#ifdef QT_DEBUG
     qDebug() << "contains" << m_sChars;
+#endif
 }
 
 QString dicFile::variation(const QString aChars)
@@ -416,10 +423,9 @@ QVariantList dicFile::getLetterDistribution(QVariantList currentDistribution)
         }
         if (aResult != currentDistribution) {
             QMessageBox msgBox;
-            //FIXME: dictionary: localization QString() -> tr()
-            msgBox.setWindowTitle(QString("Letter Distribution"));
-            msgBox.setText( QString("Letter distribution in dictionary does not match the current configuration.") );
-            msgBox.setInformativeText(QString("Do you want to update the letter set?"));
+            msgBox.setWindowTitle(QObject::tr("Letter Distribution") );
+            msgBox.setText( QObject::tr("Letter distribution in dictionary does not match the current configuration.") );
+            msgBox.setInformativeText( QObject::tr("Do you want to update the letter set?") );
             msgBox.setIcon(QMessageBox::Question);
             msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
             if (msgBox.exec() == QMessageBox::No)
@@ -508,21 +514,24 @@ QVariant dicList::data(const QModelIndex &index, int role) const
         return (index.row() == m_nCurrentDictionary);
         break;
     }
+    //TODO: dictionary dummy for author and license; currently done per selectedDicInfo()
+/*
     case AuthorRole: if (index.row() == m_nCurrentDictionary) {
-        return "Hello World"; //TODO: dictionary dummy for author and license; currently done per selectedDicInfo()
+        return "Hello World";
         break;
     }
     case LicenseRole: if (index.row() == m_nCurrentDictionary) {
         return "GNU Public License v3";
         break;
     }
+*/
     }
     return QVariant();
 }
 
 void dicList::updateList()
 {
-    QDir aPath = dictionaryPath();
+    const QDir aPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
     QFile file(aPath.path() + "/Scrabble3D.conf");
 
     m_Dictionaries.clear();
@@ -576,7 +585,7 @@ void dicList::updateList()
 
 void dicList::getInfo(dicListData *aData)
 {
-    QDir aPath = dictionaryPath();
+    const QDir aPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
     QFileInfo fileInfo(aPath.path() + "/" + aData->FileName);
     if (fileInfo.exists())
     {
@@ -636,7 +645,8 @@ bool dicList::loadFrom(QString fileName)
 
 bool dicList::deleteDic(QString fileName)
 {
-    const bool bResult = QFile::remove(dictionaryPath().path() + "/" + fileName);
+    const QDir aPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+    const bool bResult = QFile::remove(aPath.path() + "/" + fileName);
     if (bResult) {
         const int nIndex = indexOf(fileName);
 
@@ -689,34 +699,3 @@ QVariantMap dicList::selectedDicInfo(const int index) const
     return dicInfo;
 }
 
-QString dicList::versionToString(const int aValue)
-{
-    int aMajor, aMinor, aBuild;
-    int temp;
-
-    if (aValue == -1)
-        return "";
-
-    temp = aValue;
-    aMajor = temp / 100000;
-    temp = temp-aMajor*100000;
-    aMinor = temp / 1000;
-    temp = temp-aMinor*1000;
-    aBuild = temp;
-    return QString::number(aMajor)+'.'+QString::number(aMinor)+'.'+QString::number(aBuild);
-}
-
-int dicList::stringToVersion(const QString aVersion)
-{
-    int aMajor, aMinor, aBuild;
-    QString temp;
-    int pos1 = aVersion.indexOf(".");
-    int pos2 = aVersion.indexOf(".", pos1 + 1);
-    temp = aVersion.left( pos1);
-    aMajor = temp.toInt();
-    temp = aVersion.mid(pos1 + 1, pos2 - (pos1 + 1));
-    aMinor = temp.toInt();
-    temp = aVersion.last( aVersion.length() - (pos2 + 1));
-    aBuild = temp.toInt();
-    return aMajor * 100000 + aMinor * 1000 + aBuild;
-}
