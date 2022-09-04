@@ -38,8 +38,7 @@ void rackmodel::setLetter(const Letter aLetter, const bool bSilent, int nPlayer)
         qFatal("Setting letter failed"); //WARNING: rackmodel: make fatal just a warning
         return;
     }
-    if ( (nIndex >= 0) && (nIndex < m_nRackSize) &&
-         (m_lPieces[nPlayer][nIndex].IsEmpty()) )
+    if ((nIndex >= 0) && (nIndex < m_nRackSize)) //&& (m_lPieces[nPlayer][nIndex].IsEmpty() -> fails for rollback
     {
         if (!bSilent) beginResetModel();
         m_lPieces[nPlayer][nIndex] = aLetter;
@@ -81,7 +80,7 @@ Letter rackmodel::getLetter(const int nRackIndex, int nPlayer) const
     if ((nPlayer < m_nPlayerCount) && (nRackIndex < m_nRackSize))
         return m_lPieces[nPlayer][nRackIndex];
     else {
-        qFatal("Retrieving rack letter failed");
+        qWarning("Retrieving rack letter failed");
         return EmptyLetter;
     }
 }
@@ -94,7 +93,7 @@ void rackmodel::setActivePlayer(const int nPlayer)
         endResetModel();
     }
     else
-        qFatal("Active player cannot be set");
+        qWarning() << "Active player cannot be set" << nPlayer << m_nPlayerCount;
 }
 
 void rackmodel::setLocalPlayer(const int nPlayer)
@@ -139,6 +138,7 @@ QHash<int, QByteArray> rackmodel::roleNames() const
     roles[WhatRole] = "what";
     roles[ValueRole] = "value";
     roles[IsJokerRole] = "isJoker";
+    roles[IsRandomRole] = "isRandom";
     roles[IsExchangeRole] = "isExchange";
     roles[IsVisibleRole] = "isVisible";
     return roles;
@@ -156,8 +156,8 @@ QVariant rackmodel::data(const QModelIndex &index, int role) const
       case WhatRole: return replaceLetter.value(aLetter.What, aLetter.What); break;
       case ValueRole: return aLetter.Value; break;
       case IsJokerRole: return aLetter.IsJoker; break;
+      case IsRandomRole: return aLetter.IsRandom; break;
       case IsExchangeRole: return aLetter.IsExchange; break;
-      //NOTE: rackmodel: invisible role probably never read
       case IsVisibleRole: return (aLetter.State == LetterState::lsRack); break;
     }
 

@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Qt.labs.qmlmodels // delegate choice
-import Qt5Compat.GraphicalEffects //color overlay
 
 Dialog {
     id: remotegame
@@ -60,7 +59,7 @@ Dialog {
             model: headerText
             textRole: "text"
             //TODO: remote games: sort on click
-//            TapHandler { onTapped: console.log(index) }
+//            TapHandler { onTapped: console.log(model.) }
         }
         TableView {
             id: tableView
@@ -88,18 +87,13 @@ Dialog {
                                 spacing: pad
                                 leftPadding: pad
                                 topPadding: pad
-                                Image {
+                                IconImage {
                                     id: imgDate
                                     anchors.verticalCenter: contentDate.verticalCenter
                                     source: "qrc:///resources/create.png"
+                                    color: config.myPalette.buttonText
                                     height: 12//textMetrics.height
                                     width: height
-                                    layer {
-                                        enabled: true
-                                        effect: ColorOverlay {
-                                            color: model.hasended ? "red" : config.myPalette.buttonText
-                                        }
-                                    }
                                 }
                                 Text {
                                     id: contentDate
@@ -114,23 +108,18 @@ Dialog {
                                 leftPadding: pad
                                 bottomPadding: pad
                                 //TODO: remotegames icon gameend
-                                //TODO: remotegames icon color own move
-                                Image {
+                                //FIXME: remotegames icon color own move
+                                IconImage {
                                     id: imgModified
                                     source: "qrc:///resources/change.png"
                                     anchors.verticalCenter: contentText.verticalCenter
                                     height: 12//textMetrics.height
                                     width: height
-                                    layer {
-                                        enabled: true
-                                        effect: ColorOverlay {
-                                            color: model.hasEnded
-                                                   ? "red"
-                                                   : model.isOwnTurn
-                                                     ? "green"
-                                                     : config.myPalette.buttonText
-                                        }
-                                    }
+                                    color: model.hasEnded
+                                           ? "red"
+                                           : model.isOwnTurn
+                                             ? "green"
+                                             : config.myPalette.buttonText
                                 }
                                 Text {
                                     id: contentText

@@ -143,6 +143,7 @@ GridLayout {
         }
         GridLayout {
             id: layoutPenaltyPoints
+            Layout.leftMargin: 24
             columns: 2
             SpinBox {
                 id: sbPenaltyPoints

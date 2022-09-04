@@ -68,6 +68,14 @@ ApplicationWindow {
                      : GamePlay.nextPlayer()
     }
     Action {
+        id: acChallenge
+        text: qsTr("Object placed word")
+        icon.source: "qrc:///resources/challenge.png"
+        icon.color: iconColor
+        enabled: GamePlay.isRunning && GamePlay.isChallenge
+        onTriggered: GamePlay.syncChallengeWord()
+    }
+    Action {
         id: acExitApp
         text: qsTr("Exit")
         shortcut: StandardKey.Quit
@@ -89,7 +97,7 @@ ApplicationWindow {
         // https://www.volkerkrause.eu/2019/02/16/qt-open-files-on-android.html
         // https://forum.qt.io/topic/113328/how-to-convert-android-content-url-and-use-it-to-open-file/5
         // https://forum.qt.io/topic/113335/qfiledialog-getopenfilename-always-returns-empty-string-on-android/15
-        enabled: Qt.platform.os !== "android" && GamePlay.isInitialized
+        enabled: Qt.platform.os !== "android" && GamePlay.isInitialized && !GamePlay.isConnected
         onTriggered: {
             fileDialog.acceptLabel = qsTr("Save")
             fileDialog.fileMode = FileDialog.SaveFile
@@ -117,7 +125,7 @@ ApplicationWindow {
         text: qsTr("Compute Move")
         shortcut: StandardKey.Find
         property string tip: text
-        enabled: GamePlay.isRunning && GamePlay.bestMoveCount === 0
+        enabled: GamePlay.isRunning && GamePlay.bestMoveCount === 0 && !GamePlay.isConnected
         icon.source: "qrc:///resources/wheelchair.png"
         icon.color: iconColor
         onTriggered: GamePlay.computeMove()
@@ -133,10 +141,13 @@ ApplicationWindow {
         checkable: true
         text: qsTr("Network")
         //TODO: main: update network icons
-        icon.source: checked ? "qrc:///resources/netw_disco.png"
-                             : "qrc:///resources/netw_connect.png"
+        icon.source: GamePlay.isConnected
+                     ? "qrc:///resources/netw_disco.png"
+                     : "qrc:///resources/netw_connect.png"
         icon.color: iconColor
-        onToggled: checked ? network.open() : GamePlay.disconnect()
+        onTriggered: GamePlay.isConnected
+                     ? GamePlay.disconnect()
+                     : network.open()
     }
 
     ActionGroup {
@@ -166,6 +177,7 @@ ApplicationWindow {
     Action {
         id: acDictionary
         text: qsTr("Word search")
+        enabled: !GamePlay.isConnected || !GamePlay.isRunning
         onTriggered: dictionary.open()
     }
     Action {
@@ -200,7 +212,6 @@ ApplicationWindow {
     ScrConfig      { id: config }
     ScrAbout       { id: about }
     ScrNetwork     { id: network }
-//    ScrPoll        { id: poll }
     ScrRemoteGames { id: remotegames}
 
     onWidthChanged: if (acAutomaticView.checked) {

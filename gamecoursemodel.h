@@ -28,6 +28,7 @@ public:
                  int bestValue,
                  bool IsScrabble,
                  int moveTime);
+    void clearLastMove(); //legimately challenged
     void addBonus(int player, int value);
     int getScore(const int nPlayer);
     int timeTotalPerPlayer(const uint nPlayer);

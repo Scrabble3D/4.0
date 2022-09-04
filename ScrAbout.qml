@@ -26,7 +26,7 @@ Dialog {
             id: colLayout
             Layout.topMargin: 24
             Layout.alignment: Qt.AlignTop
-            Text { color: config.myPalette.windowText; text: "<b>"+qsTr("Version:") + "</b> " + GamePlay.version() + " / 2022-05-23"}
+            Text { color: config.myPalette.windowText; text: "<b>"+qsTr("Version:") + "</b> " + GamePlay.version() }
             Text { color: config.myPalette.windowText; text: "<b>"+qsTr("Author:")  + "</b> Heiko Tietze" }
             LinkText { text: "<b>"+qsTr("Manual:") + "</b> <a href=\"http://scrabble.sourceforge.net/wiki/\">Wiki</a> (outdated)" }
             LinkText { text: "<b>"+qsTr("License:") + "</b> <a href=\"https://www.gnu.org/licenses/gpl-3.0.html\">GNU General Public License v3</a>" }

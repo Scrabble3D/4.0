@@ -14,6 +14,7 @@ public:
         WhenRole,
         IsPlacedRole,
         IsJokerRole,
+        IsRandomRole,
         BonusTopRole,
         BonusBottomRole,
         BonusLeftRole,

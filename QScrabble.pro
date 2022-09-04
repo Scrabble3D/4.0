@@ -22,6 +22,7 @@ SOURCES += \
         network.cpp \
         playersmodel.cpp \
         rackmodel.cpp \
+        remotegamesmodel.cpp \
         zip.c
 
 HEADERS += \
@@ -39,6 +40,7 @@ HEADERS += \
         network.h \
         playersmodel.h \
         rackmodel.h \
+        remotegamesmodel.h \
         version.h \
         zip.h
 
@@ -85,3 +87,8 @@ DISTFILES += \
     android/gradlew \
     android/gradlew.bat \
     android/res/values/libs.xml
+
+contains(ANDROID_TARGET_ARCH,arm64-v8a) {
+    ANDROID_PACKAGE_SOURCE_DIR = \
+        $$PWD/android
+}

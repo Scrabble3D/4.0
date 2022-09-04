@@ -22,7 +22,7 @@ void boardmodel::update()
 void boardmodel::updateSquare(Point3D aPos)
 {
     QModelIndex aIndex = this->index( m_pBoard->index2D(aPos) );
-    emit dataChanged(aIndex, aIndex, { WhatRole, ValueRole, WhoRole, WhenRole, IsPlacedRole } );
+    emit dataChanged(aIndex, aIndex, { WhatRole, ValueRole, WhoRole, WhenRole, IsJokerRole, IsRandomRole, IsPlacedRole } );
 }
 
 void boardmodel::updateAllSquares()
@@ -33,11 +33,11 @@ void boardmodel::updateAllSquares()
      for (int j=0; j<z; j++)
      {
          aIndex = this->index( i * m_pBoard->getBoardSize() + j );
-         emit dataChanged(aIndex, aIndex, { WhatRole, ValueRole, WhoRole, WhenRole, IsPlacedRole } );
+         emit dataChanged(aIndex, aIndex, { WhatRole, ValueRole, WhoRole, WhenRole, IsJokerRole, IsRandomRole, IsPlacedRole } );
      }
 }
 
-void boardmodel::updateAllFields()
+void boardmodel::updateAllFields() //TODO: MERGE with func above
 {
     QModelIndex aIndex;
     int z = m_pBoard->getBoardSize();
@@ -45,7 +45,7 @@ void boardmodel::updateAllFields()
      for (int j=0; j<z; j++)
      {
          aIndex = this->index( i * m_pBoard->getBoardSize() + j );
-         emit dataChanged(aIndex, aIndex, { WhatRole, ValueRole, WhoRole, WhenRole, IsPlacedRole, FieldTypeRole, BonusTopRole, BonusBottomRole, BonusLeftRole, BonusRightRole } );
+         emit dataChanged(aIndex, aIndex, { WhatRole, ValueRole, WhoRole, WhenRole, IsJokerRole, IsRandomRole, IsPlacedRole, FieldTypeRole, BonusTopRole, BonusBottomRole, BonusLeftRole, BonusRightRole } );
      }
 }
 
@@ -58,6 +58,7 @@ QHash<int, QByteArray> boardmodel::roleNames() const
     roles[WhenRole] = "when";
     roles[IsPlacedRole] = "isPlaced";
     roles[IsJokerRole] = "isJoker";
+    roles[IsRandomRole] = "isRandom";
     roles[FieldTypeRole] = "fieldtype";
     roles[BonusTopRole] = "bonustop";
     roles[BonusBottomRole] = "bonusbottom";
@@ -72,7 +73,8 @@ QVariant boardmodel::data(const QModelIndex &index, int role) const
     int z = m_pBoard->pointToWhere( m_pBoard->pos3D(index.row()) );
 
     if (((role == WhatRole) || (role == ValueRole) || (role == WhoRole) ||
-         (role == WhenRole) ||(role == IsPlacedRole)
+         (role == WhenRole) || (role == IsPlacedRole) ||
+         (role == IsJokerRole) || (role == IsRandomRole)
         ) && (z < m_pBoard->getFieldSize()) //if board is not yet initialized
        ) aLetter = m_pBoard->getLetter(z);
 
@@ -83,6 +85,7 @@ QVariant boardmodel::data(const QModelIndex &index, int role) const
       case WhenRole:      return aLetter.When;  break;
       case IsPlacedRole:  return (aLetter.State == LetterState::lsPlaced); break;
       case IsJokerRole:   return aLetter.IsJoker; break;
+      case IsRandomRole:  return aLetter.IsRandom; break;
       case FieldTypeRole: return (m_pBoard->getFieldtype(z)); break;
       case BonusTopRole ... BonusRightRole:
       {

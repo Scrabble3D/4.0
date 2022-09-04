@@ -122,6 +122,30 @@ void gamecoursemodel::addMove(QString PlacedWord, QString ConnectedWords, uint W
     endInsertRows();
 }
 
+void gamecoursemodel::clearLastMove()
+{
+    ModelData aData;
+    aData.placedWord = "";
+    aData.connectedWords = "";
+    aData.who = m_lData.last().who;
+    m_Total[m_lData.last().who] -= m_lData.last().value;
+    aData.value = 0;
+    aData.bestValue = 0;
+    aData.isScrabble = false;
+    aData.time = 0;
+
+    int i = m_lData.count();
+    beginRemoveRows(QModelIndex(), i, i);
+    m_lData.removeLast();
+    endRemoveRows();
+
+    i--;
+    beginInsertRows(QModelIndex(), i, i);
+    m_lData.append(aData);
+    endInsertRows();
+
+}
+
 void gamecoursemodel::addBonus(int player, int value)
 {
     m_Total[player] += value;
@@ -160,7 +184,7 @@ void gamecoursemodel::getWinner(QList<int> &result)
         if (aWinner.value > 0)
             lWinner.append(aWinner);
     }
-    std::sort(lWinner.begin(),lWinner.end(),sortByValue);
+    std::sort(lWinner.begin(),lWinner.end(), sortByValue);
 
     if (lWinner.count()>0)
         result.append(lWinner[0].player);

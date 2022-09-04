@@ -274,10 +274,16 @@ QString flagName(const QVariant aCountry) {
 QVariant playersTree::data(const QModelIndex &index, int role) const
 {
     QVariant aValue;
+
     if (index.isValid())
     {
         if (role == flag)
-           aValue = flagName(QStandardItemModel::data(index, country));
+            aValue = flagName(QStandardItemModel::data(index, country));
+        else if (role == registered) {
+            QLocale loc;
+            QDateTime tmp = QStandardItemModel::data(index, registered).toDateTime();
+            aValue = tmp.toString(loc.dateTimeFormat(QLocale::ShortFormat));
+        }
         else
            aValue = QStandardItemModel::data(index, role);
     }
@@ -294,6 +300,7 @@ QHash<int, QByteArray> playersTree::roleNames() const
     roles[gameStarted] = "gameStarted";
     roles[moveNumber] = "moveNumber";
     roles[release] = "release";
+    roles[version] = "version";
     roles[mates] = "mates";
     roles[registered] = "registered";
     roles[rating] = "rating";
@@ -378,7 +385,6 @@ void playersTree::doLogout(QString playerName)
 void playersTree::doRefresh(QVariantMap msg)
 {
     clientInfo aClient;
-//    qDebug() << msg;
     int nPlayer = msg["Count"].toInt(0);
     for (int i = 0; i < nPlayer; i++) {
         aClient.playerName = msg[QString::number(i) + "_Name"].toString();
@@ -461,6 +467,7 @@ void playersTree::updateTree()
         aNode->setData(m_lPlayers[i].country, country);
         aNode->setData(m_lPlayers[i].city, city);
         aNode->setData(m_lPlayers[i].release, release);
+        aNode->setData(m_lPlayers[i].version, version);
         aNode->setData(m_lPlayers[i].registered, registered);
         aNode->setData(m_lPlayers[i].rating, rating);
         aNode->setData(m_lPlayers[i].groupID, groupID);

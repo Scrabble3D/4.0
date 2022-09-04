@@ -18,6 +18,7 @@
 #include "version.h"
 #include "network.h"
 #include "playersmodel.h"
+#include "remotegamesmodel.h"
 
 enum WordCheckMode {wcAsk=0,
                     wcPoll=1,
@@ -38,8 +39,10 @@ class GamePlay : public QObject
     Q_PROPERTY(gamecoursemodel* gamecourseModel READ gamecourseModel CONSTANT)
     Q_PROPERTY(dicList* dicListModel READ dicListModel CONSTANT)
     Q_PROPERTY(playersTree* playersTreeModel READ playersTreeModel CONSTANT)
+//    Q_PROPERTY(remoteGamesProxy* remoteGames READ remoteGames CONSTANT)
     Q_PROPERTY(remoteGamesModel* remoteGames READ remoteGames CONSTANT)
 
+    Q_PROPERTY(bool isChallenge READ getIsChallenge NOTIFY isChallengeChanged)
     Q_PROPERTY(bool isRunning READ getIsRunning NOTIFY isRunningChanged)
     Q_PROPERTY(bool isInitialized READ getIsInitialized NOTIFY isInitializedChanged)
     Q_PROPERTY(bool is3D READ getIs3D NOTIFY is3DChanged)
@@ -67,12 +70,11 @@ class GamePlay : public QObject
     //network
     Q_PROPERTY(bool isConnected READ getIsConnected NOTIFY connectedChanged)
     Q_PROPERTY(bool isLocalPlayer READ getIsLocalPlayer NOTIFY isLocalPlayerChanged)
-    Q_PROPERTY(bool isPoll READ getIsPoll NOTIFY isPollChanged)
-//    Q_PROPERTY(QStringList answer READ getAnswer NOTIFY answerChanged)
 
 signals:
     void boardSizeChanged();
     void isRunningChanged();
+    void isChallengeChanged();
     void isInitializedChanged();
     void is3DChanged();
     void isAcceptedChanged();
@@ -87,9 +89,9 @@ signals:
     void dicWordCountChanged();
     void statInfoChanged();
     void connectedChanged();
-    void isPollChanged();
+    void showPoll(bool); //true = poll is running, false = no poll/hide the pieseries
     void isLocalPlayerChanged();
-    void answerChanged();
+    void answerChanged(QVariantList); // 0 = no answer, 1 = yes/green, -1 = no/red
     void newGame(bool); // triggers acNewGame in mainwindow
     void applyConfig(QVariantMap); // triggers config::applyconfig()
     void showRemoteGames(); // shows ScrRemoteGames()
@@ -115,12 +117,12 @@ public:
     Q_INVOKABLE void loadGame(const QUrl &fileName);
     Q_INVOKABLE void getRemoteGames() {
         addMessage( tr("Requesting saved games from server...") );
-        m_pNetwork->doSend(network::nwRemoteGames, m_pNetwork->localPlayerName(), "");
+        emit onSend(network::nwRemoteGames, m_pNetwork->localPlayerName(), "");
     }
     Q_INVOKABLE void loadRemoteGame(const int selectedRow) {
         const QModelIndex idx = m_RemoteGamesModel->index(selectedRow,0);
-        const QString fileName = m_RemoteGamesModel->data(idx,m_RemoteGamesModel->NameRole).toString();
-        m_pNetwork->doSend(network::nwLoadGame, m_pNetwork->localPlayerName(), "Name="+fileName);
+        const QString fileName = m_RemoteGamesModel->data(idx, m_RemoteGamesModel->NameRole).toString();
+        emit onSend(network::nwLoadGame, m_pNetwork->localPlayerName(), "Name="+fileName);
     }
     Q_INVOKABLE bool loadDictionary(const QString fileName) { const bool result = m_pDicListModel->loadFrom(fileName); emit dicWordCountChanged(); return result; }
     Q_INVOKABLE bool deleteDictionary(const QString fileName) { return m_pDicListModel->deleteDic(fileName); }
@@ -143,15 +145,16 @@ public:
     Q_INVOKABLE void download(QString fileName) { m_pDownloadManager->download(fileName); }
     Q_INVOKABLE void statInfoType(const int aType) { m_nStatInfoType = aType; emit statInfoChanged(); }
     Q_INVOKABLE QString allStat() { return getAllStat(); }
-    Q_INVOKABLE QString version() { return versionString(); }
+    Q_INVOKABLE QString version() { return versionString() + " / " + QStringLiteral(__DATE__); }
 
     Q_INVOKABLE QString networkName() { return m_pNetwork->localPlayerName(); }
 //    Q_INVOKABLE QString fromTDateTime(double aValue) { return m_PlayersTreeModel->fromTDateTimeF(aValue); }
     Q_INVOKABLE void doInvite(QString sName);
     Q_INVOKABLE void doLeave();
     Q_INVOKABLE void syncNewGame(QVariantMap aConfig);
-    Q_INVOKABLE void rejectNewGame() { if (m_bIsConnected) m_pNetwork->doSend(network::nwAnswer, "group", "Answer=false"); }
+    Q_INVOKABLE void rejectNewGame() { if (m_bIsConnected) emit onSend(network::nwAnswer, "group", "Answer=false"); }
     Q_INVOKABLE void syncNextPlayer();
+    Q_INVOKABLE void syncChallengeWord();
 
     rackmodel *rackModel();
     boardmodel *boardModel();
@@ -160,38 +163,15 @@ public:
     gamecoursemodel *gamecourseModel();
     dicList *dicListModel();
     playersTree *playersTreeModel();
+//    remoteGamesProxy *remoteGames();
     remoteGamesModel *remoteGames();
 
-public slots: // slots are public methods available in QML
-    void startNewGame(QStringList PlayerNames,
-                      int RackSize,
-                      bool is3D,
-                      QVariantList FieldTypeArray,
-                      QVariantList LetterList,
-                      int NumberOfJokers,
-                      bool CanJokerExchange,
-                      int GameEndBonus,
-                      int NumberOfPasses,
-                      int JokerPenalty,
-                      bool ChangeIsPass,
-                      int TimeControl,
-                      int TimeControlValue,
-                      int LimitedExchange,
-                      bool CambioSecco,
-                      bool Whatif,
-                      bool Add,
-                      bool Substract,
-                      int TimePenaltyValue,
-                      int TimePenaltyCount,
-                      bool TimeGameLost,
-                      int WordCheck,
-                      int WordCheckPeriod,
-                      int WordCheckPenalty,
-                      int WordCheckBonus,
-                      int ScrabbleBonus,
-                      bool isCLABBERS,
-                      bool RandomSequence,
-                      int seed = -1);
+public slots:
+    void startNewGame(QVariantMap gameConfig);
+    void startNewGameLater(QVariantMap gameConfig) {
+        m_lGameConfig = gameConfig;
+        emit onSend(network::nwAnswer, "group", "Answer=true");
+    }
     void nextPlayer(const bool bIsLoading = false);
 
     void dropLetter(const uint rackIndex, const uint boardIndex);
@@ -202,6 +182,14 @@ public slots: // slots are public methods available in QML
     void dicDownloadFinished(const QString aFileName) {m_pDicListModel->updateList(); if (!aFileName.isEmpty()) loadDictionary(aFileName); }
     void confDownloadFinished(const QString aFileName);
 
+private:
+    enum PollType {ptNone, ptNewGame, ptNextPlayer, ptChallenge};
+
+private slots:
+    void startPoll(GamePlay::PollType pollType);
+    void endPoll() { if (m_ePoll == ptNone) emit showPoll(false); }
+    void endChallenge() { m_bIsChallenge = false; emit isChallengeChanged(); }
+
 public slots:
     void doNetworkError(QAbstractSocket::SocketError socketError);
     void doNetworkInfo(QVariantMap aMsg);
@@ -210,12 +198,13 @@ public slots:
     void doNetworkDisconnect(QString aMsg); //signal from server
     void doNetworkInvite(QVariantMap aMsg);
     void doNetworkJoin(QVariantMap aMsg);
-    void doNetworkPoll(QVariantMap aMsg);
     void doNetworkAnswer(QVariantMap aMsg);
     void doNetworkSyncNewGame(QVariantMap aMsg);
     void doNetworkNextPlayer(QVariantMap aMsg);
     void doNetworkRemoteGames(QVariantMap aMsg);
     void doNetworkGameResult(int oldRating, int newRating);
+    void doNetworkChallengeMove(QString aSender);
+    void doNetworkChallengeResult(QVariantMap aMsg);
 
 signals:
     void onSend(const network::MessageType msgType, const QString msgReceiver, QString msgText);
@@ -225,6 +214,7 @@ protected:
 
 private:
     bool getIsRunning() { return m_bIsRunning; };
+    bool getIsChallenge() { return m_bIsChallenge; };
     bool getIsInitialized() { return m_bIsInitialized; };
     bool getIsAccepted() { return m_bIsAccepted; };
     unsigned int getBoardSize() {return m_pBoard->getBoardSize(); }
@@ -238,20 +228,19 @@ private:
     int getActivePosition();
     int getComputeProgress() { return m_nProgress; }
     void setComputeProgress(const int aProgress);
+    void doComputeMove();
     int getPlacedValue() { return m_lMoves.count()>0 ? m_lMoves.last()->Value() : 0; }
     void resetPieces(); //removeLetter(*)
+    void rollbackLastMove();
     void doGameEnd();
     void doUpdateRack();
-    bool doCheckWords(); //returns true if all words are found in dictionary
+    bool doCheckWords(const bool bPrevious = false); //returns true if all words are found in dictionary; use nMove to check the previous
     void doStartTimer(const bool doRun = true);
 
     int getBestMoveCount() {return m_pComputeMove->numberOfResults(); }
     int getDicWordCount() { return m_pDicListModel->dictionary->count(); }
     bool getIsConnected() { return m_bIsConnected; }
     bool getIsLocalPlayer() { return (!m_bIsConnected) || (m_pNetwork->localPlayerName() == m_lPlayerNames[m_nCurrentPlayer]); }
-    bool getIsPoll() { return m_bIsPoll; }
-//    QStringList getAnswer() { return m_lAnswer; }
-    bool waitForPoll();
 
     int m_nStatInfoType = 0;
     QString getStatInfo() { return getStatInfoType(m_nStatInfoType); }
@@ -289,6 +278,10 @@ private:
     uint m_nPlayerCount;
 
     bool m_bIsRunning;
+    bool m_bIsChallenge = false;              // set to true in nextplayer() when in network mode with m_eWordCheckMode = wcChallenge for m_nWordCheckPeriod seconds
+
+    PollType m_ePoll = ptNone;
+    QString m_sChallengePlayer;               // stores the name of the player who send a challenge to the group
     bool m_bIsInitialized = false;            // false until the first game has been started; used to block save
     bool m_bIsAccepted;                       // feedback for the UI to disable nextplayer
     bool m_bIsFirstMove;                      // needed for checkmove()
@@ -299,14 +292,8 @@ private:
     int m_nTimeLeft;
 
     bool m_bIsConnected; //whether in network mode or not
-    bool m_bIsPoll = false; //true when poll is active
-    enum AnswerType {
-        plWait,
-        plNo,
-        plYes,
-    };
-    QVariantMap m_lAnswer;
-
+    QVariantMap m_lGameConfig; //stores configuration for startNewGame()
+    QVariantMap m_lAnswer; //true or false, or not yet answered, ie. < count()
     board *m_pBoard;
     rackmodel *m_pRackModel;
     boardmodel *m_pBoardModel;
@@ -316,6 +303,7 @@ private:
     dicList *m_pDicListModel;
     playersTree *m_PlayersTreeModel;
     remoteGamesModel *m_RemoteGamesModel;
+//    remoteGamesProxy *m_RemoteGamesProxy;
 
     computemove *m_pComputeMove;
     DownloadManager *m_pDownloadManager;

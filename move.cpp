@@ -1,11 +1,11 @@
 #include "move.h"
 
-move::move(const bool IsFirstMove, board* aBoard)
+move::move(bool IsFirstMove, board* aBoard)
     : m_PlacedLetters(0),
       m_Value(0),
       m_nBonusValue(0),
-      m_eBonusType(btNone),
       m_IsFirstMove(IsFirstMove),
+      m_IsScrabble(false),
       m_pBoard(aBoard)
 {
 }
@@ -93,7 +93,7 @@ bool move::checkMove()
         //connected words are gathered per getResults() in checkConnection()
         if (!m_IsFirstMove && !checkConnection())
         {
-            m_LastError = tr("Pieces needs to be connected with previous");
+            m_LastError = tr("Pieces need to be connected with previous");
             m_Value = 0;
             PlacedWord = "";
             ConnectedWords = "";
@@ -113,6 +113,16 @@ void move::setJokerLetter(const QString aWhat)
         m_PlacedLetters.last().What = aWhat;
     else
         qWarning() << "No joker in move";
+}
+
+void move::clear()
+{
+    PlacedWord = "";
+    ConnectedWords = "";
+    m_PlacedLetters.clear();
+    m_Value = 0;
+    m_nBonusValue = 0;
+    m_IsScrabble = false;
 }
 
 bool move::checkFirstMove()

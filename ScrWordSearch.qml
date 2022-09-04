@@ -46,8 +46,7 @@ Dialog {
             Label {
                 text: qsTr("Word:")
             }
-            //TODO: wordsearch: misplaced text for Farsi
-            //TODO: wordsearch: digraph replacement not working for eg. Spanish
+            //TODO: wordsearch: digraph replacement (Espanol -> 1ACA = LLACA)
             TextField {
                 id: dicWord
                 property string bgcolor: config.myPalette.light

@@ -175,6 +175,15 @@ Dialog {
                                     ? qsTr("Per Move") + " (" + getTimeString() + ")"
                                     : qsTr("Per Game") + " (" + getTimeString() + ")"
                     }
+                    Label { text: qsTr("Word check mode:") }
+                    Label { text: config.wordCheckMode == 0
+                                  ? qsTr("Takeback")
+                                  : config.timeControl == 1
+                                    ? qsTr("Poll")
+                                    : qsTr("Challenge") + " (" +
+                                      //: unit seconds
+                                      config.wordCheckPeriod + qsTr("s") + ")"
+                    }
                 }
             }
         }
@@ -190,36 +199,42 @@ Dialog {
         }
         onAccepted: {
             buttons.enabled = false //disabled as feedback while poll is active in network mode
-            //TODO: newgame: add random letters
-            GamePlay.startNewGame(getNames(),                             //PlayerNames
-                                  config.numberOfLettersOnRack,           //RackSize
-                                  config.bIs3D,                           //is3D
-                                  config.board,                           //FieldTypeArray
-                                  config.getLetterSet(-1),                //Letters[letter,value,count]
-                                  config.numberOfJokers,                  //NumberOfJokers
-                                  true,                                   //CanJokerExchange
-                                  config.gameEndBonus,                    //GameEndBonus
-                                  config.numberOfPasses,                  //NumberOfPasses
-                                  config.jokerPenalty,                    //JokerPenalty
-                                  config.changeIsPass,                    //ChangeIsPass
-                                  config.timeControl,                     //TimeControl
-                                  config.timeControlValue,                //TimeControlValue
-                                  3,                                      //LimitedExchange
-                                  false,                                  //CambioSecco
-                                  false,                                  //Whatif
-                                  config.addLetters,                      //Add
-                                  config.substractLetters,                //Substract
-                                  0,                                      //TimePenaltyValue
-                                  10,                                     //TimePenaltyCount
-                                  true,                                   //TimeGameLost
-                                  0,                                      //WordCheck
-                                  30,                                     //WordCheckPeriod
-                                  10,                                     //WordCheckPenlty
-                                  10,                                     //WordCheckBonus
-                                  config.bingoBonus,                      //ScrabbleBonus
-                                  false,                                  //isCLABBERS
-                                  cbRandomized.checked,                   //RandomSequence
-                                  seed)                                   // -1 = generate
+            var gameConfig = {}
+            gameConfig["PlayerNames"] = getNames()
+            gameConfig["RackSize"] = config.numberOfLettersOnRack
+            gameConfig["Is3D"] = config.bIs3D
+            gameConfig["FieldTypeArray"] = config.board
+            gameConfig["LetterList"] = config.getLetterSet(-1) //Letters[letter,value,count]
+            gameConfig["NumberOfRandoms"] = config.numberOfRandomLetters
+            gameConfig["NumberOfJokers"] = config.numberOfJokers
+            gameConfig["CanJokerExchange"] = true //TODO: newgame CanJokerExchange
+            gameConfig["GameEndBonus"] = config.gameEndBonus
+            gameConfig["NumberOfPasses"] = config.numberOfPasses
+            gameConfig["JokerPenalty"] = config.jokerPenalty
+            gameConfig["ChangeIsPass"] = config.changeIsPass
+            gameConfig["TimeControlType"] = config.timeControl // tcNoLimit=0, tcPerMove=1, tcPerGame=2
+            gameConfig["TimeControlValue"] = config.timeControlValue
+            gameConfig["LimitedExchange"] = 3 //TODO: newgame LimitedExchange
+            gameConfig["CambioSecco"] = false //TODO: newgame CambioSecco
+            gameConfig["Whatif"] = false
+            gameConfig["Add"] = config.addLetters
+            gameConfig["Substract"] = config.substractLetters
+            gameConfig["TimePenaltyValue"] = 0 //TODO: newgame TimePenaltyValue
+            gameConfig["TimePenaltyCount"] = 10 //TODO: newgame TimePenaltyCount
+            gameConfig["TimeGameLost"] = true //TODO: newgame TimeGameLost
+            gameConfig["WordCheckType"] = config.wordCheckMode
+            gameConfig["WordCheckPeriod"] =config.wordCheckPeriod
+            gameConfig["WordCheckPenalty"] = config.wordCheckPenalty
+            gameConfig["WordCheckBonus"] = config.wordCheckBonus
+            gameConfig["ScrabbleBonus"] = config.bingoBonus
+            gameConfig["IsCLABBERS"] = config.clabbers
+            gameConfig["RandomSequence"] = cbRandomized.checked // -1 = generate
+            gameConfig["Seed"] = seed
+
+            if (!GamePlay.isConnected)
+                GamePlay.startNewGame(gameConfig)
+            else
+                GamePlay.startNewGameLater(gameConfig)
 
             main.board.jokerPicker.updatePickerModel() //use current letterlist for joker picker
             main.board.updateLabelsModel() //redraw labels on x/y axis

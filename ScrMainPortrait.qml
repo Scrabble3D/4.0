@@ -28,6 +28,12 @@ ColumnLayout {
                 size: 38
             }
             ToolbarButton {
+                id: btnChallenge
+                action: acChallenge
+                size: 38
+            }
+
+            ToolbarButton {
                 id: btnComputeMove
                 action: acComputeMove
                 size: 38
@@ -83,10 +89,12 @@ ColumnLayout {
                         id: contextMenu
                         MenuItem { action: acNewGame }
                         MenuItem { action: acNextPlayer }
+                        MenuItem { action: acChallenge }
                         MenuItem { action: acComputeMove }
+                        MenuItem { action: acDictionary }
                         MenuSeparator { }
-                        MenuItem { action: acSaveGame }
                         MenuItem { action: acLoadGame }
+                        MenuItem { action: acSaveGame }
                         MenuItem { action: acConfiguration }
                         MenuSeparator { }
                         MenuItem { action: acNetwork; icon.source: "" }

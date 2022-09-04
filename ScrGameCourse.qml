@@ -55,7 +55,7 @@ ColumnLayout {
 
     }
 
-    //TODO: statistics: sort columns via click on header
+    //TODO: game course: selection => history
     TableView {
         id: statTable
         Layout.fillHeight: true

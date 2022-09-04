@@ -5,6 +5,9 @@ import QtQuick.Layouts
 ColumnLayout {
     id: layout
 
+    Layout.fillHeight: true
+    Layout.fillWidth: true
+
     property alias treeview: treeview
 
     Action {
@@ -44,7 +47,7 @@ ColumnLayout {
                        ? config.myPalette.highlight
                        : "transparent"
 
-            implicitWidth: treeview.width //3*padding + label.x + label.implicitWidth
+            implicitWidth: layout.parent.width //3*padding + label.x + label.implicitWidth
             implicitHeight: label.implicitHeight * 1.5
 
             readonly property real indent: 20
@@ -59,6 +62,33 @@ ColumnLayout {
             //TODO: scrplayers: remember expanded state
             onTreeViewChanged: treeView.toggleExpanded(row)
 
+            function getText(md) { //suppress Unable to assign [undefined] to QString
+                if (md) return md
+                   else return ""
+            }
+
+            ToolTip {
+                id: toolTip
+
+                contentItem: GridLayout {
+                    columns: 2
+                    rowSpacing: 1
+                    Label { text: qsTr("Country:");    Layout.alignment: Qt.AlignRight } Label { text: getText(model.country) }
+                    Label { text: qsTr("City:");       Layout.alignment: Qt.AlignRight } Label { text: getText(model.city) }
+                    Label { text: qsTr("Language:");   Layout.alignment: Qt.AlignRight } Label { text: getText(model.menuLang) }
+                    Label { text: qsTr("Rating:");     Layout.alignment: Qt.AlignRight } Label { text: getText(model.rating) }
+                    Label { text: qsTr("#Games:");     Layout.alignment: Qt.AlignRight } Label { text: getText(model.gamesPlayed) }
+                    Label { text: qsTr("Registered:"); Layout.alignment: Qt.AlignRight } Label { text: getText(model.registered) }
+                    Label { text: qsTr("Release:");    Layout.alignment: Qt.AlignRight } Label { text: getText(model.release) }
+                }
+                visible: false
+                delay: 1000
+                timeout: 5000
+            }
+            HoverHandler {
+                id: hoverHandler
+                onHoveredChanged: toolTip.visible = hovered
+            }
             TapHandler {
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                 onTapped: (eventPoint, button)=> {
@@ -74,7 +104,8 @@ ColumnLayout {
                     if (treeView.selected === model.name) //long press on selected item
                     {
                         acLeave.enabled = (depth === 1) && (treeView.selected === GamePlay.networkName()) //in a group
-                        acInvite.enabled = treeView.selected !== GamePlay.networkName()
+                        acInvite.enabled = (treeView.selected !== GamePlay.networkName()) &&  //don't invite yourself
+                                           (model.version === 4) // don't group with old program version
                         contextMenu.popup()
                     }
             }
@@ -96,7 +127,7 @@ ColumnLayout {
             }
             Image {
                 id: flagImage
-                source: (model.flag !== "unknown")
+                source: (model.flag !== "unknown") && (model.flag !== "undefined")
                         ? "qrc:///flags/" + model.flag
                         : ""
                 x: playerImage.x + 9
@@ -112,16 +143,6 @@ ColumnLayout {
                 color: config.myPalette.windowText
                 text: model.name
             }
-        }
-    }
-    TextField {
-        id: chatMsg
-        Layout.fillWidth: true
-        text: ""
-        placeholderText: qsTr("Type in what's on your mind")
-        Keys.onReturnPressed: {
-            GamePlay.chat(text)
-            chatMsg.text = ""
         }
     }
 }

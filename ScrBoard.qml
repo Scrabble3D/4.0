@@ -114,6 +114,7 @@ Item {
             pieceLabel: aWhat
             pieceValue: value
             pieceIsJoker: isJoker
+            pieceIsRandom: isRandom
             pieceShadow: (isPlaced && config.bColoredPlayers)
                          ? config.playercolors.get(who).itemColor //colored shadow to show who placed a piece
                          : "transparent"
@@ -201,11 +202,11 @@ Item {
                             ? config.colors.get(0).itemColor //start
                             : config.colors.get(8).itemColor //piece
 
-            visible: isVisible // LetterState::lsRack
+            visible: isVisible //LetterState::lsRack
             pieceLabel: what
             pieceValue: value
             pieceIsJoker: isJoker
-
+            pieceIsRandom: isRandom
             property bool dragAccept: false
             property point dragStartedAt: Qt.point(0,0)
             Drag.active: maRack.drag.active

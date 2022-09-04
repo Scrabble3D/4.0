@@ -5,6 +5,7 @@ Rectangle {
     property string pieceLabel: String.fromCharCode(0)
     property int pieceValue: 0
     property bool pieceIsJoker: false
+    property bool pieceIsRandom: false
     property color pieceColor: "transparent"
     property color pieceShadow: "transparent"
     property color bonusTop: "transparent"
@@ -42,14 +43,15 @@ Rectangle {
     }
 
     Image {
-        visible: pieceIsJoker
+        visible: pieceIsJoker || pieceIsRandom
         anchors.bottom: parent.bottom
-        anchors.right: parent.right
-        anchors.rightMargin: 3
+        anchors.left: parent.left
+        anchors.leftMargin: 3
         anchors.bottomMargin: 3
         width: parent.height*0.25
         height: parent.height*0.25
-        source: "qrc:///resources/star.png"
+        source: pieceIsJoker ? "qrc:///resources/star.png"
+                             : "qrc:///resources/dice.png"
     }
 
     Rectangle {

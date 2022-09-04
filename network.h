@@ -2,10 +2,6 @@
 
 #include <QtNetwork>
 
-#include <QVariant>
-#include <QList>
-#include <QAbstractTableModel>
-
 class network : public QTcpSocket
 {
     Q_OBJECT
@@ -22,23 +18,23 @@ public:
         nwJoin,          // send = invitation accepted, receive = loadgame in TODO: network nwJoin
         nwInformation,   // static information received, eg. feedback or finger/best -> gameplay::doNetworkInfo
         nwChat,          // chat message received, emits onChat(), passed via gameplay to -> msgmodel::addMessage
-        nwPoll,          // suspend the running game and ask all mates whether a word should be accepted or a new game started, for example -> gameplay::doNetworkPoll
+//        nwPoll,          // obsolete; was suspend the running game and ask all mates whether a word should be accepted or a new game started, for example -> gameplay::doNetworkPoll
         nwAnswer,        // answer to poll; QString::number(true/false)
         nwSyncNewGame,   // game configuration sent by the player who initiated the new game -> gameplay::syncNewGame
+        nwCheckWord,     // special poll to check words in challenge mode
+        nwChallenge,     // result of the challenge
         nwNextPlayer,    // submit move within group
         nwRemoteGames,   // retrieves a list of games on server that can be loaded (and continued if not ended)
         nwLoadGame,      // loads a game stored on the server by its consecutive number
+//        nwEndGame,       // obsolete; was the message to run the final reckoning
         nwGameResult,    // updates rating; also sets GameEnd flag in saved game on game server, returns message with new rating
+        nwBestValues,
         /*
-    'nwAnswer'       : DoAnswer;
-    'nwPoll'         : DoPoll;
     'nwPause'        : acPauseExecute(nil);
     'nwKibitz'       : DoKibitz;
     'nwCambioSecco'  : DoCambioSecco;
     'nwJokerize'     : DoJokerize(TLetter(Scrabble.Letters[aMsg.Value('LetterIndex',-1)]));
-    'nwCheckWord'    : DoCheckWord;
     'nwHighscore'    : DoHighscore;
-    'nwChallenge'    : DoChallengeCall;
     'nwEndGame'      : if (gsRunning in Scrabble.GameState) then DoGameEnd(self);
     'nwAddTime'      : DoAddTime;
     'nwBestValues'   : GameCourse.AllBestMovesValues:=aMsg.Value('BestValues','');
@@ -71,8 +67,9 @@ signals:
 //    void onLeave(QVariantMap aMsg); //gameplay
     void onSyncNewGame(QVariantMap aMsg); //gameplay
     void onNextPlayer(QVariantMap aMsg); //gameplay
+    void onChallengeMove(QString aSender); //gameplay
+    void onChallengeResult(QVariantMap aMsg); //gameplay
     void onRemoteGames(QVariantMap aMsg); //gameplay
-    void onPoll(QVariantMap aMsg); //gameplay
     void onAnswer(QVariantMap aMsg); //gameplay
     void onGameResult(int oldRating, int newRating); //gameplay
 
@@ -92,39 +89,3 @@ private:
     QByteArray m_aData;
 };
 
-class remoteGamesModel: public QAbstractTableModel
-{
-    Q_OBJECT
-
-public:
-    enum ModelRoles {
-        DateRole = Qt::UserRole + 1,
-        LastAccessRole = Qt::UserRole + 2,
-        PlayerNameRole = Qt::UserRole + 3,
-        MovesRole = Qt::UserRole + 4,
-        NameRole = Qt::UserRole + 5,
-        OwnTurnRole = Qt::UserRole + 6,
-        HasEndedRole = Qt::UserRole + 7,
-    };
-
-    explicit remoteGamesModel(QObject *parent = nullptr);;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
-    int rowCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
-    int columnCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
-    void setRemoteGames(const QVariantMap games, const QString sOwnName);
-
-protected:
-    QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
-
-private:
-    struct gameInfo {
-        QString created;
-        QString lastaccess;
-        QString players;
-        int moves;
-        QString fileName;
-        bool isOwnMove;
-        bool hasEnded;
-    };
-    QList<gameInfo> m_RemoteGames;
-};

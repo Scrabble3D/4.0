@@ -17,6 +17,7 @@ Window {
     property bool bIs3D: false //ScrConfigBoard::rb3D.checked
 
     property int numberOfLettersOnRack: 7 //ScrConfigLetter::sbPieces.value
+    property int numberOfRandomLetters: 0 //ScrConfigLetter::sbRandoms.value
     property int numberOfJokers: 2 // set in onValueChange of ScrConfigLetter::sbJoker.value
     property int numberOfPasses: 3 // set in onValueChange of ScrConfigTime::sbPasses
     property int timeControl: 0 // set in onToggled of ScrConfigTime::rbNoLimit/rbPerMove/rbPerGame
@@ -27,6 +28,11 @@ Window {
     property bool substractLetters: true // set in onToggled of ScrConfigRules::sbGameEnd
     property int jokerPenalty: 0 // set in onValueChange of ScrConfigRules::sbJokerPanelty
     property bool changeIsPass: false // set in onToggled of ScrConfigRules::cbChangeIsPass
+    property int wordCheckMode: 0 //set via rbTakeback = 0, rbPoll = 1, rbChallenge = 2 in ScrConfigWordCheck
+    property int wordCheckPeriod: 0 //set sbPeriod.value in ScrConfigWordCheck
+    property int wordCheckPenalty: 0 //set sbPenalty.value in ScrConfigWordCheck
+    property int wordCheckBonus: 0 //set sbBonus.value in ScrConfigWordCheck
+    property bool clabbers: false //set cbClabbers.toggle in ScrConfigWordCheck
 
     property TableModel letterSet // ScrConfigLetter::tvLetterSet.model
     property alias colors: scrColors
@@ -105,6 +111,14 @@ Window {
         configData["sbPieces"] = configLetter.sbPieces.value
         configData["sbRandoms"] = configLetter.sbRandoms.value
         if (bComplete) configData["rbReadingDirectionLTR"] = configLetter.rbReadingDirectionLTR.checked
+        //configWordCheck
+        configData["rbTakeback"] = configWordCheck.rbTakeback.checked
+        configData["rbPoll"] = configWordCheck.rbPoll.checked
+        configData["rbChallenge"] = configWordCheck.rbChallenge.checked
+        configData["sbPeriod"] = configWordCheck.sbPeriod.value
+        configData["sbPenalty"] = configWordCheck.sbPenalty.value
+        configData["sbBonus"] = configWordCheck.sbBonus.value
+        configData["cbClabbers"] = configWordCheck.cbClabbers.checked
         //configTime
         configData["rbNoLimit"] = configTime.rbNoLimit.checked
         configData["rbPerMove"] = configTime.rbPerMove.checked
@@ -124,7 +138,6 @@ Window {
         configData["cbAddLetters"] = configRules.cbAddLetters.checked
         configData["cbSubstractLetters"] = configRules.cbSubstractLetters.checked
         configData["cbChangeIsPass"] = configRules.cbChangeIsPass.checked
-
         //dictionary
         configData["dictionary"] = GamePlay.currentDicName()
         var aCat = []
@@ -197,6 +210,15 @@ Window {
         configLetter.sbRandoms.value = getConfigValue("sbRandoms", 0)
         configLetter.rbReadingDirectionLTR.checked = getConfigValue("rbReadingDirectionLTR", "true") === "true"
         configLetter.rbReadingDirectionRTL.checked = getConfigValue("rbReadingDirectionLTR", "true") !== "true"
+
+        //configWordCheck
+        configWordCheck.rbTakeback.checked = getConfigValue("rbTakeback", true) === "true"
+        configWordCheck.rbPoll.checked = getConfigValue("rbPoll", false) === "true"
+        configWordCheck.rbChallenge.checked = getConfigValue("rbChallenge", false) === "true"
+        configWordCheck.sbPeriod.value = getConfigValue("sbPeriod", 0)
+        configWordCheck.sbPenalty.value = getConfigValue("sbPenalty", 0)
+        configWordCheck.sbBonus.value = getConfigValue("sbBonus",0)
+        configWordCheck.cbClabbers.checked = getConfigValue("cbClabbers", "false") === "true"
 
         //time
         configTime.rbNoLimit.checked = getConfigValue("rbNoLimit", "false") === "true"
@@ -294,6 +316,7 @@ Window {
         id: lmCategories
         ListElement { name: qsTr("Board"); imgname: "optboard.png" }
         ListElement { name: qsTr("Letters"); imgname: "optletters.png" }
+        ListElement { name: qsTr("Word Check Mode"); imgname: "optwordcheck.png" }
         ListElement { name: qsTr("Time Control"); imgname: "opttime.png" }
         ListElement { name: qsTr("Rules"); imgname: "optrules.png" }
         ListElement { name: qsTr("Dictionary"); imgname: "optdic.png" }
@@ -343,7 +366,7 @@ Window {
             Rectangle {
                 id: leftPane
                 visible: Qt.platform.os !== "android"
-                SplitView.preferredWidth: parent.width * 1/4
+                SplitView.preferredWidth: parent.width * 28/100 //TODO: config: fit left pane to content width
                 SplitView.minimumWidth: 50
                 color: myPalette.window
                 ListView {
@@ -388,9 +411,20 @@ Window {
                             scrollView.contentWidth = configLetter.width
                         }
                     }
+                    ScrConfigWordCheck {
+                        id: configWordCheck
+                        visible: lView.currentIndex === 2
+                        defaultLetterSet: configLetter.cbLetterSet.currentIndex > -1
+                                          ? configLetter.cbLetterSet.currentIndex
+                                          : defaultLetterSet
+                        onVisibleChanged: {
+                            scrollView.contentHeight = configWordCheck.height
+                            scrollView.contentWidth = configWordCheck.width
+                        }
+                    }
                     ScrConfigTime {
                         id: configTime
-                        visible: lView.currentIndex === 2
+                        visible: lView.currentIndex === 3
                         defaultLetterSet: configLetter.cbLetterSet.currentIndex > -1
                                           ? configLetter.cbLetterSet.currentIndex
                                           : defaultLetterSet
@@ -399,10 +433,9 @@ Window {
                             scrollView.contentWidth = configRules.width
                         }
                     }
-
                     ScrConfigRules {
                         id: configRules
-                        visible: lView.currentIndex === 3
+                        visible: lView.currentIndex === 4
                         defaultLetterSet: configLetter.cbLetterSet.currentIndex > -1
                                           ? configLetter.cbLetterSet.currentIndex
                                           : defaultLetterSet
@@ -413,7 +446,7 @@ Window {
                     }
                     ScrConfigDictionary {
                         id: configDictionary
-                        visible: lView.currentIndex === 4
+                        visible: lView.currentIndex === 5
                         onVisibleChanged: {
                             scrollView.contentHeight = configDictionary.height + 50 //some space for categories
                             scrollView.contentWidth = configDictionary.width

@@ -1,6 +1,5 @@
 #include "network.h"
 #include "version.h"
-#include <QCoreApplication>
 
 network::network(QObject* parent, const QString name, const QString password, const QString email,
                  const QString country, const QString city)
@@ -35,18 +34,31 @@ void network::doSend(const MessageType msgType, QString msgReceiver, QString msg
     if (msgReceiver.isEmpty()) msgReceiver = m_sName;
     msgText += "Receiver=" + msgReceiver + "\a";
     msgText += "\r\n";
-    if( this->write( msgText.toUtf8() ) != msgText.toUtf8().length() )
-        qWarning() << "Not all data have been sent";
-    this->waitForBytesWritten(5000);
-//    this->flush();
+    this->write( msgText.toUtf8() );
+//    this->waitForBytesWritten(1000);
+    this->flush();
 #ifdef QT_DEBUG
-    qDebug() << "sent" << QDateTime::currentMSecsSinceEpoch() << QVariant::fromValue(msgType).toString() << "from" << m_sName;
+    qDebug() << "sent" << QVariant::fromValue(msgType).toString() << "from" << m_sName;
 #endif
 
 }
 
 void network::doConnected()
 {
+    QString sOS;
+#ifdef Q_OS_WINDOWS
+    sOS = "Windows";
+#endif
+#ifdef Q_OS_LINUX
+    sOS = "Linux";
+#endif
+#ifdef Q_OS_MACOS
+    sOS = "macOS";
+#endif
+#ifdef Q_OS_ANDROID //needs to come after Linux
+    sOS = "Android";
+#endif
+
     QStringList lData;
     lData.append("Password=" + m_sPassword);
     lData.append("MenuLang=en");//TODO: network: menu lang
@@ -55,7 +67,7 @@ void network::doConnected()
     lData.append("City=" + m_sCity);
     lData.append("UID="); //TODO: network: mac address
     lData.append("Email=" + m_sEmail);
-    lData.append("Release=" + versionString() + "_"); //v3.1 uses underscore to separate platform
+    lData.append("Release=" + versionString() + "_" + sOS); //v3.1 uses underscore to separate platform
 
     doSend(nwConnect, m_sName, lData.join("\a"));
 }
@@ -122,8 +134,6 @@ void network::doReadyRead()
                             aLastMessage["Chat"].toString()),
                         aLastMessage["Sender"].toString());
         } break;
-        //initialize the poll and wait for answers -> gameplay::doNetworkPoll
-        case nwPoll: emit onPoll(aLastMessage); break;
         //insert answer into poll -> gameplay::doNetworkAnswer
         case nwAnswer: emit onAnswer(aLastMessage); break;
         //gameplay::doInvite() invitation received to join a group, gameplay::doNetworkInvite
@@ -139,7 +149,10 @@ void network::doReadyRead()
         case nwJoin: emit onJoin(aLastMessage); break;
         case nwSyncNewGame: emit onSyncNewGame(aLastMessage); break;
         case nwNextPlayer: emit onNextPlayer(aLastMessage); break;
+        case nwCheckWord: emit onChallengeMove(aLastMessage["Sender"].toString()); break;
+        case nwChallenge: emit onChallengeResult(aLastMessage); break;
         case nwRemoteGames: emit onRemoteGames(aLastMessage); break;
+        case nwBestValues: break; //TODO: bestvalues into gamrcourse
         case nwGameResult: {
             if (aLastMessage["Sender"] == m_sName)
                 emit onGameResult(aLastMessage["OldRating"].toInt(), aLastMessage["NewRating"].toInt());
@@ -151,102 +164,7 @@ void network::doReadyRead()
     }
     m_aData.clear();
 #ifdef QT_DEBUG
-    qDebug() << "received" << QDateTime::currentMSecsSinceEpoch() << aLastMessage["MessageType"].toString() << "from" << aLastMessage["Sender"].toString();
+    qDebug() << "received" << aLastMessage["MessageType"].toString() << "from" << aLastMessage["Sender"].toString();
 #endif
 }
 
-remoteGamesModel::remoteGamesModel(QObject *parent)
-    : QAbstractTableModel(parent),
-    m_RemoteGames(0)
-{
-}
-
-QVariant remoteGamesModel::data(const QModelIndex &index, int role) const
-{
-    if (!index.isValid())
-        return QVariant();
-    gameInfo aGame = m_RemoteGames.at(index.row());
-
-    QVariant aReturn;
-    switch (role) {
-    case DateRole: aReturn = aGame.created; break;
-    case LastAccessRole: aReturn = aGame.lastaccess; break;
-    case PlayerNameRole: aReturn = aGame.players; break;
-    case MovesRole: aReturn = aGame.moves; break;
-    case NameRole: aReturn = aGame.fileName; break;
-    case OwnTurnRole: aReturn = aGame.isOwnMove; break;
-    case HasEndedRole: aReturn = aGame.hasEnded; break;
-    } //switch
-    return aReturn;
-}
-
-int remoteGamesModel::rowCount(const QModelIndex &parent) const
-{
-    Q_UNUSED(parent);
-    return m_RemoteGames.count();
-}
-
-int remoteGamesModel::columnCount(const QModelIndex &parent) const
-{
-    Q_UNUSED(parent);
-    return 3;
-}
-
-QHash<int, QByteArray> remoteGamesModel::roleNames() const
-{
-    QHash<int, QByteArray> roles;
-    roles[DateRole] = "created";
-    roles[LastAccessRole] = "lastaccess";
-    roles[PlayerNameRole] = "playernames";
-    roles[MovesRole] = "moves";
-    roles[NameRole] = "filename";
-    roles[OwnTurnRole] = "isOwnTurn";
-    roles[HasEndedRole] = "hasEnded";
-
-    return roles;
-}
-
-QString fromTDateTime(const double tDateTime)
-{
-    const double since01Jan1970 = 25569.16666; //TDateTime starts at December 30, 1899
-    const int secPerDay = 24*60*60;
-    int time_t = (int) ((tDateTime - since01Jan1970) * secPerDay);
-    const QDateTime datetime = QDateTime::fromSecsSinceEpoch(time_t, Qt::LocalTime);
-    QLocale loc;
-    return datetime.toString(loc.dateTimeFormat(QLocale::ShortFormat));
-}
-
-void remoteGamesModel::setRemoteGames(const QVariantMap games, const QString sOwnName)
-{
-    gameInfo aGame;
-    beginResetModel();
-    m_RemoteGames.clear();
-    int nRows = games["NumberOfGames"].toInt();
-    for (int i = 0; i < nRows; i++) {
-        QString sPrefix = "Game" + QString::number(i);
-        aGame.created = fromTDateTime(games[sPrefix + ".Date"].toDouble());
-        aGame.lastaccess = fromTDateTime(games[sPrefix + ".LastAccess"].toDouble());
-        aGame.players = games[sPrefix + ".Player"].toString();
-        aGame.moves = games[sPrefix + ".Moves"].toInt();
-        aGame.fileName = games[sPrefix + ".Name"].toString();
-        QStringList aSequence = aGame.players.split(",");
-/*
-#ifdef QT_DEBUG
-        qDebug() << aSequence;
-        qDebug() << aGame.moves % aSequence.count();
-        qDebug() << aSequence[aGame.moves % aSequence.count()];
-        qDebug() << sOwnName;
-#endif
-*/
-        aGame.isOwnMove = aSequence[aGame.moves % aSequence.count()] == sOwnName;
-        aGame.hasEnded = games[sPrefix + ".GameEnd"].toBool();
-/*
-#ifdef QT_DEBUG
-        qDebug() << games;
-        qDebug() << aGame.fileName << aGame.isOwnMove << aGame.hasEnded;
-#endif
-*/
-        m_RemoteGames.append(aGame);
-    }
-    endResetModel();
-}

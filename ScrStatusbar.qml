@@ -1,10 +1,12 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import QtCharts
 
 RowLayout {
     property int tbHeight: 22
     property string tip: "";
+
     Rectangle {
         id: statProgress
         Layout.preferredHeight: tbHeight
@@ -80,7 +82,7 @@ RowLayout {
             rightPadding: 4
             height: parent.height
             color: config.myPalette.windowText
-            text: GamePlay.statInfo //TODO: statusbar: detailled gamestate
+            text: GamePlay.statInfo
             verticalAlignment: Text.AlignVCenter
         }
         ToolTip {
@@ -148,5 +150,39 @@ RowLayout {
             active: index === GamePlay.currentPlayer;
         }
 
+    }
+    Item {
+        Layout.preferredHeight: tbHeight * poll.visible
+        Layout.preferredWidth: tbHeight * poll.visible
+        ChartView {
+            id: poll
+            visible: false
+            anchors.fill: parent
+            legend.visible: false
+            antialiasing: true
+            margins { top: 0; bottom: 0; left: 0; right: 0 }
+            property int border: 1
+            plotArea: Qt.rect(border, border, width - border*2, height - border*2)
+            PieSeries { id: pieSeries; size: 1 }
+        }
+    }
+    Connections {
+        target: GamePlay
+        function onShowPoll(doShow) {
+            poll.visible = doShow
+        }
+        function onAnswerChanged(answers) {
+            pieSeries.clear()
+            for (var i=0; i<answers.length; i++) {
+                var pie = pieSeries.append("", 1)
+                switch (answers[i]) {
+                case  0: pie.color = config.myPalette.dark; break
+                case -1: pie.color = "red"; break
+                case  1: pie.color = "green"; break
+                }
+                pie.borderWidth = 0
+                pie.borderColor = pie.color
+             }
+        }
     }
 }

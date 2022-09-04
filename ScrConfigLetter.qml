@@ -141,6 +141,7 @@ GridLayout {
     }
     SpinBox {
         id: sbRandoms
+        onValueChanged: config.numberOfRandomLetters = value
     }
     Label {
         id: lbReadingDirection

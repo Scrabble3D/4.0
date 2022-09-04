@@ -13,6 +13,7 @@ struct clientInfo {
     QDateTime gameStarted;
     uint moveNumber;
     QString release;
+    uint version; //3.x = 3, 4.x = 4
     QStringList mates;
     QDateTime registered;
     uint rating;
@@ -40,17 +41,18 @@ public:
         gameStarted = Qt::UserRole + 4,
         moveNumber = Qt::UserRole + 5,
         release = Qt::UserRole + 6,
-        mates = Qt::UserRole + 7,
-        registered = Qt::UserRole + 8,
-        rating = Qt::UserRole + 9,
-        gamesPlayed = Qt::UserRole + 10,
-        menuLang = Qt::UserRole + 11,
-        allowKibitz = Qt::UserRole + 12,
-        isKibitz = Qt::UserRole + 13,
-        groupID = Qt::UserRole + 14,
-        gameID = Qt::UserRole + 15,
-        clientState = Qt::UserRole + 16,
-        flag = Qt::UserRole + 17
+        version = Qt::UserRole + 7,
+        mates = Qt::UserRole + 8,
+        registered = Qt::UserRole + 9,
+        rating = Qt::UserRole + 10,
+        gamesPlayed = Qt::UserRole + 11,
+        menuLang = Qt::UserRole + 12,
+        allowKibitz = Qt::UserRole + 13,
+        isKibitz = Qt::UserRole + 14,
+        groupID = Qt::UserRole + 15,
+        gameID = Qt::UserRole + 16,
+        clientState = Qt::UserRole + 17,
+        flag = Qt::UserRole + 18,
     };
     void playerTree(QObject *parent = nullptr);
     QVariant data(const QModelIndex &index, int role) const Q_DECL_OVERRIDE;

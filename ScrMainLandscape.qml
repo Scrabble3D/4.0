@@ -26,6 +26,8 @@ ColumnLayout {
             title: qsTr("Game")
             MenuItem { action: acNewGame }
             MenuItem { action: acNextPlayer }
+            MenuItem { action: acChallenge }
+            MenuItem { action: acComputeMove }
         }
         Menu {
             id: viewMenu
@@ -72,6 +74,17 @@ ColumnLayout {
                 ToolTip {
                     text: acNextPlayer.tip
                     visible: text.length === 0 ? false : btnNextPlayer.hovered
+                    delay: 1000
+                    timeout: 5000
+                }
+            }
+            ToolbarButton {
+                id: btnChallenge
+                action: acChallenge
+                text: ""
+                ToolTip {
+                    text: acChallenge.text
+                    visible: text.length === 0 ? false : btnChallenge.hovered
                     delay: 1000
                     timeout: 5000
                 }
@@ -125,6 +138,17 @@ ColumnLayout {
                     ScrMessages { id: messages }
                     ScrGameCourse { id: statistics }
                     ScrPlayers { id: players; visible: GamePlay.isConnected }
+                }
+                TextField {
+                    id: chatMsg
+                    Layout.fillWidth: true
+                    visible: GamePlay.isConnected
+                    text: ""
+                    placeholderText: qsTr("Enter a message to the group or use /help")
+                    Keys.onReturnPressed: {
+                        GamePlay.chat(text)
+                        chatMsg.text = ""
+                    }
                 }
                 TabBar {
                     id: tabs

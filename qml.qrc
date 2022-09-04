@@ -300,10 +300,6 @@
         <file>resources/netw_disco.png</file>
         <file>ScrNetwork.qml</file>
         <file>resources/group.png</file>
-        <file>ScrPoll.qml</file>
-        <file>resources/pollNo.png</file>
-        <file>resources/pollWait.png</file>
-        <file>resources/pollYes.png</file>
         <file>resources/dummy.png</file>
         <file>resources/eye.png</file>
         <file>ScrRemoteGames.qml</file>
@@ -311,5 +307,9 @@
         <file>resources/create.png</file>
         <file>ScrConfigTime.qml</file>
         <file>resources/opttime.png</file>
+        <file>resources/dice.png</file>
+        <file>resources/optwordcheck.png</file>
+        <file>ScrConfigWordCheck.qml</file>
+        <file>resources/challenge.png</file>
     </qresource>
 </RCC>

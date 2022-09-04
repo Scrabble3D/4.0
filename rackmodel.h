@@ -11,8 +11,9 @@ public:
         WhatRole = Qt::UserRole + 1,
         ValueRole,
         IsJokerRole,
+        IsRandomRole,
         IsExchangeRole,
-        IsVisibleRole
+        IsVisibleRole,
     };
 
     explicit rackmodel(QObject *parent = nullptr);
