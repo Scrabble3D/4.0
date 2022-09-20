@@ -7,8 +7,8 @@ Dialog {
     title: qsTr("Login to game server")
     standardButtons: Dialog.Cancel | Dialog.Ok
     modal: true
-    x: (app.width - network.width) / 2
-    y: (app.height - network.height) / 2
+    x: (scrabble3D.width - network.width) / 2
+    y: (scrabble3D.height - network.height) / 2
     padding: 12
 
     ListModel {

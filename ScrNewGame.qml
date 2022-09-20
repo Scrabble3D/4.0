@@ -15,8 +15,8 @@ Dialog {
 
     padding: mainLoader.state === "landscape" ? 12 : 0
 
-    x: (app.width - newgame.width) / 2
-    y: (app.height - newgame.height) / 2
+    x: (scrabble3D.width - newgame.width) / 2
+    y: (scrabble3D.height - newgame.height) / 2
 
     property int rbIndex: 1
     property int seed: -1
@@ -244,7 +244,6 @@ Dialog {
             //save last game settings except when in network mode
             if (!GamePlay.isConnected) {
                 var configData = {}
-    //            configData = GamePlay.loadConfig("")
                 configData["player1"] = playerNames.get(0).playerName
                 configData["player2"] = playerNames.get(1).playerName
                 configData["player3"] = playerNames.get(2).playerName
@@ -255,9 +254,8 @@ Dialog {
                 configData["comp4"] = playerNames.get(3).isComputer
                 configData["playerCount"] = rbIndex
                 configData["randomized"] = cbRandomized.checked
-                GamePlay.saveConfig("", configData)
-
-                config.saveConfig("")
+                GamePlay.saveConfig("", configData) // player info only
+                config.saveConfig("") //all other config
             }
 
         }

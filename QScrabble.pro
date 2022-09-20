@@ -29,6 +29,7 @@ HEADERS += \
         board.h \
         boardmodel.h \
         computemove.h \
+        configpath.h \
         cubemodel.h \
         dictionary.h \
         downloadmanager.h \

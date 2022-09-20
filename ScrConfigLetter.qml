@@ -1,8 +1,10 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Qt.labs.qmlmodels
 
 GridLayout {
+
     property alias cbLetterSet: cbLetterSet
     property alias sbJoker: sbJoker
     property alias sbPieces: sbPieces
@@ -10,21 +12,58 @@ GridLayout {
     property alias rbReadingDirectionLTR: rbReadingDirectionLTR
     property alias rbReadingDirectionRTL: rbReadingDirectionRTL
 
-    function getLetterSetName() {
+    function getLetterSetName() { //used at ScrNewGame
         var sResult = cbLetterSet.currentText
         if (sResult === "") sResult = qsTr("Special")
         return sResult
     }
-    //FIXME!: configletter: if letterset are identical eg English US/GB the first one is taken ending up in a loop
+
     function checkDefault() {
-        var comp = JSON.stringify(config.getLetterSet(-1))
-        for (var i=0; i<defaults.languages.length; i++) {
-           if (comp === JSON.stringify(config.getLetterSet(i))) {
+        var comp = JSON.stringify(getLetterSet(-1))
+        // sets can be identical like en_UK / en_US
+        if ((cbLetterSet.currentIndex > -1) &&
+            (comp === JSON.stringify(getLetterSet(cbLetterSet.currentIndex))))
+                return
+
+        for (var i=0; i<defaults.languages.length; i++)
+           if (comp === JSON.stringify(getLetterSet(i))) {
                cbLetterSet.currentIndex = i
                return
            }
-        }
+
         cbLetterSet.currentIndex = -1
+    }
+
+    function getLetterSet(index) {
+        var letterlist = [];
+        if (index === -1)
+            for (var i = 0; i < tmLetterSet.rowCount; i++) {
+                letterlist.push(tmLetterSet.rows[i].letter);
+                letterlist.push(tmLetterSet.rows[i].value);
+                letterlist.push(tmLetterSet.rows[i].count);
+            }
+        else
+            letterlist = defaults.languages[index].letters;
+        return letterlist;
+    }
+
+    function setLetterSet(letterlist) {
+        tmLetterSet.clear();
+        for (var i=0; i<letterlist.length; i+=3)
+            tmLetterSet.appendRow( {
+                letter: letterlist[i + 0],
+                value:  parseInt(letterlist[i + 1]),
+                count:  parseInt(letterlist[i + 2]),})
+        checkDefault()
+        tvLetterSet.modelChanged() //update sum
+    }
+
+    function updateLetterSum() {
+        var z = 0
+        if (tmLetterSet)
+            for (var i=0; i<tmLetterSet.rowCount; i++)
+                z += tmLetterSet.getRow(i).count
+        lbNumberOfLetters.text = z
     }
 
     columns: 2
@@ -34,6 +73,15 @@ GridLayout {
     width: scrollView.width - 10
     height: scrollView.height - 10
 
+    property int multiplier: 1
+
+    TableModel {
+        id: tmLetterSet
+        TableModelColumn { display: "letter" }
+        TableModelColumn { display: "value" }
+        TableModelColumn { display: "count" }
+    }
+
     Label {
         id: lbLetterSet
         Layout.alignment: Qt.AlignRight
@@ -41,18 +89,22 @@ GridLayout {
     }
     ComboBox {
         id: cbLetterSet
+        Layout.minimumWidth: 100
         Layout.preferredWidth: tvLetterSet.width - sbLetterSet.width
         model: defaults.languages
         textRole: "nativeName"
-        onCurrentIndexChanged:
+        onCurrentIndexChanged: {
+            if ( currentIndex >= 0 )
+                setLetterSet( defaults.languages[currentIndex].letters )
+            // setLetterSet() can change the index
             if ( currentIndex >= 0 ) {
-                config.letterSet = defaults.languages[currentIndex].letters
                 sbJoker.value = defaults.languages[currentIndex].numberOfJokers
                 sbPieces.value = defaults.languages[currentIndex].numberOfLetters
                 sbRandoms.value = defaults.languages[currentIndex].numberOfRandoms
                 rbReadingDirectionLTR.checked = defaults.languages[currentIndex].readingDirection === Qt.LeftToRight
                 rbReadingDirectionRTL.checked = defaults.languages[currentIndex].readingDirection === Qt.RightToLeft
             }
+        }
     }
     Label {
         id: lbLetterDistribution
@@ -83,15 +135,15 @@ GridLayout {
             }
         }
         TableView {
-            //TODO: configletter: make letterset editable
             id: tvLetterSet
             Layout.preferredWidth: contentWidth + sbLetterSet.width
             Layout.minimumHeight: 200
             Layout.fillHeight: true
             ScrollBar.vertical: ScrollBar { id: sbLetterSet }
             clip: true
-            model: config.letterSet
+            model: tmLetterSet
             delegate: Rectangle {
+                id: rcLetterSet
                 implicitWidth: 75
                 implicitHeight: 20
                 color: myPalette.light
@@ -102,24 +154,91 @@ GridLayout {
                     color: myPalette.windowText
                     anchors.centerIn: parent
                 }
+                TapHandler {
+                    id: cellMouseArea
+                    onTapped: {
+                        editor.source = display
+                        editor.visible = true
+                        editor.item.forceActiveFocus()
+                    }
+                }
+                Loader {
+                    id: editor
+                    anchors.fill: parent
+                    visible: false
+                    sourceComponent: visible ? editComponent : undefined
+                    property var source;
+
+                    Component {
+                        id: editComponent
+                        TextField {
+                            id: textField
+                            validator: RegularExpressionValidator {
+                                regularExpression:
+                                    (column === 0) ? /.+/            // any character, as many as possible
+                                                   : /\d|[1-9][0-9]/ // either 0..9 or 1:9 followed by 0:9
+                            }
+                            horizontalAlignment: TextInput.AlignHCenter
+                            anchors { fill: parent }
+                            text: source
+                            Keys.onReturnPressed: editingFinished()
+                            onActiveFocusChanged: if (!activeFocus) editingFinished()
+                            onEditingFinished: {
+                                if (textField.text === "")
+                                    if (column === 0) text = "?"; else text = 0;
+                                var idx = tvLetterSet.model.index(row, column);
+                                tmLetterSet.setData(idx, "display",
+                                       (column === 0) ? text : parseInt(text))
+                                tvLetterSet.modelChanged() //update sum
+                                editor.visible = false
+                            }
+                        }
+                    }
+                }
             }
             onModelChanged: {
                 checkDefault()
-                var z = 0
-                if (model)
-                    for (var i=0; i<model.rowCount; i++)
-                        z += model.getRow(i).count
-                lbNumberOfLetters.text = qsTr("Total number of letters: %1").arg(z)
+                updateLetterSum()
             }
         }
-        Label {
-            id: lbNumberOfLetters
+        GridLayout {
+            columns: 2
+            Layout.alignment: Qt.AlignRight
+            Layout.rightMargin: 10
+            Label {
+                id: lbMultiplier
+                text: qsTr("Multiplier:")
+                Layout.alignment: Qt.AlignRight
+            }
+            SpinBox {
+                id: sbMultiplier
+                Layout.preferredWidth: 75
+                from: 1
+                onValueChanged: {
+                    var idx
+                    var z
+                    for (var i = 0; i < tmLetterSet.rowCount; i++) {
+                        idx = tvLetterSet.model.index(i, 2);
+                        z = tmLetterSet.getRow(i).count
+                        tmLetterSet.setData(idx, "display", (z / multiplier) * value)
+                    }
+                    updateLetterSum()
+                    multiplier = value
+                }
+            }
+            Label {
+                text: qsTr("Total number of letters:")
+                Layout.alignment: Qt.AlignRight
+            }
+            Label {
+                id: lbNumberOfLetters
+            }
         }
     }
     Label {
         id: lbJoker
         Layout.alignment: Qt.AlignRight
-        text: qsTr("Number of blank tiles:")
+        text: qsTr("Blank tiles:")
     }
     SpinBox {
         id: sbJoker
@@ -128,7 +247,7 @@ GridLayout {
     Label {
         id: lbPieces
         Layout.alignment: Qt.AlignRight
-        text: qsTr("Number of letters on rack:")
+        text: qsTr("Letters on rack:")
     }
     SpinBox {
         id: sbPieces
@@ -137,7 +256,7 @@ GridLayout {
     Label {
         id: lbRandoms
         Layout.alignment: Qt.AlignRight
-        text: qsTr("Number of random letters:")
+        text: qsTr("Random letters:")
     }
     SpinBox {
         id: sbRandoms

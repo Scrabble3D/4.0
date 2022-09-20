@@ -135,11 +135,13 @@ GridLayout {
             id: rbGameEnd
             Layout.columnSpan: 2
             text: qsTr("Game ends on timeout")
+            enabled: rbPerGame.checked
         }
         RadioButton {
             id: rbPenalty
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
             text: qsTr("Penalty on timeout")
+            enabled: rbPerGame.checked
         }
         GridLayout {
             id: layoutPenaltyPoints
@@ -147,32 +149,32 @@ GridLayout {
             columns: 2
             SpinBox {
                 id: sbPenaltyPoints
-                enabled: rbPenalty.checked
+                enabled: rbPenalty.checked && rbPenalty.enabled
                 from: 1
                 to: 5000
             }
             Label {
                 id: lbPenaltyPointsUnit
-                enabled: rbPenalty.checked
+                enabled: rbPenalty.checked && rbPenalty.enabled
                 color: enabled ? config.myPalette.windowText : config.myPalette.mid
                 text: qsTr("points")
             }
             Label {
                 id: lbPenltyJoiner
                 Layout.columnSpan: 2
-                enabled: rbPenalty.checked
+                enabled: rbPenalty.checked && rbPenalty.enabled
                 color: enabled ? config.myPalette.windowText : config.myPalette.mid
                 text: qsTr("but not more than")
             }
             SpinBox {
                 id: sbPenaltyCount
-                enabled: rbPenalty.checked
+                enabled: rbPenalty.checked && rbPenalty.enabled
                 from: 1
                 to: 5000
             }
             Label {
                 id: lbPenaltyCountUnit
-                enabled: rbPenalty.checked
+                enabled: rbPenalty.checked && rbPenalty.enabled
                 color: enabled ? config.myPalette.windowText : config.myPalette.mid
                 text: qsTr("times")
             }
@@ -180,6 +182,7 @@ GridLayout {
         CheckBox {
             id: cbGameEnd
             text: qsTr("Game lost after last timeout")
+            enabled: rbPerGame.checked
         }
     }
 }

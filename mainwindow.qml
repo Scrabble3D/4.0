@@ -1,24 +1,24 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-//import QtQuick.Dialogs
-import Qt.labs.platform //native dialog
-//import Qt.labs.settings //TODO: main: save window position
+import Qt.labs.platform //native dialog, instead of import QtQuick.Dialogs
+import Qt.labs.settings
 
 ApplicationWindow {
-    id: app //TODO: main: rename app
-    width: 1024 //TODO: mainform: use system default for app size
+    id: scrabble3D
+    width: 1024
     height: 800
     visible: true
     title: "Scrabble3D"
-/*
+
     Settings {
-        property alias x: app.x
-        property alias y: app.y
-        property alias width: app.width
-        property alias height: app.height
+        fileName: GamePlay.config()
+        property alias x: scrabble3D.x
+        property alias y: scrabble3D.y
+        property alias width: scrabble3D.width
+        property alias height: scrabble3D.height
     }
-*/
+
     property alias main: mainLoader.item
 
     property color iconColor: isDark(config.myPalette.window) ? "white" : "black"
@@ -37,6 +37,10 @@ ApplicationWindow {
         function onNewGame(isLoading) {
             newgame.open()
             if (isLoading) newgame.accept()
+        }
+        function onLoadGame(fileName) {
+            config.loadConfig("")
+            doLoad(fileName)
         }
         function onApplyConfig(configData) {
             config.applyConfig(configData)
@@ -76,14 +80,14 @@ ApplicationWindow {
         onTriggered: GamePlay.syncChallengeWord()
     }
     Action {
-        id: acExitApp
+        id: acExit
         text: qsTr("Exit")
         shortcut: StandardKey.Quit
         onTriggered: Qt.quit();
     }
     Action {
         id: acConfiguration
-        text: qsTr("Configuration")
+        text: qsTr("Configuration...")
         shortcut: StandardKey.Preferences
         onTriggered: Qt.platform.os === "android"
                      ? config.showFullScreen()
@@ -93,11 +97,7 @@ ApplicationWindow {
         id: acSaveGame
         text: qsTr("Save As...")
         shortcut: StandardKey.SaveAs
-        //TODO: main: filedialog on Android
-        // https://www.volkerkrause.eu/2019/02/16/qt-open-files-on-android.html
-        // https://forum.qt.io/topic/113328/how-to-convert-android-content-url-and-use-it-to-open-file/5
-        // https://forum.qt.io/topic/113335/qfiledialog-getopenfilename-always-returns-empty-string-on-android/15
-        enabled: Qt.platform.os !== "android" && GamePlay.isInitialized && !GamePlay.isConnected
+        enabled: GamePlay.isInitialized && !GamePlay.isConnected
         onTriggered: {
             fileDialog.acceptLabel = qsTr("Save")
             fileDialog.fileMode = FileDialog.SaveFile
@@ -105,22 +105,20 @@ ApplicationWindow {
             fileDialog.open()
         }
     }
-    function showLocalGames() {
-        fileDialog.acceptLabel = qsTr("Open")
-        fileDialog.fileMode = FileDialog.OpenFile
-        fileDialog.title = qsTr("Load game")
-        fileDialog.open()
-    }
     Action {
         id: acLoadGame
         text: qsTr("Load From...")
         shortcut: StandardKey.Open
-        enabled: Qt.platform.os !== "android" || GamePlay.isConnected
-        onTriggered: GamePlay.isConnected
-            ? GamePlay.getRemoteGames()
-            : showLocalGames()
+        onTriggered:
+            if (!GamePlay.isConnected) {
+                fileDialog.acceptLabel = qsTr("Open")
+                fileDialog.fileMode = FileDialog.OpenFile
+                fileDialog.title = qsTr("Load game")
+                fileDialog.open()
+            } else
+                GamePlay.getRemoteGames()
     }
-    Action { //FIXME!: mainform disable compute action when not localplayer; check the various emits
+    Action {
         id: acComputeMove
         text: qsTr("Compute Move")
         shortcut: StandardKey.Find
@@ -198,8 +196,6 @@ ApplicationWindow {
     FileDialog {
         id: fileDialog
         folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
-        //TODO: main: clean-up
-//            GamePlay.documentPath() // StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
         nameFilters: [qsTr("Scrabble3D savegame (*.ssg)"), qsTr("All files (*)")]
         defaultSuffix: "ssg"
         onAccepted: fileMode === FileDialog.OpenFile

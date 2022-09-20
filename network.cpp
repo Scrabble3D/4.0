@@ -46,17 +46,25 @@ void network::doSend(const MessageType msgType, QString msgReceiver, QString msg
 void network::doConnected()
 {
     QString sOS;
+
 #ifdef Q_OS_WINDOWS
     sOS = "Windows";
 #endif
+
 #ifdef Q_OS_LINUX
     sOS = "Linux";
 #endif
+
 #ifdef Q_OS_MACOS
     sOS = "macOS";
 #endif
+
 #ifdef Q_OS_ANDROID //needs to come after Linux
     sOS = "Android";
+#endif
+
+#ifdef Q_OS_IOS
+    sOS = "iOS";
 #endif
 
     QStringList lData;
@@ -67,7 +75,7 @@ void network::doConnected()
     lData.append("City=" + m_sCity);
     lData.append("UID="); //TODO: network: mac address
     lData.append("Email=" + m_sEmail);
-    lData.append("Release=" + versionString() + "_" + sOS); //v3.1 uses underscore to separate platform
+    lData.append("Release=" + version::current() + "_" + sOS); //v3.1 uses underscore to separate platform
 
     doSend(nwConnect, m_sName, lData.join("\a"));
 }

@@ -1,5 +1,4 @@
 import QtQuick
-import Qt.labs.qmlmodels
 
 Item {
 
@@ -751,39 +750,33 @@ Item {
         property int limitExchange: 7           //page 16, IV.E.2.a.
         property int endBonus: 0
         property int scrabbleBonus: 50
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "A", "value":1, "count":9},
-                { "letter": "B", "value":3, "count":2},
-                { "letter": "C", "value":3, "count":2},
-                { "letter": "D", "value":2, "count":4},
-                { "letter": "E", "value":1, "count":12},
-                { "letter": "F", "value":4, "count":2},
-                { "letter": "G", "value":2, "count":3},
-                { "letter": "H", "value":4, "count":2},
-                { "letter": "I", "value":1, "count":9},
-                { "letter": "J", "value":8, "count":1},
-                { "letter": "K", "value":5, "count":1},
-                { "letter": "L", "value":1, "count":4},
-                { "letter": "M", "value":3, "count":2},
-                { "letter": "N", "value":1, "count":6},
-                { "letter": "O", "value":1, "count":8},
-                { "letter": "P", "value":3, "count":2},
-                { "letter": "Q", "value":10, "count":1},
-                { "letter": "R", "value":1, "count":6},
-                { "letter": "S", "value":1, "count":4},
-                { "letter": "T", "value":1, "count":6},
-                { "letter": "U", "value":1, "count":4},
-                { "letter": "V", "value":4, "count":2},
-                { "letter": "W", "value":4, "count":2},
-                { "letter": "X", "value":8, "count":1},
-                { "letter": "Y", "value":4, "count":2},
-                { "letter": "Z", "value":10, "count":1}
-            ]
-        }
+        property var letters: [
+            "A",1,9,
+            "B",3,2,
+            "C",3,2,
+            "D",2,4,
+            "E",1,12,
+            "F",4,2,
+            "G",2,3,
+            "H",4,2,
+            "I",1,9,
+            "J",8,1,
+            "K",5,1,
+            "L",1,4,
+            "M",3,2,
+            "N",1,6,
+            "O",1,8,
+            "P",3,2,
+            "Q",10,1,
+            "R",1,6,
+            "S",1,4,
+            "T",1,6,
+            "U",1,4,
+            "V",4,2,
+            "W",4,2,
+            "X",8,1,
+            "Y",4,2,
+            "Z",10,1]
         /*
         http://www.scrabbleplayers.org/wiki/images/9/95/Rules-20120616.pdf (NASPA, June 27, 2012)
         http://www.scrabbleplayers.org/w/Welcome_to_NASPAWiki
@@ -823,39 +816,33 @@ Item {
         property int limitExchange: 7                //page 11, 3.2.1
         property int endBonus: 0
         property int scrabbleBonus:50
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                 { "letter": "A", "value":1, "count":9},
-                 { "letter": "B", "value":3, "count":2},
-                 { "letter": "C", "value":3, "count":2},
-                 { "letter": "D", "value":2, "count":4},
-                 { "letter": "E", "value":1, "count":12},
-                 { "letter": "F", "value":4, "count":2},
-                 { "letter": "G", "value":2, "count":3},
-                 { "letter": "H", "value":4, "count":2},
-                 { "letter": "I", "value":1, "count":9},
-                 { "letter": "J", "value":8, "count":1},
-                 { "letter": "K", "value":5, "count":1},
-                 { "letter": "L", "value":1, "count":4},
-                 { "letter": "M", "value":3, "count":2},
-                 { "letter": "N", "value":1, "count":6},
-                 { "letter": "O", "value":1, "count":8},
-                 { "letter": "P", "value":3, "count":2},
-                 { "letter": "Q", "value":10, "count":1},
-                 { "letter": "R", "value":1, "count":6},
-                 { "letter": "S", "value":1, "count":4},
-                 { "letter": "T", "value":1, "count":6},
-                 { "letter": "U", "value":1, "count":4},
-                 { "letter": "V", "value":4, "count":2},
-                 { "letter": "W", "value":4, "count":2},
-                 { "letter": "X", "value":8, "count":1},
-                 { "letter": "Y", "value":4, "count":2},
-                 { "letter": "Z", "value":10, "count":1}
-            ]
-        }
+        property var letters: [
+            "A",1,9,
+            "B",3,2,
+            "C",3,2,
+            "D",2,4,
+            "E",1,12,
+            "F",4,2,
+            "G",2,3,
+            "H",4,2,
+            "I",1,9,
+            "J",8,1,
+            "K",5,1,
+            "L",1,4,
+            "M",3,2,
+            "N",1,6,
+            "O",1,8,
+            "P",3,2,
+            "Q",10,1,
+            "R",1,6,
+            "S",1,4,
+            "T",1,6,
+            "U",1,4,
+            "V",4,2,
+            "W",4,2,
+            "X",8,1,
+            "Y",4,2,
+            "Z",10,1]
         /*
         References:
         http://www.absp.org.uk/index.shtml
@@ -897,37 +884,31 @@ Item {
         property int limitExchange: 7                  //number of tiles that have to be left in bag for exchanging tiles on rack
         property int endBonus: 0                       //bonus for the player who ends the game
         property int scrabbleBonus: 50                 //bonus when all tiles have been placed
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "A", "value":1, "count":14},
-                { "letter": "B", "value":3, "count":3},
-                { "letter": "C", "value":2, "count":4},
-                { "letter": "Ç", "value":3, "count":2},
-                { "letter": "D", "value":2, "count":5},
-                { "letter": "E", "value":1, "count":11},
-                { "letter": "F", "value":4, "count":2},
-                { "letter": "G", "value":4, "count":2},
-                { "letter": "H", "value":4, "count":2},
-                { "letter": "I", "value":1, "count":10},
-                { "letter": "J", "value":5, "count":2},
-                { "letter": "L", "value":2, "count":5},
-                { "letter": "M", "value":1, "count":6},
-                { "letter": "N", "value":3, "count":4},
-                { "letter": "O", "value":1, "count":10},
-                { "letter": "P", "value":2, "count":4},
-                { "letter": "Q", "value":6, "count":1},
-                { "letter": "R", "value":1, "count":6},
-                { "letter": "S", "value":1, "count":8},
-                { "letter": "T", "value":1, "count":5},
-                { "letter": "U", "value":1, "count":7},
-                { "letter": "V", "value":4, "count":2},
-                { "letter": "X", "value":8, "count":1},
-                { "letter": "Z", "value":8, "count":1}
-            ]
-        }
+        property var letters: [
+            "A",1,14,
+            "B",3,3,
+            "C",2,4,
+            "Ç",3,2,
+            "D",2,5,
+            "E",1,11,
+            "F",4,2,
+            "G",4,2,
+            "H",4,2,
+            "I",1,10,
+            "J",5,2,
+            "L",2,5,
+            "M",1,6,
+            "N",3,4,
+            "O",1,10,
+            "P",2,4,
+            "Q",6,1,
+            "R",1,6,
+            "S",1,8,
+            "T",1,5,
+            "U",1,7,
+            "V",4,2,
+            "X",8,1,
+            "Z",8,1]
     }
     QtObject {
         id: langCatalan
@@ -962,39 +943,33 @@ Item {
         property int limitExchange: 7         //page 4, point 3
         property int endBonus: 0
         property int scrabbleBonus: 50
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "A", "value":1, "count":12},
-                { "letter": "B", "value":3, "count":2},
-                { "letter": "C", "value":2, "count":3},
-                { "letter": "Ç", "value":10, "count":1},
-                { "letter": "D", "value":2, "count":3},
-                { "letter": "E", "value":1, "count":13},
-                { "letter": "F", "value":4, "count":1},
-                { "letter": "G", "value":3, "count":2},
-                { "letter": "H", "value":8, "count":1},
-                { "letter": "I", "value":1, "count":8},
-                { "letter": "J", "value":8, "count":1},
-                { "letter": "L", "value":1, "count":4},
-                { "letter": "1", "value":10, "count":1},
-                { "letter": "M", "value":2, "count":3},
-                { "letter": "N", "value":1, "count":6},
-                { "letter": "2", "value":10, "count":1},
-                { "letter": "O", "value":1, "count":5},
-                { "letter": "P", "value":3, "count":2},
-                { "letter": "3", "value":8, "count":1},
-                { "letter": "R", "value":1, "count":8},
-                { "letter": "S", "value":1, "count":8},
-                { "letter": "T", "value":1, "count":5},
-                { "letter": "U", "value":1, "count":4},
-                { "letter": "V", "value":4, "count":1},
-                { "letter": "X", "value":10, "count":1},
-                { "letter": "Z", "value":8, "count":1}
-            ]
-        }
+        property var letters: [
+            "A",1,12,
+            "B",3,2,
+            "C",2,3,
+            "Ç",10,1,
+            "D",2,3,
+            "E",1,13,
+            "F",4,1,
+            "G",3,2,
+            "H",8,1,
+            "I",1,8,
+            "J",8,1,
+            "L",1,4,
+            "1",10,1,
+            "M",2,3,
+            "N",1,6,
+            "2",10,1,
+            "O",1,5,
+            "P",3,2,
+            "3",8,1,
+            "R",1,8,
+            "S",1,8,
+            "T",1,5,
+            "U",1,4,
+            "V",4,1,
+            "X",10,1,
+            "Z",8,1]
         /*
         http://www.fiscrabble.cat/wp-content/uploads/2011/07/Reglament-de-joc.pdf (July 2011)
         http://www.fiscrabble.cat/
@@ -1036,39 +1011,33 @@ Item {
         property int limitExchange: 7           //page 11, 3.2.1
         property int endBonus: 0
         property int scrabbleBonus: 50
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "A", "value":1, "count":6},
-                { "letter": "B", "value":3, "count":2},
-                { "letter": "C", "value":5, "count":2},
-                { "letter": "D", "value":2, "count":5},
-                { "letter": "E", "value":1, "count":18},
-                { "letter": "F", "value":4, "count":2},
-                { "letter": "G", "value":3, "count":3},
-                { "letter": "H", "value":4, "count":2},
-                { "letter": "I", "value":1, "count":4},
-                { "letter": "J", "value":4, "count":2},
-                { "letter": "K", "value":3, "count":3},
-                { "letter": "L", "value":3, "count":3},
-                { "letter": "M", "value":3, "count":3},
-                { "letter": "N", "value":1, "count":10},
-                { "letter": "O", "value":1, "count":6},
-                { "letter": "P", "value":3, "count":2},
-                { "letter": "Q", "value":10, "count":1},
-                { "letter": "R", "value":2, "count":5},
-                { "letter": "S", "value":2, "count":5},
-                { "letter": "T", "value":2, "count":5},
-                { "letter": "U", "value":4, "count":3},
-                { "letter": "V", "value":4, "count":2},
-                { "letter": "W", "value":5, "count":2},
-                { "letter": "X", "value":8, "count":1},
-                { "letter": "Y", "value":8, "count":1},
-                { "letter": "Z", "value":4, "count":2}
-            ]
-        }
+        property var letters: [
+            "A",1,6,
+            "B",3,2,
+            "C",5,2,
+            "D",2,5,
+            "E",1,18,
+            "F",4,2,
+            "G",3,3,
+            "H",4,2,
+            "I",1,4,
+            "J",4,2,
+            "K",3,3,
+            "L",3,3,
+            "M",3,3,
+            "N",1,10,
+            "O",1,6,
+            "P",3,2,
+            "Q",10,1,
+            "R",2,5,
+            "S",2,5,
+            "T",2,5,
+            "U",4,3,
+            "V",4,2,
+            "W",5,2,
+            "X",8,1,
+            "Y",8,1,
+            "Z",4,2]
        /*
           There are two official Scrabble Federations for Dutch Scrabble: one in the Netherlands and one in Belgium,
           and therefore there are official rules for Scrabble tournaments in Dutch language indeed, but those
@@ -1116,37 +1085,33 @@ Item {
         property int limitExchange: 7
         property int endBonus: 0
         property int scrabbleBonus: 50
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "A", "value":1, "count":10},
-                { "letter": "B", "value":8, "count":1},
-                { "letter": "C", "value":10, "count":1},
-                { "letter": "D", "value":7, "count":1},
-                { "letter": "E", "value":1, "count":8},
-                { "letter": "F", "value":8, "count":1},
-                { "letter": "G", "value":8, "count":1},
-                { "letter": "H", "value":4, "count":2},
-                { "letter": "I", "value":1, "count":10},
-                { "letter": "J", "value":4, "count":2},
-                { "letter": "K", "value":2, "count":5},
-                { "letter": "L", "value":2, "count":5},
-                { "letter": "M", "value":3, "count":3},
-                { "letter": "N", "value":1, "count":9},
-                { "letter": "O", "value":2, "count":5},
-                { "letter": "P", "value":4, "count":2},
-                { "letter": "R", "value":4, "count":2},
-                { "letter": "S", "value":1, "count":7},
-                { "letter": "T", "value":1, "count":9},
-                { "letter": "U", "value":3, "count":4},
-                { "letter": "V", "value":4, "count":2},
-                { "letter": "Y", "value":4, "count":2},
-                { "letter": "Ä", "value":2, "count":5},
-                { "letter": "Ö", "value":7, "count":1}
-            ]
-        }
+        property var letters: [
+            "A",1,10,
+            "B",8,1,
+            "C",10,1,
+            "D",7,1,
+            "E",1,8,
+            "F",8,1,
+            "G",8,1,
+            "H",4,2,
+            "I",1,10,
+            "J",4,2,
+            "K",2,5,
+            "L",2,5,
+            "M",3,3,
+            "N",1,9,
+            "O",2,5,
+            "P",4,2,
+            "R",4,2,
+            "S",1,7,
+            "T",1,9,
+            "U",3,4,
+            "V",4,2,
+            "Y",4,2,
+            "Ä",2,5,
+            "Ö",7,1,
+            "Y",8,1,
+            "Z",4,2]
         /*
           It is understood that there are no official tournament rules for Scrabble in Finnish language, because there is no
           Finnish Scrabble Federation. That's why Swedish tournament rules have arbitrarily been chosen for Scrabble games in
@@ -1197,39 +1162,33 @@ Item {
         property int limitExchange: 7               //point 4.3
         property int endBonus: 0
         property int scrabbleBonus: 50
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "A", "value":1, "count":9},
-                { "letter": "B", "value":3, "count":2},
-                { "letter": "C", "value":3, "count":2},
-                { "letter": "D", "value":2, "count":3},
-                { "letter": "E", "value":1, "count":15},
-                { "letter": "F", "value":4, "count":2},
-                { "letter": "G", "value":2, "count":2},
-                { "letter": "H", "value":4, "count":2},
-                { "letter": "I", "value":1, "count":8},
-                { "letter": "J", "value":8, "count":1},
-                { "letter": "K", "value":10, "count":1},
-                { "letter": "L", "value":1, "count":5},
-                { "letter": "M", "value":2, "count":3},
-                { "letter": "N", "value":1, "count":6},
-                { "letter": "O", "value":1, "count":6},
-                { "letter": "P", "value":3, "count":2},
-                { "letter": "Q", "value":8, "count":1},
-                { "letter": "R", "value":1, "count":6},
-                { "letter": "S", "value":1, "count":6},
-                { "letter": "T", "value":1, "count":6},
-                { "letter": "U", "value":1, "count":6},
-                { "letter": "V", "value":4, "count":2},
-                { "letter": "W", "value":10, "count":1},
-                { "letter": "X", "value":10, "count":1},
-                { "letter": "Y", "value":10, "count":1},
-                { "letter": "Z", "value":10, "count":1}
-            ]
-        }
+        property var letters: [
+            "A",1,9,
+            "B",3,2,
+            "C",3,2,
+            "D",2,3,
+            "E",1,15,
+            "F",4,2,
+            "G",2,2,
+            "H",4,2,
+            "I",1,8,
+            "J",8,1,
+            "K",10,1,
+            "L",1,5,
+            "M",2,3,
+            "N",1,6,
+            "O",1,6,
+            "P",3,2,
+            "Q",8,1,
+            "R",1,6,
+            "S",1,6,
+            "T",1,6,
+            "U",1,6,
+            "V",4,2,
+            "W",10,1,
+            "X",10,1,
+            "Y",10,1,
+            "Z",10,1]
       /*
         http://www.fisf.net
         http://www.fisf.net/documents/reglements-et-guides.html
@@ -1274,42 +1233,36 @@ Item {
         property int limitExchange:7                //page 9, point 3.2.1
         property int endBonus: 0
         property int scrabbleBonus:50
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "A", "value":1, "count":5},
-                { "letter": "B", "value":3, "count":2},
-                { "letter": "C", "value":4, "count":2},
-                { "letter": "D", "value":1, "count":4},
-                { "letter": "E", "value":1, "count":15},
-                { "letter": "F", "value":4, "count":2},
-                { "letter": "G", "value":2, "count":3},
-                { "letter": "H", "value":2, "count":4},
-                { "letter": "I", "value":1, "count":6},
-                { "letter": "J", "value":6, "count":1},
-                { "letter": "K", "value":4, "count":2},
-                { "letter": "L", "value":2, "count":3},
-                { "letter": "M", "value":3, "count":4},
-                { "letter": "N", "value":1, "count":9},
-                { "letter": "O", "value":2, "count":3},
-                { "letter": "P", "value":4, "count":1},
-                { "letter": "Q", "value":10, "count":1},
-                { "letter": "R", "value":1, "count":6},
-                { "letter": "S", "value":1, "count":7},
-                { "letter": "T", "value":1, "count":6},
-                { "letter": "U", "value":1, "count":6},
-                { "letter": "V", "value":6, "count":1},
-                { "letter": "W", "value":3, "count":1},
-                { "letter": "X", "value":8, "count":1},
-                { "letter": "Y", "value":10, "count":1},
-                { "letter": "Z", "value":3, "count":1},
-                { "letter": "Ä", "value":6, "count":1},
-                { "letter": "Ö", "value":8, "count":1},
-                { "letter": "Ü", "value":6, "count":1}
-            ]
-        }
+        property var letters: [
+            "A",1,5,
+            "B",3,2,
+            "C",4,2,
+            "D",1,4,
+            "E",1,15,
+            "F",4,2,
+            "G",2,3,
+            "H",2,4,
+            "I",1,6,
+            "J",6,1,
+            "K",4,2,
+            "L",2,3,
+            "M",3,4,
+            "N",1,9,
+            "O",2,3,
+            "P",4,1,
+            "Q",10,1,
+            "R",1,6,
+            "S",1,7,
+            "T",1,6,
+            "U",1,6,
+            "V",6,1,
+            "W",3,1,
+            "X",8,1,
+            "Y",10,1,
+            "Z",3,1,
+            "Ä",6,1,
+            "Ö",8,1,
+            "Ü",6,1]
       /*
         http://www.scrabble-deutschland.de/docs/SDeV_TSO.pdf (version 1.0 from 2010-04-25)
         http://www.scrabble.de/rules.php?f=&sub=2
@@ -1348,38 +1301,31 @@ Item {
         property int limitExchange: 7
         property int endBonus: 0
         property int scrabbleBonus: 50
-
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "Α", "value":1, "count":12},
-                { "letter": "Β", "value":8, "count":1},
-                { "letter": "Γ", "value":4, "count":2},
-                { "letter": "Δ", "value":4, "count":2},
-                { "letter": "Ε", "value":1, "count":8},
-                { "letter": "Ζ", "value":10, "count":1},
-                { "letter": "Η", "value":1, "count":7},
-                { "letter": "Θ", "value":10, "count":1},
-                { "letter": "Ι", "value":1, "count":8},
-                { "letter": "Κ", "value":2, "count":4},
-                { "letter": "Λ", "value":3, "count":3},
-                { "letter": "Μ", "value":3, "count":3},
-                { "letter": "Ν", "value":1, "count":6},
-                { "letter": "Ξ", "value":10, "count":1},
-                { "letter": "Ο", "value":1, "count":9},
-                { "letter": "Π", "value":2, "count":4},
-                { "letter": "Ρ", "value":2, "count":5},
-                { "letter": "Σ", "value":1, "count":7},
-                { "letter": "Τ", "value":1, "count":8},
-                { "letter": "Υ", "value":2, "count":4},
-                { "letter": "Φ", "value":8, "count":1},
-                { "letter": "Χ", "value":8, "count":1},
-                { "letter": "Ψ", "value":10, "count":1},
-                { "letter": "Ω", "value":3, "count":3}
-            ]
-        }
+        property var letters: [
+            "Α",1,12,
+            "Β",8,1,
+            "Γ",4,2,
+            "Δ",4,2,
+            "Ε",1,8,
+            "Ζ",10,1,
+            "Η",1,7,
+            "Θ",10,1,
+            "Ι",1,8,
+            "Κ",2,4,
+            "Λ",3,3,
+            "Μ",3,3,
+            "Ν",1,6,
+            "Ξ",10,1,
+            "Ο",1,9,
+            "Π",2,4,
+            "Ρ",2,5,
+            "Σ",1,7,
+            "Τ",1,8,
+            "Υ",2,4,
+            "Φ",8,1,
+            "Χ",8,1,
+            "Ψ",10,1,
+            "Ω",3,3]
       /*
         http://www.greekscrabble.gr/index.php?option=com_content&task=view&id=31&Itemid=102 (Κανονισμοί)
         http://www.greekscrabble.gr/
@@ -1425,35 +1371,29 @@ Item {
         property int limitExchange: 7               //page 11, 3.2.1
         property int endBonus: 0
         property int scrabbleBonus: 50
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "א", "value":2, "count":6},
-                { "letter": "ב", "value":3, "count":4},
-                { "letter": "ג", "value":5, "count":2},
-                { "letter": "ד", "value":3, "count":4},
-                { "letter": "ה", "value":1, "count":8},
-                { "letter": "ו", "value":1, "count":12},
-                { "letter": "ז", "value":8, "count":1},
-                { "letter": "ח", "value":4, "count":3},
-                { "letter": "ט", "value":8, "count":1},
-                { "letter": "י", "value":1, "count":10},
-                { "letter": "כ", "value":5, "count":2},
-                { "letter": "ל", "value":2, "count":6},
-                { "letter": "מ", "value":2, "count":6},
-                { "letter": "נ", "value":3, "count":4},
-                { "letter": "ס", "value":8, "count":1},
-                { "letter": "ע", "value":5, "count":2},
-                { "letter": "פ", "value":4, "count":3},
-                { "letter": "צ", "value":8, "count":1},
-                { "letter": "ק", "value":4, "count":3},
-                { "letter": "ר", "value":1, "count":8},
-                { "letter": "ש", "value":2, "count":6},
-                { "letter": "ת", "value":1, "count":9}
-            ]
-        }
+        property var letters: [
+            "א",2,6,
+            "ב",3,4,
+            "ג",5,2,
+            "ד",3,4,
+            "ה",1,8,
+            "ו",1,12,
+            "ז",8,1,
+            "ח",4,3,
+            "ט",8,1,
+            "י",1,10,
+            "כ",5,2,
+            "ל",2,6,
+            "מ",2,6,
+            "נ",3,4,
+            "ס",8,1,
+            "ע",5,2,
+            "פ",4,3,
+            "צ",8,1,
+            "ק",4,3,
+            "ר",1,8,
+            "ש",2,6,
+            "ת",1,9]
       /*
         It is understood that there are no official tournament rules for Scrabble in Hebrew language.
         In Israel all official tournaments seem to be held in English language only. That's the reason
@@ -1499,44 +1439,38 @@ Item {
         property int limitExchange: 7           //page 11, 3.2.1
         property int endBonus: 0
         property int scrabbleBonus: 50
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "A", "value":1, "count":11},
-                { "letter": "Á", "value":1, "count":5},
-                { "letter": "B", "value":3, "count":2},
-                { "letter": "Ḃ", "value":3, "count":2},
-                { "letter": "C", "value":2, "count":3},
-                { "letter": "Ċ", "value":2, "count":3},
-                { "letter": "D", "value":2, "count":3},
-                { "letter": "Ḋ", "value":4, "count":1},
-                { "letter": "E", "value":1, "count":4},
-                { "letter": "É", "value":3, "count":2},
-                { "letter": "F", "value":4, "count":1},
-                { "letter": "Ḟ", "value":10, "count":1},
-                { "letter": "G", "value":2, "count":3},
-                { "letter": "Ġ", "value":4, "count":1},
-                { "letter": "I", "value":1, "count":8},
-                { "letter": "Í", "value":1, "count":5},
-                { "letter": "L", "value":1, "count":5},
-                { "letter": "M", "value":2, "count":3},
-                { "letter": "Ṁ", "value":5, "count":1},
-                { "letter": "N", "value":1, "count":5},
-                { "letter": "O", "value":1, "count":4},
-                { "letter": "Ó", "value":2, "count":3},
-                { "letter": "P", "value":8, "count":1},
-                { "letter": "Ṗ", "value":10, "count":1},
-                { "letter": "R", "value":1, "count":5},
-                { "letter": "S", "value":1, "count":4},
-                { "letter": "Ṡ", "value":8, "count":1},
-                { "letter": "T", "value":2, "count":3},
-                { "letter": "Ṫ", "value":3, "count":2},
-                { "letter": "U", "value":3, "count":2},
-                { "letter": "Ú", "value":2, "count":3}
-            ]
-        }
+        property var letters: [
+            "A",1,11,
+            "Á",1,5,
+            "B",3,2,
+            "Ḃ",3,2,
+            "C",2,3,
+            "Ċ",2,3,
+            "D",2,3,
+            "Ḋ",4,1,
+            "E",1,4,
+            "É",3,2,
+            "F",4,1,
+            "Ḟ",10,1,
+            "G",2,3,
+            "Ġ",4,1,
+            "I",1,8,
+            "Í",1,5,
+            "L",1,5,
+            "M",2,3,
+            "Ṁ",5,1,
+            "N",1,5,
+            "O",1,4,
+            "Ó",2,3,
+            "P",8,1,
+            "Ṗ",10,1,
+            "R",1,5,
+            "S",1,4,
+            "Ṡ",8,1,
+            "T",2,3,
+            "Ṫ",3,2,
+            "U",3,2,
+            "Ú",2,3]
       /*
         http://www.absp.org.uk/index.shtml
         http://17085.homepagemodules.de/t1213f329-Assistant-Which-default-settings-do-you-wish.html
@@ -1576,39 +1510,33 @@ Item {
         property int limitExchange: 3           //page 10, point 34
         property int endBonus: 0
         property int scrabbleBonus: 50
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "A", "value":1, "count":14},
-                { "letter": "B", "value":5, "count":3},
-                { "letter": "C", "value":2, "count":6},
-                { "letter": "D", "value":5, "count":3},
-                { "letter": "E", "value":1, "count":11},
-                { "letter": "F", "value":5, "count":3},
-                { "letter": "G", "value":8, "count":2},
-                { "letter": "H", "value":8, "count":2},
-                { "letter": "I", "value":1, "count":12},
-                { "letter": "J", "value":0, "count":0},
-                { "letter": "K", "value":0, "count":0},
-                { "letter": "L", "value":3, "count":5},
-                { "letter": "M", "value":3, "count":5},
-                { "letter": "N", "value":3, "count":5},
-                { "letter": "O", "value":1, "count":15},
-                { "letter": "P", "value":5, "count":3},
-                { "letter": "Q", "value":10, "count":1},
-                { "letter": "R", "value":2, "count":6},
-                { "letter": "S", "value":2, "count":6},
-                { "letter": "T", "value":2, "count":6},
-                { "letter": "U", "value":3, "count":5},
-                { "letter": "V", "value":5, "count":3},
-                { "letter": "W", "value":0, "count":0},
-                { "letter": "X", "value":0, "count":0},
-                { "letter": "Y", "value":0, "count":0},
-                { "letter": "Z", "value":8, "count":2}
-            ]
-        }
+        property var letters: [
+            "A",1,14,
+            "B",5,3,
+            "C",2,6,
+            "D",5,3,
+            "E",1,11,
+            "F",5,3,
+            "G",8,2,
+            "H",8,2,
+            "I",1,12,
+            "J",0,0,
+            "K",0,0,
+            "L",3,5,
+            "M",3,5,
+            "N",3,5,
+            "O",1,15,
+            "P",5,3,
+            "Q",10,1,
+            "R",2,6,
+            "S",2,6,
+            "T",2,6,
+            "U",3,5,
+            "V",5,3,
+            "W",0,0,
+            "X",0,0,
+            "Y",0,0,
+            "Z",8,2]
       /*
         http://www.scrabbleitalia.com/regnaz.pdf (2012-09-13)
         http://www.scrabbleitalia.com
@@ -1647,37 +1575,31 @@ Item {
         property int limitExchange: 7
         property int endBonus: 0
         property int scrabbleBonus: 50
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "A", "value":1, "count":9},
-                { "letter": "B", "value":5, "count":2},
-                { "letter": "C", "value":2, "count":4},
-                { "letter": "D", "value":3, "count":3},
-                { "letter": "E", "value":1, "count":11},
-                { "letter": "F", "value":6, "count":1},
-                { "letter": "G", "value":6, "count":1},
-                { "letter": "H", "value":10, "count":1},
-                { "letter": "I", "value":1, "count":11},
-                { "letter": "K", "value":0, "count":0},
-                { "letter": "L", "value":4, "count":2},
-                { "letter": "M", "value":2, "count":5},
-                { "letter": "N", "value":1, "count":6},
-                { "letter": "O", "value":2, "count":5},
-                { "letter": "P", "value":4, "count":2},
-                { "letter": "Q", "value":10, "count":1},
-                { "letter": "R", "value":1, "count":9},
-                { "letter": "S", "value":1, "count":8},
-                { "letter": "T", "value":1, "count":7},
-                { "letter": "U", "value":1, "count":7},
-                { "letter": "V", "value":5, "count":2},
-                { "letter": "X", "value":6, "count":1},
-                { "letter": "Y", "value":0, "count":0},
-                { "letter": "Z", "value":0, "count":0}
-            ]
-        }
+        property var letters: [
+            "A",1,9,
+            "B",5,2,
+            "C",2,4,
+            "D",3,3,
+            "E",1,11,
+            "F",6,1,
+            "G",6,1,
+            "H",10,1,
+            "I",1,11,
+            "K",0,0,
+            "L",4,2,
+            "M",2,5,
+            "N",1,6,
+            "O",2,5,
+            "P",4,2,
+            "Q",10,1,
+            "R",1,9,
+            "S",1,8,
+            "T",1,7,
+            "U",1,7,
+            "V",5,2,
+            "X",6,1,
+            "Y",0,0,
+            "Z",0,0]
       /*
         It is understood that there are no official tournament rules for Scrabble in Latin language, because there
         is no Scrabble Federation for Latin Scrabble. That's why the English WESPA tournament rules have arbitrarily
@@ -1722,46 +1644,40 @@ Item {
         property int limitExchange: 7           //page 16, IV.E.2.a.
         property int endBonus: 0
         property int scrabbleBonus: 50
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "آ", "value":6, "count":1},
-                { "letter": "ا", "value":1, "count":9},
-                { "letter": "ب", "value":1, "count":3},
-                { "letter": "پ", "value":4, "count":2},
-                { "letter": "ت", "value":1, "count":6},
-                { "letter": "ث", "value":10, "count":1},
-                { "letter": "ج", "value":3, "count":2},
-                { "letter": "چ", "value":6, "count":1},
-                { "letter": "ح", "value":4, "count":2},
-                { "letter": "خ", "value":3, "count":2},
-                { "letter": "د", "value":1, "count":4},
-                { "letter": "ذ", "value":8, "count":1},
-                { "letter": "ر", "value":1, "count":7},
-                { "letter": "ز", "value":2, "count":2},
-                { "letter": "ژ", "value":8, "count":1},
-                { "letter": "س", "value":1, "count":3},
-                { "letter": "ش", "value":1, "count":4},
-                { "letter": "ص", "value":6, "count":1},
-                { "letter": "ض", "value":8, "count":1},
-                { "letter": "ط", "value":6, "count":1},
-                { "letter": "ظ", "value":10, "count":1},
-                { "letter": "ع", "value":4, "count":2},
-                { "letter": "غ", "value":6, "count":1},
-                { "letter": "ف", "value":2, "count":2},
-                { "letter": "ق", "value":3, "count":2},
-                { "letter": "ک", "value":1, "count":3},
-                { "letter": "گ", "value":4, "count":2},
-                { "letter": "ل", "value":1, "count":4},
-                { "letter": "م", "value":1, "count":7},
-                { "letter": "ن", "value":1, "count":6},
-                { "letter": "و", "value":1, "count":4},
-                { "letter": "ه", "value":1, "count":4},
-                { "letter": "ی", "value":1, "count":8}
-            ]
-        }
+        property var letters: [
+            "آ",6,1,
+            "ا",1,9,
+            "ب",1,3,
+            "پ",4,2,
+            "ت",1,6,
+            "ث",10,1,
+            "ج",3,2,
+            "چ",6,1,
+            "ح",4,2,
+            "خ",3,2,
+            "د",1,4,
+            "ذ",8,1,
+            "ر",1,7,
+            "ز",2,2,
+            "ژ",8,1,
+            "س",1,3,
+            "ش",1,4,
+            "ص",6,1,
+            "ض",8,1,
+            "ط",6,1,
+            "ظ",10,1,
+            "ع",4,2,
+            "غ",6,1,
+            "ف",2,2,
+            "ق",3,2,
+            "ک",1,3,
+            "گ",4,2,
+            "ل",1,4,
+            "م",1,7,
+            "ن",1,6,
+            "و",1,4,
+            "ه",1,4,
+            "ی",1,8]
       /*
         It is understood that there are no official tournament rules for Scrabble in Persian language,
         because there is no Scrabble Federation in Iran or any other country where Farsi is spoken.
@@ -1810,37 +1726,31 @@ Item {
         property int limitExchange: 7           //number of tiles that have to be left in bag for exchanging tiles on rack
         property int endBonus: 0                //bonus for the player who ends the game
         property int scrabbleBonus: 50          //bonus when all tiles have been placed
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "A", "value":1, "count":14},
-                { "letter": "B", "value":3, "count":3},
-                { "letter": "C", "value":2, "count":4},
-                { "letter": "Ç", "value":3, "count":2},
-                { "letter": "D", "value":2, "count":5},
-                { "letter": "E", "value":1, "count":11},
-                { "letter": "F", "value":4, "count":2},
-                { "letter": "G", "value":4, "count":2},
-                { "letter": "H", "value":4, "count":2},
-                { "letter": "I", "value":1, "count":10},
-                { "letter": "J", "value":5, "count":2},
-                { "letter": "L", "value":2, "count":5},
-                { "letter": "M", "value":1, "count":6},
-                { "letter": "N", "value":3, "count":4},
-                { "letter": "O", "value":1, "count":10},
-                { "letter": "P", "value":2, "count":4},
-                { "letter": "Q", "value":6, "count":1},
-                { "letter": "R", "value":1, "count":6},
-                { "letter": "S", "value":1, "count":8},
-                { "letter": "T", "value":1, "count":5},
-                { "letter": "U", "value":1, "count":7},
-                { "letter": "V", "value":4, "count":2},
-                { "letter": "X", "value":8, "count":1},
-                { "letter": "Z", "value":8, "count":1}
-            ]
-        }
+        property var letters: [
+            "A",1,14,
+            "B",3,3,
+            "C",2,4,
+            "Ç",3,2,
+            "D",2,5,
+            "E",1,11,
+            "F",4,2,
+            "G",4,2,
+            "H",4,2,
+            "I",1,10,
+            "J",5,2,
+            "L",2,5,
+            "M",1,6,
+            "N",3,4,
+            "O",1,10,
+            "P",2,4,
+            "Q",6,1,
+            "R",1,6,
+            "S",1,8,
+            "T",1,5,
+            "U",1,7,
+            "V",4,2,
+            "X",8,1,
+            "Z",8,1]
       /*
       */
     }
@@ -1877,39 +1787,33 @@ Item {
         property int limitExchange: 7
         property int endBonus: 0
         property int scrabbleBonus: 50
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "A", "value":1, "count":11},
-                { "letter": "B", "value":9, "count":2},
-                { "letter": "C", "value":1, "count":5},
-                { "letter": "D", "value":2, "count":4},
-                { "letter": "E", "value":1, "count":9},
-                { "letter": "F", "value":8, "count":2},
-                { "letter": "G", "value":9, "count":2},
-                { "letter": "H", "value":10, "count":1},
-                { "letter": "I", "value":1, "count":10},
-                { "letter": "J", "value":10, "count":1},
-                { "letter": "K", "value":0, "count":0},
-                { "letter": "L", "value":1, "count":4},
-                { "letter": "M", "value":4, "count":3},
-                { "letter": "N", "value":1, "count":6},
-                { "letter": "O", "value":1, "count":5},
-                { "letter": "P", "value":2, "count":4},
-                { "letter": "Q", "value":0, "count":0},
-                { "letter": "R", "value":1, "count":7},
-                { "letter": "S", "value":1, "count":5},
-                { "letter": "T", "value":1, "count":7},
-                { "letter": "U", "value":1, "count":6},
-                { "letter": "V", "value":8, "count":2},
-                { "letter": "W", "value":0, "count":0},
-                { "letter": "X", "value":10, "count":1},
-                { "letter": "Y", "value":0, "count":0},
-                { "letter": "Z", "value":10, "count":1}
-            ]
-        }
+        property var letters: [
+            "A",1,11,
+            "B",9,2,
+            "C",1,5,
+            "D",2,4,
+            "E",1,9,
+            "F",8,2,
+            "G",9,2,
+            "H",10,1,
+            "I",1,10,
+            "J",10,1,
+            "K",0,0,
+            "L",1,4,
+            "M",4,3,
+            "N",1,6,
+            "O",1,5,
+            "P",2,4,
+            "Q",0,0,
+            "R",1,7,
+            "S",1,5,
+            "T",1,7,
+            "U",1,6,
+            "V",8,2,
+            "W",0,0,
+            "X",10,1,
+            "Y",0,0,
+            "Z",10,1]
       /*
         http://www.scrabblero.ro/reg/reg-libera2011.doc
         http://www.scrabblero.ro/
@@ -1950,46 +1854,40 @@ Item {
         property int limitExchange: 7           //page 11, 3.2.1
         property int endBonus: 0
         property int scrabbleBonus: 50
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "А", "value":1, "count":8},
-                { "letter": "Б", "value":3, "count":2},
-                { "letter": "В", "value":1, "count":4},
-                { "letter": "Г", "value":3, "count":2},
-                { "letter": "Д", "value":2, "count":4},
-                { "letter": "Е", "value":1, "count":8},
-                { "letter": "Ё", "value":3, "count":1},
-                { "letter": "Ж", "value":5, "count":1},
-                { "letter": "З", "value":5, "count":2},
-                { "letter": "И", "value":1, "count":5},
-                { "letter": "Й", "value":4, "count":1},
-                { "letter": "К", "value":2, "count":4},
-                { "letter": "Л", "value":2, "count":4},
-                { "letter": "М", "value":2, "count":3},
-                { "letter": "Н", "value":1, "count":5},
-                { "letter": "О", "value":1, "count":10},
-                { "letter": "П", "value":2, "count":4},
-                { "letter": "Р", "value":1, "count":5},
-                { "letter": "С", "value":1, "count":5},
-                { "letter": "Т", "value":1, "count":5},
-                { "letter": "У", "value":2, "count":4},
-                { "letter": "Ф", "value":10, "count":1},
-                { "letter": "Х", "value":5, "count":1},
-                { "letter": "Ц", "value":5, "count":1},
-                { "letter": "Ч", "value":5, "count":1},
-                { "letter": "Ш", "value":8, "count":1},
-                { "letter": "Щ", "value":10, "count":1},
-                { "letter": "Ъ", "value":10, "count":1},
-                { "letter": "Ы", "value":4, "count":2},
-                { "letter": "Ь", "value":3, "count":2},
-                { "letter": "Э", "value":8, "count":1},
-                { "letter": "Ю", "value":8, "count":1},
-                { "letter": "Я", "value":3, "count":2}
-            ]
-        }
+        property var letters: [
+            "А",1,8,
+            "Б",3,2,
+            "В",1,4,
+            "Г",3,2,
+            "Д",2,4,
+            "Е",1,8,
+            "Ё",3,1,
+            "Ж",5,1,
+            "З",5,2,
+            "И",1,5,
+            "Й",4,1,
+            "К",2,4,
+            "Л",2,4,
+            "М",2,3,
+            "Н",1,5,
+            "О",1,10,
+            "П",2,4,
+            "Р",1,5,
+            "С",1,5,
+            "Т",1,5,
+            "У",2,4,
+            "Ф",10,1,
+            "Х",5,1,
+            "Ц",5,1,
+            "Ч",5,1,
+            "Ш",8,1,
+            "Щ",10,1,
+            "Ъ",10,1,
+            "Ы",4,2,
+            "Ь",3,2,
+            "Э",8,1,
+            "Ю",8,1,
+            "Я",3,2]
       /*
         It is understood that there are no official tournament rules for Scrabble in Russian language, because there
         is no Russian Scrabble Federation. That's why the English WESPA tournament rules have arbitrarily been chosen
@@ -2032,47 +1930,41 @@ Item {
         property int limitExchange: 7           //page 11, 3.2.1
         property int endBonus: 0
         property int scrabbleBonus: 50
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "A", "value":1, "count":15},
-                { "letter": "À", "value":5, "count":1},
-                { "letter": "B", "value":3, "count":2},
-                { "letter": "Ḃ", "value":2, "count":1},
-                { "letter": "C", "value":3, "count":3},
-                { "letter": "Ċ", "value":2, "count":3},
-                { "letter": "D", "value":2, "count":3},
-                { "letter": "Ḋ", "value":2, "count":3},
-                { "letter": "E", "value":1, "count":10},
-                { "letter": "È", "value":6, "count":1},
-                { "letter": "F", "value":5, "count":1},
-                { "letter": "Ḟ", "value":5, "count":1},
-                { "letter": "G", "value":3, "count":3},
-                { "letter": "Ġ", "value":5, "count":1},
-                { "letter": "I", "value":1, "count":11},
-                { "letter": "Ì", "value":6, "count":1},
-                { "letter": "L", "value":2, "count":3},
-                { "letter": "Ḻ", "value":8, "count":1},
-                { "letter": "M", "value":3, "count":2},
-                { "letter": "Ṁ", "value":5, "count":1},
-                { "letter": "N", "value":1, "count":4},
-                { "letter": "Ṉ", "value":4, "count":1},
-                { "letter": "O", "value":1, "count":4},
-                { "letter": "Ò", "value":6, "count":1},
-                { "letter": "P", "value":6, "count":1},
-                { "letter": "Ṗ", "value":1, "count":1},
-                { "letter": "R", "value":1, "count":4},
-                { "letter": "Ṟ", "value":8, "count":1},
-                { "letter": "S", "value":1, "count":4},
-                { "letter": "Ṡ", "value":1, "count":1},
-                { "letter": "T", "value":3, "count":3},
-                { "letter": "Ṫ", "value":3, "count":3},
-                { "letter": "U", "value":2, "count":2},
-                { "letter": "Ù", "value":6, "count":1}
-            ]
-        }
+        property var letters: [
+            "A",1,15,
+            "À",5,1,
+            "B",3,2,
+            "Ḃ",2,1,
+            "C",3,3,
+            "Ċ",2,3,
+            "D",2,3,
+            "Ḋ",2,3,
+            "E",1,10,
+            "È",6,1,
+            "F",5,1,
+            "Ḟ",5,1,
+            "G",3,3,
+            "Ġ",5,1,
+            "I",1,11,
+            "Ì",6,1,
+            "L",2,3,
+            "Ḻ",8,1,
+            "M",3,2,
+            "Ṁ",5,1,
+            "N",1,4,
+            "Ṉ",4,1,
+            "O",1,4,
+            "Ò",6,1,
+            "P",6,1,
+            "Ṗ",1,1,
+            "R",1,4,
+            "Ṟ",8,1,
+            "S",1,4,
+            "Ṡ",1,1,
+            "T",3,3,
+            "Ṫ",3,3,
+            "U",2,2,
+            "Ù",6,1]
       /*
           http://www.absp.org.uk/index.shtml
           http://17085.homepagemodules.de/t1212f328-Assistant-Which-default-settings-do-you-wish-for-Scottish-Gaelic.html
@@ -2112,58 +2004,52 @@ Item {
         property int limitExchange: 7
         property int endBonus: 0
         property int scrabbleBonus: 50
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "A", "value":1, "count":9},
-                { "letter": "Á", "value":4, "count":1},
-                { "letter": "Ä", "value":10, "count":1},
-                { "letter": "B", "value":4, "count":2},
-                { "letter": "C", "value":4, "count":1},
-                { "letter": "Č", "value":5, "count":1},
-                { "letter": "D", "value":2, "count":3},
-                { "letter": "Ď", "value":8, "count":1},
-                { "letter": "E", "value":1, "count":8},
-                { "letter": "É", "value":7, "count":1},
-                { "letter": "F", "value":8, "count":1},
-                { "letter": "G", "value":8, "count":1},
-                { "letter": "H", "value":4, "count":1},
-                { "letter": "I", "value":1, "count":5},
-                { "letter": "Í", "value":5, "count":1},
-                { "letter": "J", "value":3, "count":2},
-                { "letter": "K", "value":2, "count":3},
-                { "letter": "L", "value":2, "count":3},
-                { "letter": "Ľ", "value":7, "count":1},
-                { "letter": "Ĺ", "value":10, "count":1},
-                { "letter": "M", "value":2, "count":4},
-                { "letter": "N", "value":1, "count":5},
-                { "letter": "Ň", "value":8, "count":1},
-                { "letter": "O", "value":1, "count":9},
-                { "letter": "Ô", "value":8, "count":1},
-                { "letter": "Ó", "value":10, "count":1},
-                { "letter": "Ö", "value":0, "count":0},
-                { "letter": "P", "value":2, "count":3},
-                { "letter": "Q", "value":0, "count":0},
-                { "letter": "R", "value":1, "count":4},
-                { "letter": "Ŕ", "value":10, "count":1},
-                { "letter": "S", "value":1, "count":4},
-                { "letter": "Š", "value":5, "count":1},
-                { "letter": "T", "value":1, "count":4},
-                { "letter": "Ť", "value":7, "count":1},
-                { "letter": "U", "value":3, "count":2},
-                { "letter": "Ú", "value":7, "count":1},
-                { "letter": "Ü", "value":0, "count":0},
-                { "letter": "V", "value":1, "count":4},
-                { "letter": "W", "value":0, "count":0},
-                { "letter": "X", "value":10, "count":1},
-                { "letter": "Y", "value":4, "count":1},
-                { "letter": "Ý", "value":5, "count":1},
-                { "letter": "Z", "value":4, "count":1},
-                { "letter": "Ž", "value":5, "count":1}
-            ]
-        }
+        property var letters: [
+            "A",1,9,
+            "Á",4,1,
+            "Ä",10,1,
+            "B",4,2,
+            "C",4,1,
+            "Č",5,1,
+            "D",2,3,
+            "Ď",8,1,
+            "E",1,8,
+            "É",7,1,
+            "F",8,1,
+            "G",8,1,
+            "H",4,1,
+            "I",1,5,
+            "Í",5,1,
+            "J",3,2,
+            "K",2,3,
+            "L",2,3,
+            "Ľ",7,1,
+            "Ĺ",10,1,
+            "M",2,4,
+            "N",1,5,
+            "Ň",8,1,
+            "O",1,9,
+            "Ô",8,1,
+            "Ó",10,1,
+            "Ö",0,0,
+            "P",2,3,
+            "Q",0,0,
+            "R",1,4,
+            "Ŕ",10,1,
+            "S",1,4,
+            "Š",5,1,
+            "T",1,4,
+            "Ť",7,1,
+            "U",3,2,
+            "Ú",7,1,
+            "Ü",0,0,
+            "V",1,4,
+            "W",0,0,
+            "X",10,1,
+            "Y",4,1,
+            "Ý",5,1,
+            "Z",4,1,
+            "Ž",5,1]
       /*
           http://www.hramescrabble.sk/
           Discussion on http://17085.homepagemodules.de/t1494f349-Official-Slovakian-Scrabble-Rules.html
@@ -2202,41 +2088,35 @@ Item {
         property int limitExchange: 1           //no limit is explicitly mentioned in the rules, therefore the value 1 has been chosen
         property int endBonus: 0
         property int scrabbleBonus: 50
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "A", "value":1, "count":12},
-                { "letter": "B", "value":3, "count":2},
-                { "letter": "C", "value":3, "count":4},
-                { "letter": "D", "value":2, "count":5},
-                { "letter": "E", "value":1, "count":12},
-                { "letter": "F", "value":4, "count":1},
-                { "letter": "G", "value":2, "count":2},
-                { "letter": "H", "value":4, "count":2},
-                { "letter": "I", "value":1, "count":6},
-                { "letter": "J", "value":8, "count":1},
-                { "letter": "L", "value":1, "count":4},
-                { "letter": "M", "value":3, "count":2},
-                { "letter": "N", "value":1, "count":5},
-                { "letter": "Ñ", "value":8, "count":1},
-                { "letter": "O", "value":1, "count":9},
-                { "letter": "P", "value":3, "count":2},
-                { "letter": "Q", "value":5, "count":1},
-                { "letter": "R", "value":1, "count":5},
-                { "letter": "S", "value":1, "count":6},
-                { "letter": "T", "value":1, "count":4},
-                { "letter": "U", "value":1, "count":5},
-                { "letter": "V", "value":4, "count":1},
-                { "letter": "X", "value":8, "count":1},
-                { "letter": "Y", "value":4, "count":1},
-                { "letter": "Z", "value":10, "count":1},
-                { "letter": "1", "value":5, "count":1},
-                { "letter": "2", "value":8, "count":1},
-                { "letter": "3", "value":8, "count":1}
-            ]
-        }
+        property var letters: [
+            "A",1,12,
+            "B",3,2,
+            "C",3,4,
+            "D",2,5,
+            "E",1,12,
+            "F",4,1,
+            "G",2,2,
+            "H",4,2,
+            "I",1,6,
+            "J",8,1,
+            "L",1,4,
+            "M",3,2,
+            "N",1,5,
+            "Ñ",8,1,
+            "O",1,9,
+            "P",3,2,
+            "Q",5,1,
+            "R",1,5,
+            "S",1,6,
+            "T",1,4,
+            "U",1,5,
+            "V",4,1,
+            "X",8,1,
+            "Y",4,1,
+            "Z",10,1,
+            "1",5,1,
+            "2",8,1,
+            "3",8,1]
       /*
           http://fisescrabble.org/reglamentos/modalidad-clasica/
           http://fisescrabble.org
@@ -2276,44 +2156,38 @@ Item {
         property int limitExchange: 7
         property int endBonus: 0
         property int scrabbleBonus: 50
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "A", "value":1, "count":8},
-                { "letter": "B", "value":4, "count":2},
-                { "letter": "C", "value":8, "count":1},
-                { "letter": "D", "value":1, "count":5},
-                { "letter": "E", "value":1, "count":7},
-                { "letter": "F", "value":3, "count":2},
-                { "letter": "G", "value":2, "count":3},
-                { "letter": "H", "value":2, "count":2},
-                { "letter": "I", "value":1, "count":5},
-                { "letter": "J", "value":7, "count":1},
-                { "letter": "K", "value":2, "count":3},
-                { "letter": "L", "value":1, "count":5},
-                { "letter": "M", "value":2, "count":3},
-                { "letter": "N", "value":1, "count":6},
-                { "letter": "O", "value":2, "count":5},
-                { "letter": "P", "value":4, "count":2},
-                { "letter": "Q", "value":0, "count":0},
-                { "letter": "R", "value":1, "count":8},
-                { "letter": "S", "value":1, "count":8},
-                { "letter": "T", "value":1, "count":8},
-                { "letter": "U", "value":4, "count":3},
-                { "letter": "V", "value":3, "count":2},
-                { "letter": "W", "value":0, "count":0},
-                { "letter": "X", "value":8, "count":1},
-                { "letter": "Y", "value":7, "count":1},
-                { "letter": "Z", "value":10, "count":1},
-                { "letter": "Ä", "value":3, "count":2},
-                { "letter": "Å", "value":4, "count":2},
-                { "letter": "Æ", "value":0, "count":0},
-                { "letter": "Ö", "value":4, "count":2},
-                { "letter": "Ü", "value":0, "count":0}
-            ]
-        }
+        property var letters: [
+            "A",1,8,
+            "B",4,2,
+            "C",8,1,
+            "D",1,5,
+            "E",1,7,
+            "F",3,2,
+            "G",2,3,
+            "H",2,2,
+            "I",1,5,
+            "J",7,1,
+            "K",2,3,
+            "L",1,5,
+            "M",2,3,
+            "N",1,6,
+            "O",2,5,
+            "P",4,2,
+            "Q",0,0,
+            "R",1,8,
+            "S",1,8,
+            "T",1,8,
+            "U",4,3,
+            "V",3,2,
+            "W",0,0,
+            "X",8,1,
+            "Y",7,1,
+            "Z",10,1,
+            "Ä",3,2,
+            "Å",4,2,
+            "Æ",0,0,
+            "Ö",4,2,
+            "Ü",0,0]
       /*
           http://www.scrabbleforbundet.se/index.php?option=content&task=view&id=16&Itemid=39
           http://www.scrabbleforbundet.se
@@ -2356,42 +2230,36 @@ Item {
         property int limitExchange: 7               //page 11, 3.2.1
         property int endBonus: 0
         property int scrabbleBonus: 50
-        property var letters: TableModel {
-            TableModelColumn { display: "letter" }
-            TableModelColumn { display: "value" }
-            TableModelColumn { display: "count" }
-            rows: [
-                { "letter": "A", "value":1, "count":12},
-                { "letter": "B", "value":3, "count":2},
-                { "letter": "C", "value":4, "count":2},
-                { "letter": "Ç", "value":4, "count":2},
-                { "letter": "D", "value":3, "count":2},
-                { "letter": "E", "value":1, "count":8},
-                { "letter": "F", "value":7, "count":1},
-                { "letter": "G", "value":5, "count":1},
-                { "letter": "Ğ", "value":8, "count":1},
-                { "letter": "H", "value":5, "count":1},
-                { "letter": "I", "value":2, "count":4},
-                { "letter": "İ", "value":1, "count":7},
-                { "letter": "J", "value":10, "count":1},
-                { "letter": "K", "value":1, "count":7},
-                { "letter": "L", "value":1, "count":7},
-                { "letter": "M", "value":2, "count":4},
-                { "letter": "N", "value":1, "count":5},
-                { "letter": "O", "value":2, "count":3},
-                { "letter": "Ö", "value":7, "count":1},
-                { "letter": "P", "value":5, "count":1},
-                { "letter": "R", "value":1, "count":6},
-                { "letter": "S", "value":2, "count":3},
-                { "letter": "Ş", "value":4, "count":2},
-                { "letter": "T", "value":1, "count":5},
-                { "letter": "U", "value":2, "count":3},
-                { "letter": "Ü", "value":3, "count":2},
-                { "letter": "V", "value":7, "count":1},
-                { "letter": "Y", "value":3, "count":2},
-                { "letter": "Z", "value":4, "count":2}
-            ]
-        }
+        property var letters: [
+            "A",1,12,
+            "B",3,2,
+            "C",4,2,
+            "Ç",4,2,
+            "D",3,2,
+            "E",1,8,
+            "F",7,1,
+            "G",5,1,
+            "Ğ",8,1,
+            "H",5,1,
+            "I",2,4,
+            "İ",1,7,
+            "J",10,1,
+            "K",1,7,
+            "L",1,7,
+            "M",2,4,
+            "N",1,5,
+            "O",2,3,
+            "Ö",7,1,
+            "P",5,1,
+            "R",1,6,
+            "S",2,3,
+            "Ş",4,2,
+            "T",1,5,
+            "U",2,3,
+            "Ü",3,2,
+            "V",7,1,
+            "Y",3,2,
+            "Z",4,2]
       /*
         based on rules for British English
       */

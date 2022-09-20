@@ -133,16 +133,23 @@ Item {
 
             DropArea {
                 anchors.fill: parent
-                onEntered: (drag)=> { drag.source.dragAccept = GamePlay.canDrop(index)}
-                onExited:  drag.source.dragAccept = false
+                onEntered: (drag)=> {
+                    rcPiece.border.color = Qt.darker(rcPiece.color)
+                    drag.source.dragAccept = GamePlay.canDrop(index)
+                }
+                onExited: {
+                    rcPiece.border.color = Qt.lighter(rcPiece.color)
+                    drag.source.dragAccept = false
+                }
                 onDropped: (drag)=> {
+                    rcPiece.border.color = "transparent"
                     GamePlay.dropLetter(drag.source.rackIndex, index)
                     if (drag.source.pieceIsJoker) {
                         var p = mapToItem(board, drag.x,drag.y)
-                        if (app.width > p.x + jokerPicker.width)
+                        if (scrabble3D.width > p.x + jokerPicker.width)
                             jokerPicker.x = p.x; else
                             jokerPicker.x = p.x - jokerPicker.width
-                        if (app.height > p.y + jokerPicker.height)
+                        if (scrabble3D.height > p.y + jokerPicker.height)
                             jokerPicker.y = p.y; else
                             jokerPicker.y = p.y - jokerPicker.height
                         jokerPicker.boardIndex = index
@@ -163,6 +170,7 @@ Item {
                             GamePlay.removeLetter(index);
                         if (mouse.button === Qt.LeftButton) {
                             GamePlay.removeLetter(index)
+//                            drag.target = rcPiece
 //FIXME: board: drag on board
 //                            drag.source = rackList.itemAtIndex(index)
 //                            Drag.active = true

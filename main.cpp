@@ -9,9 +9,9 @@
 // use "set QT_D3D_ADAPTER_INDEX=1" on Windows
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
+    QApplication scrabble3D(argc, argv);
 
-    app.setWindowIcon(QIcon(":/resources/app.ico"));
+    scrabble3D.setWindowIcon(QIcon(":/resources/app.ico"));
 
     QQmlApplicationEngine engine;
 
@@ -21,11 +21,11 @@ int main(int argc, char *argv[])
     const QUrl url(QStringLiteral("qrc:/mainwindow.qml"));
 
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
-                     &app, [url](QObject *obj, const QUrl &objUrl) {
+                     &scrabble3D, [url](QObject *obj, const QUrl &objUrl) {
         if (!obj && url == objUrl)
             QCoreApplication::exit(-1);
     }, Qt::QueuedConnection);
     engine.load(url);
 
-    return app.exec();
+    return scrabble3D.exec();
 }

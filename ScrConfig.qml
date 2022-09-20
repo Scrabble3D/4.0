@@ -1,9 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-//import QtQuick.Dialogs
-import Qt.labs.qmlmodels //TableModel
-import Qt.labs.platform //Standardpath, native dialog
+import Qt.labs.platform //Standardpath, native dialog; instead of import QtQuick.Dialogs
 
 Window {
     visible: false //show per action acConfiguration
@@ -34,7 +32,6 @@ Window {
     property int wordCheckBonus: 0 //set sbBonus.value in ScrConfigWordCheck
     property bool clabbers: false //set cbClabbers.toggle in ScrConfigWordCheck
 
-    property TableModel letterSet // ScrConfigLetter::tvLetterSet.model
     property alias colors: scrColors
     property alias playercolors: scrPlayerColors
     property var board: []
@@ -59,31 +56,8 @@ Window {
         //load last session properties
         loadConfig("")
     }
-
     function getLetterSet(index) {
-        var letterlist = [];
-        var aLetterSet;
-        if (index === -1) //current set = -1
-            aLetterSet = letterSet
-        else
-            aLetterSet = defaults.languages[index].letters;
-        if (aLetterSet === null) return
-
-        for (var i=0; i<aLetterSet.rowCount; i++) {
-            letterlist.push(aLetterSet.getRow(i).letter);
-            letterlist.push(aLetterSet.getRow(i).value);
-            letterlist.push(aLetterSet.getRow(i).count);
-        }
-        return letterlist;
-    }
-    function setLetterSet(letterlist) {
-        letterSet.clear();
-        for (var i=0; i<letterlist.length; i+=3)
-            config.letterSet.appendRow( {
-                letter: letterlist[i + 0],
-                value:  letterlist[i + 1],
-                count:  letterlist[i + 2],})
-        configLetter.cbLetterSet.currentIndex = -1
+        return configLetter.getLetterSet(index)
     }
 
     function getConfigData(bComplete = true) {
@@ -147,7 +121,6 @@ Window {
         return configData;
     }
 
-    //FIXME: config: save config/game fails on Android
     function saveConfig(fileName)
     {
         GamePlay.saveConfig(fileName, getConfigData())
@@ -202,7 +175,7 @@ Window {
             var aLetters = []
             aLetters = getConfigValue("cbLetterSetData","").split(",")
             if (aLetters.length > 0)
-               setLetterSet(aLetters)
+               configLetter.setLetterSet(aLetters)
         }
 
         configLetter.sbJoker.value = getConfigValue("sbJokers", 2)
@@ -267,10 +240,11 @@ Window {
         folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
         nameFilters: [qsTr("Scrabble3D configuration (*.ssc)"), qsTr("All files (*)")]
         defaultSuffix: "ssc"
-        onAccepted:
+        onAccepted: {
             fileMode === FileDialog.OpenFile
                     ? loadConfig(file)
                     : saveConfig(file)
+        }
     }
 
     Action {
@@ -353,7 +327,7 @@ Window {
 
         SplitView {
             id: splitView
-            orientation: Qt.platform.os !== "android"
+            orientation: mainLoader.state === "landscape"
                          ? Qt.Horizontal
                          : Qt.Vertical
 
@@ -365,7 +339,7 @@ Window {
 
             Rectangle {
                 id: leftPane
-                visible: Qt.platform.os !== "android"
+                visible: mainLoader.state === "landscape"
                 SplitView.preferredWidth: parent.width * 28/100 //TODO: config: fit left pane to content width
                 SplitView.minimumWidth: 50
                 color: myPalette.window
@@ -379,7 +353,7 @@ Window {
             }
             ComboBox {
                 id: catSelector
-                visible: Qt.platform.os === "android"
+                visible: mainLoader.state === "portrait"
                 model: lmCategories
                 textRole: "name"
                 onCurrentIndexChanged: lView.currentIndex = currentIndex
@@ -464,7 +438,6 @@ Window {
             Button {
                 id: btnLoad
                 action: acLoadConfig
-                enabled: Qt.platform.os !== "android" //TODO: config filedialog on Android
                 icon.width: 16; icon.height: 16 //needed on macOS
                 anchors.leftMargin: 10
                 anchors.verticalCenter: parent.verticalCenter
@@ -472,7 +445,6 @@ Window {
             Button {
                 id: btnSave
                 action: acSaveConfig
-                enabled: Qt.platform.os !== "android"
                 icon.width: 16; icon.height: 16
                 anchors.left: btnLoad.right
                 anchors.leftMargin: 3

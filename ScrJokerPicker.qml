@@ -34,9 +34,10 @@ Dialog {
     }
     function updatePickerModel() {
         pickerModel.clear()
-        for (var i=0; i<config.letterSet.rowCount; i++)
-            pickerModel.append({"what":config.letterSet.getRow(i).letter,
-                                "value":config.letterSet.getRow(i).value})
+        var letterlist = config.getLetterSet(-1)
+        for (var i = 0; i < letterlist.length; i+=3)
+            pickerModel.append( {"what"  : letterlist[i+0],
+                                 "value" : letterlist[i+1]} )
     }
     Grid {
         columns: Math.max(Math.sqrt(pickerModel.count), 6)

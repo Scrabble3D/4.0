@@ -4,12 +4,12 @@
 #include <QtMath>
 #include <QMessageBox>
 #include <QSettings>
-#include <QDir>
-#include <QStandardPaths>
 #include <QCoreApplication>
 #include <QQmlEngine> //translation
 #include <QQmlFile>
 #include <QCheckBox>
+
+#include "configpath.h"
 
 #ifdef QT_DEBUG
 #include <QDebug>
@@ -17,6 +17,7 @@
 
 GamePlay::GamePlay(QQmlEngine *engine)
 {
+
     m_pTranslator = new QTranslator(this);
     m_pEngine = engine;
 
@@ -44,11 +45,8 @@ GamePlay::GamePlay(QQmlEngine *engine)
 //    m_RemoteGamesProxy->setSortRole(remoteGamesModel::LastAccessRole);
 */
 #ifdef Q_OS_ANDROID
-    const QDir aPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-    QString fileName = aPath.path() +"/debug.ssg";
-    loadGame(QUrl::fromLocalFile(fileName));
+    emit loadGame(config::file("debug.ssg"));
 #endif
-
 }
 
 void GamePlay::connect(QString name, QString password, QString email, QString country, QString city)
@@ -121,8 +119,7 @@ void GamePlay::connect(QString name, QString password, QString email, QString co
 
 void GamePlay::disconnect()
 {
-    const QDir aPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-    QSettings settings(aPath.path() + "/Scrabble3D.ini", QSettings::IniFormat);
+    QSettings settings(config::ini(), QSettings::IniFormat);
 
     if ( settings.value("program/confirmlogout","true").toBool() ) {
         QMessageBox msgBox;
@@ -206,9 +203,9 @@ void GamePlay::doNetworkInvite(QVariantMap aMsg)
         int nIndex = sRelease.indexOf("_");
         if (nIndex > 0)
             sRelease = sRelease.first(nIndex);
-        if (sRelease != versionString()) {
+        if (sRelease != version::current()) {
             msgBox.setText(tr("You are using different releases: %1<>%2").arg(
-                sRelease,versionString()));
+                sRelease, version::current()));
             msgBox.setInformativeText("");
             msgBox.setIcon(QMessageBox::Warning);
             msgBox.setStandardButtons(QMessageBox::Ok);
@@ -223,6 +220,7 @@ void GamePlay::doNetworkInvite(QVariantMap aMsg)
 
 void GamePlay::doNetworkJoin(QVariantMap aMsg)
 {
+    Q_UNUSED(aMsg);
 /*    if (aMsg["Sender"].toString() == m_pNetwork->localPlayerName()) {
         QString runningGame = aMsg["Game"].toString();
         if (!runningGame.isEmpty()) {
@@ -663,9 +661,7 @@ void GamePlay::doNetworkLogin(QVariantMap aMsg)
 //TODO: main: finish l10n
 void GamePlay::localize(QString fileName)
 {
-    const QDir aPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-
-    if ( m_pTranslator->load(fileName,aPath.path()) ) {
+    if ( m_pTranslator->load(fileName, config::file("")) ) {
         qApp->installTranslator(m_pTranslator);
         m_pEngine->retranslate();
 
@@ -973,11 +969,8 @@ void GamePlay::nextPlayer(const bool bIsLoading)
     emit lastErrorChanged();
 
 #ifdef Q_OS_ANDROID //store moves on Android to load when coming back from sleep
-    if (!m_bIsConnected) {
-        const QDir aPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-        QString fileName = aPath.path() +"/debug.ssg";
-        saveGame(QUrl::fromLocalFile(fileName));
-    }
+    if (!m_bIsConnected)
+        saveGame(config::file("debug.ssg"));
 #endif
 
     //clear computemove
@@ -1084,12 +1077,11 @@ void GamePlay::doUpdateRack()
             }
         }
         else if (rackLetter.IsExchange) {
-            //TODO: gameplay: treat exchange optionally as pass
             rackLetter.State = LetterState::lsBag;
             rackLetter.RackPos = 0;
             rackLetter.IsExchange = false;
             m_lBag.append(rackLetter); //FIXME: do not append but randomly insert exchanged letters
-            m_pRackModel->placeLetter(i,false); //set empty
+            m_pRackModel->placeLetter(i, false); //set empty
             Letter aLetter = m_lBag[0];
             aLetter.State = LetterState::lsRack;
             aLetter.RackPos = i;
@@ -1422,14 +1414,13 @@ void GamePlay::doComputeMove()
 
 void GamePlay::saveConfig(QString fileName, QVariantMap configData)
 {
-    const QDir aPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
     if (fileName.isEmpty()) //new game
-        fileName = aPath.path() + "/Scrabble3D.ini";
-//FIXME: gameplay: Android cannot access content:// urls; native filedialog not yet implemented
+        fileName = config::ini();
 #ifndef Q_OS_ANDROID
     else
         fileName = QUrl(fileName).toLocalFile();
 #endif
+
     QSettings settings(fileName, QSettings::IniFormat);
 
     settings.beginGroup("config");
@@ -1440,9 +1431,8 @@ void GamePlay::saveConfig(QString fileName, QVariantMap configData)
 
 QVariantMap GamePlay::loadConfig(QString fileName)
 {
-    const QDir aPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
     if (fileName.isEmpty()) //new game
-        fileName = aPath.path() + "/Scrabble3D.ini";
+        fileName = config::ini();
 #ifndef Q_OS_ANDROID
     else
         fileName = QUrl(fileName).toLocalFile();
@@ -1459,10 +1449,13 @@ QVariantMap GamePlay::loadConfig(QString fileName)
     return configData;
 }
 
-void GamePlay::saveGame(const QUrl &fileName)
+void GamePlay::saveGame(QString fileName)
 {
-//    m_pMsgModel->addMessage(tr("Game saved as %1").arg(fileName.toLocalFile()));
-    QSettings settings(fileName.toLocalFile(), QSettings::IniFormat);
+#ifndef Q_OS_ANDROID
+    fileName = QUrl(fileName).toLocalFile(); //android reports content:// while it's file:// on desktop
+#endif
+
+    QSettings settings(fileName, QSettings::IniFormat);
 
     //clear previous values
     settings.clear();
@@ -1556,16 +1549,18 @@ void GamePlay::saveGame(const QUrl &fileName)
         settings.setValue("letterset",m_pDicListModel->dictionary->getLetterSet());
     }
     settings.endGroup();
+
+    m_pMsgModel->addMessage(tr("Game saved to %1").arg(fileName));
 }
 
-void GamePlay::loadGame(const QUrl &fileName)
+void GamePlay::loadGame(QString fileName)
 {
-#ifdef QT_DEBUG
-    qDebug() << "Load game from " << fileName.toLocalFile();
+#ifndef Q_OS_ANDROID
+    fileName = QUrl(fileName).toLocalFile(); //android reports content:// while desktop uses file://
 #endif
 
     QFile aFile;
-    if (!aFile.exists(fileName.toLocalFile()))
+    if (!aFile.exists(fileName))
         return;
 
     if (m_bIsRunning && (m_nTimerID > -1)) {
@@ -1573,8 +1568,7 @@ void GamePlay::loadGame(const QUrl &fileName)
         m_nTimerID = -1;
     }
 
-    m_pMsgModel->addMessage(tr("Loading game from %1...").arg(fileName.toLocalFile()));
-    QSettings settings(fileName.toLocalFile(), QSettings::IniFormat);
+    QSettings settings(fileName, QSettings::IniFormat);
     m_pGameCourseModel->clear();
     m_lPlayerNames.clear();
     bool bIs3D;
@@ -1722,6 +1716,8 @@ void GamePlay::loadGame(const QUrl &fileName)
         nextPlayer();
     else
         m_nTimerID = startTimer(1000);
+
+    m_pMsgModel->addMessage(tr("Successfully loaded game from %1").arg(fileName));
 }
 
 void GamePlay::computeMove()

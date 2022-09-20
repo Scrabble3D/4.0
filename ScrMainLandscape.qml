@@ -15,39 +15,40 @@ ColumnLayout {
         id: menuBar
         Menu {
             id: fileMenu
-            title: qsTr("File")
+            title: qsTr("&File")
             MenuItem { action: acLoadGame }
             MenuItem { action: acSaveGame }
             MenuSeparator { }
-            MenuItem { action: acExitApp }
+            MenuItem { action: acExit }
         }
         Menu {
             id: editMenu
-            title: qsTr("Game")
+            title: qsTr("&Game")
             MenuItem { action: acNewGame }
             MenuItem { action: acNextPlayer }
             MenuItem { action: acChallenge }
             MenuItem { action: acComputeMove }
+            MenuSeparator { }
+            MenuItem { action: acNetwork; icon.source: "" }
         }
         Menu {
             id: viewMenu
-            title: qsTr("Configuration")
+            title: qsTr("&Configuration")
             MenuItem { action: acConfiguration }
-            MenuSeparator { }
             MenuItem { action: acDictionary }
+            MenuSeparator { }
+            Menu {
+                //TODO: mainform: view type actions as true radiobuttons; menuitemgroup doesnt work
+                title: qsTr("&View Mode")
+                MenuItem { action: acAutomaticView }
+                MenuItem { action: acLandscapeView }
+                MenuItem { action: acPortraitView }
+            }
         }
         Menu {
             id: helpMenu
             title: qsTr("&Help")
-            //TODO: mainform: view type actions as true radiobuttons; menuitemgroup doesnt work
-            MenuItem { action: acAutomaticView }
-            MenuItem { action: acLandscapeView }
-            MenuItem { action: acPortraitView }
-            MenuSeparator { }
 //            MenuItem { action: acLocalize } //TODO: mainwindow localize
-            MenuSeparator { }
-            MenuItem { action: acNetwork; icon.source: "" }
-            MenuSeparator { }
             MenuItem { action: acAbout }
         }
     }

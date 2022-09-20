@@ -19,6 +19,7 @@
 #include "network.h"
 #include "playersmodel.h"
 #include "remotegamesmodel.h"
+#include "configpath.h"
 
 enum WordCheckMode {wcAsk=0,
                     wcPoll=1,
@@ -93,7 +94,7 @@ signals:
     void isLocalPlayerChanged();
     void answerChanged(QVariantList); // 0 = no answer, 1 = yes/green, -1 = no/red
     void newGame(bool); // triggers acNewGame in mainwindow
-    void applyConfig(QVariantMap); // triggers config::applyconfig()
+    void applyConfig(QVariantMap); // triggers scrconfig::applyconfig()
     void showRemoteGames(); // shows ScrRemoteGames()
 
 public:
@@ -113,8 +114,10 @@ public:
 
     Q_INVOKABLE void saveConfig(QString fileName, QVariantMap configData);
     Q_INVOKABLE QVariantMap loadConfig(QString fileName);
-    Q_INVOKABLE void saveGame(const QUrl &fileName);
-    Q_INVOKABLE void loadGame(const QUrl &fileName);
+    Q_INVOKABLE void saveGame(QString fileName);/* { saveGame(QUrl::fromLocalFile(fileName)); }
+    void saveGame(const QUrl &fileName);*/
+    Q_INVOKABLE void loadGame(QString fileName);/* {loadGame(QUrl::fromLocalFile(fileName)); }
+    void loadGame(const QUrl &fileName);*/
     Q_INVOKABLE void getRemoteGames() {
         addMessage( tr("Requesting saved games from server...") );
         emit onSend(network::nwRemoteGames, m_pNetwork->localPlayerName(), "");
@@ -140,12 +143,11 @@ public:
     //TODO: gameplay: block meaning if currentplayer = currentmove
     Q_INVOKABLE QString meaningAt(const int index) { return replaceAllLetters(m_pDicListModel->dictionary->getMeanings( m_pBoard->getWordsAt(index)) ); }
 
-    //TODO: gameplay: clean-up
-//    Q_INVOKABLE QUrl documentPath() { return QStandardPaths::writableLocation( QStandardPaths::DocumentsLocation ); }
     Q_INVOKABLE void download(QString fileName) { m_pDownloadManager->download(fileName); }
     Q_INVOKABLE void statInfoType(const int aType) { m_nStatInfoType = aType; emit statInfoChanged(); }
     Q_INVOKABLE QString allStat() { return getAllStat(); }
-    Q_INVOKABLE QString version() { return versionString() + " / " + QStringLiteral(__DATE__); }
+    Q_INVOKABLE QString version() { return version::current() + " / " + QStringLiteral(__DATE__); }
+    Q_INVOKABLE QString config() { return config::ini(); }
 
     Q_INVOKABLE QString networkName() { return m_pNetwork->localPlayerName(); }
 //    Q_INVOKABLE QString fromTDateTime(double aValue) { return m_PlayersTreeModel->fromTDateTimeF(aValue); }

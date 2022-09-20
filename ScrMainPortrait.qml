@@ -95,17 +95,19 @@ ColumnLayout {
                         MenuSeparator { }
                         MenuItem { action: acLoadGame }
                         MenuItem { action: acSaveGame }
-                        MenuItem { action: acConfiguration }
                         MenuSeparator { }
                         MenuItem { action: acNetwork; icon.source: "" }
                         MenuSeparator { }
-                        MenuItem { action: acAutomaticView }
-                        MenuItem { action: acLandscapeView }
-                        MenuItem { action: acPortraitView }
-                        MenuSeparator { }
+                        MenuItem { action: acConfiguration }
+                        Menu {
+                            title: qsTr("View Mode")
+                            MenuItem { action: acAutomaticView }
+                            MenuItem { action: acLandscapeView }
+                            MenuItem { action: acPortraitView }
+                        }
                         MenuItem { action: acAbout }
                         MenuSeparator { }
-                        MenuItem { action: acExitApp }
+                        MenuItem { action: acExit }
                     }
                 }
             }

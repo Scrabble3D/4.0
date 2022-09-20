@@ -1,19 +1,16 @@
 #include "dictionary.h"
 #include "letter.h" //jokerchar
 #include "version.h" //version to string converter
+#include "configpath.h"
 
-#ifdef QT_DEBUG
-#include <QDebug>
-#endif
-
-#include <QFile>
-#include <QFileInfo>
-#include <QStandardPaths>
-#include <QDir>
 #include <QXmlStreamReader>
 #include <QSettings>
 #include <QCoreApplication>
 #include <QMessageBox>
+
+#ifdef QT_DEBUG
+#include <QDebug>
+#endif
 
 dicFile::dicFile(QObject* parent)
     : m_Words(0),
@@ -22,7 +19,6 @@ dicFile::dicFile(QObject* parent)
       m_pParent(parent)
 {
 }
-
 
 QString decrypt(QString aLine, QString aKey)
 {
@@ -53,8 +49,7 @@ void dicFile::clear()
 
 bool dicFile::loadDictionary(const QString fileName)
 {
-    const QDir aPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-    QFile inputFile(aPath.path() + "/" + fileName);
+    QFile inputFile(config::file(fileName));
 
     bool bHasStandardCategory = false;
     double readSize = 0;
@@ -531,8 +526,7 @@ QVariant dicList::data(const QModelIndex &index, int role) const
 
 void dicList::updateList()
 {
-    const QDir aPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-    QFile file(aPath.path() + "/Scrabble3D.conf");
+    QFile file(config::conf());
 
     m_Dictionaries.clear();
 
@@ -561,7 +555,7 @@ void dicList::updateList()
     }
 
     //local files
-    QStringList localDics = aPath.entryList(QStringList() << "*.dic", QDir::Files);
+    QStringList localDics = config::path().entryList(QStringList() << "*.dic", QDir::Files);
     bool bPublicDic;
     foreach(QString fileName, localDics)
     {
@@ -585,17 +579,17 @@ void dicList::updateList()
 
 void dicList::getInfo(dicListData *aData)
 {
-    const QDir aPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-    QFileInfo fileInfo(aPath.path() + "/" + aData->FileName);
+    const QString sFileName = config::file(aData->FileName);
+    QFileInfo fileInfo(sFileName);
     if (fileInfo.exists())
     {
-        QSettings settings(aPath.path() + "/" + aData->FileName, QSettings::IniFormat);
+        QSettings settings(sFileName, QSettings::IniFormat);
         QString aVersion = settings.value("Header/Version").toString();
         if (aVersion.isEmpty())
             aData->InstalledVersionNumber = -1;
         else
             aData->InstalledVersionNumber = aVersion.toInt();
-        aData->InstalledVersion = versionToString(aData->InstalledVersionNumber);
+        aData->InstalledVersion = version::toString(aData->InstalledVersionNumber);
         aData->Author = settings.value("Header/Author").toString();
         aData->License = settings.value("Header/Licence").toString();
         aData->Release = settings.value("Header/Release").toString();
@@ -605,7 +599,7 @@ void dicList::getInfo(dicListData *aData)
         aData->InstalledVersion = "";
         aData->InstalledVersionNumber = -1;
     }
-    aData->AvailableVersionNumber = stringToVersion(aData->AvailableVersion);
+    aData->AvailableVersionNumber = version::fromString(aData->AvailableVersion);
 }
 
 int dicList::indexOf(QString fileName)
@@ -645,8 +639,7 @@ bool dicList::loadFrom(QString fileName)
 
 bool dicList::deleteDic(QString fileName)
 {
-    const QDir aPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
-    const bool bResult = QFile::remove(aPath.path() + "/" + fileName);
+    const bool bResult = QFile::remove(config::file(fileName));
     if (bResult) {
         const int nIndex = indexOf(fileName);
 

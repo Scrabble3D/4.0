@@ -8,8 +8,8 @@ Dialog {
     title: qsTr("Start a new game")
     modal: true
     padding: mainLoader.state === "landscape" ? 12 : 0
-    x: (app.width - remotegame.width) / 2
-    y: (app.height - remotegame.height) / 2
+    x: (scrabble3D.width - remotegame.width) / 2
+    y: (scrabble3D.height - remotegame.height) / 2
 
     footer: DialogButtonBox {
         id: buttons

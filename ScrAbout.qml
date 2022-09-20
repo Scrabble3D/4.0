@@ -7,17 +7,17 @@ Dialog {
     title: qsTr("About Scrabble3D")
     standardButtons: Dialog.Ok
     modal: true
-    width: Math.min(contentWidth + 48, app.width)
-    height: Math.min(contentHeight + 128, app.height)
-    x: (app.width - about.width) / 2
-    y: (app.height - about.height) / 2
+    width: Math.min(contentWidth + 48, scrabble3D.width)
+    height: Math.min(contentHeight + 128, scrabble3D.height)
+    x: (scrabble3D.width - about.width) / 2
+    y: (scrabble3D.height - about.height) / 2
 
     RowLayout {
         spacing: 24
         Image {
             Layout.leftMargin: 24
             Layout.topMargin: 24
-            Layout.preferredWidth: Math.min(width, app.width - colLayout.width)
+            Layout.preferredWidth: Math.min(width, scrabble3D.width - colLayout.width)
             Layout.minimumWidth: 50
             fillMode: Image.PreserveAspectFit
             source: "qrc:///resources/about.png"
