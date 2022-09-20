@@ -289,7 +289,7 @@ Dialog {
                 id: server
                 Layout.fillWidth: true
                 model: ["Free International Scrabble Server"]
-                //TODO: scrnetwork: make server variable
+                //TODO low: scrnetwork: make server variable
             }
             Label { text: qsTr("Login name:") }
             TextField {
@@ -331,10 +331,7 @@ Dialog {
                     Layout.fillWidth: true
                     model: countriesModel
                     textRole: "country"
-    //                implicitContentWidthPolicy: ComboBox.WidestTextWhenCompleted
                     delegate: ItemDelegate {
-                        //TODO: ScrNetwork: larger delegate width
-    //                    width: lbCountry.width + imCountry.width + 4
                         width: countryBox.width
                         contentItem: Row {
                             Image {
@@ -361,6 +358,7 @@ Dialog {
     }
 
     onAccepted: {
+//        acNetwork.checked = true
         GamePlay.connect(name.text, password.text, email.text, countryBox.currentText, city.text)
 
         var configData = {}

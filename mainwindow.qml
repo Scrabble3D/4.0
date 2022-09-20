@@ -136,9 +136,8 @@ ApplicationWindow {
     Action {
         id: acNetwork
         checked: GamePlay.isConnected
-        checkable: true
+        checkable: GamePlay.isConnected
         text: qsTr("Network")
-        //TODO: main: update network icons
         icon.source: GamePlay.isConnected
                      ? "qrc:///resources/netw_disco.png"
                      : "qrc:///resources/netw_connect.png"

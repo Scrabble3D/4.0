@@ -10,6 +10,7 @@
 int main(int argc, char *argv[])
 {
     QApplication scrabble3D(argc, argv);
+    QThread::currentThread()->setObjectName("Main Thread");
 
     scrabble3D.setWindowIcon(QIcon(":/resources/app.ico"));
 
