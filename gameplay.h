@@ -252,7 +252,7 @@ private:
     QStringList m_lPlayerNames;               // player names; also count
     QList<Letter> m_lBag;                     // letters in bag
     bool m_bCanJokerExchange;                 // whether joker can be exchanged
-    uint m_nGameEndBonus;                     // //TODO: gameplay: bonus for ending the game
+    uint m_nGameEndBonus;                     // bonus for ending the game
     uint m_nNumberOfPasses;                   // number of zero moves until game ends
     bool m_bChangeIsPass;                     // whether changing letters is treated as pass and counted for game end
     TimeControlType m_eTimeControlType;       // type of time control (no, per game, per moves)
@@ -263,13 +263,13 @@ private:
     bool m_bAdd;                              // whether to add values of remaining tiles from other players to the winner's result
     bool m_bSubstract;                        // whether to deduct the remaining pieces' values from the individual result
     uint m_nJokerPenalty;                     // penalty for joker left on game end
-    uint m_nTimePenaltyValue;                 // //TODO: gameplay: malus to continue game after time out
-    uint m_nTimePenaltyCount;                 // //TODO: gameplay: number of accepted time outs at game end
-    bool m_bTimeGameLost;                     // //TODO: gameplay: whether game is lost on game end (despite received points)
+    uint m_nTimePenaltyValue;                 // penalty to continue game after time out
+    QList<uint> m_nTimePenaltyCount;          // number of accepted time outs at game end
+    bool m_bTimeGameLost;                     // whether game is lost on game end (despite received points)
     WordCheckMode m_eWordCheckMode;           // type of word checking (asked when placed, automatic poll, player objection)
-    uint m_nWordCheckPeriod;                  // //TODO: gameplay: time when objection is allowed
-    uint m_nWordCheckPenalty;                 // //TODO: gameplay: penalty when challenge was wrong
-    int m_nWordCheckBonus;                    // //TODO: gameplay: bonus for correct objection
+    uint m_nWordCheckPeriod;                  // time when objection is allowed
+    uint m_nWordCheckPenalty;                 // penalty when challenge was wrong
+    int m_nWordCheckBonus;                    // bonus for correct objection
     int m_nScrabbleBonus;                     // bonus when all pieces are placed, usually 50
     bool m_bIsCLABBERS;                       // //TODO: gameplay: whether CLABBER variant is allowed
     QList<move*> m_lMoves;

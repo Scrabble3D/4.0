@@ -31,6 +31,9 @@ Window {
     property int wordCheckPenalty: 0 //set sbPenalty.value in ScrConfigWordCheck
     property int wordCheckBonus: 0 //set sbBonus.value in ScrConfigWordCheck
     property bool clabbers: false //set cbClabbers.toggle in ScrConfigWordCheck
+    property int buytimecount: 0 //set per sbPenaltyCount in ScrTimeControl
+    property int buytimepenalty: 0 // sbPenaltyPoints in ScrTimeControl
+    property bool timegamelost: false // sbPenaltyPoints in ScrTimeControl
 
     property alias colors: scrColors
     property alias playercolors: scrPlayerColors

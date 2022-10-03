@@ -160,7 +160,7 @@ void network::doReadyRead()
         case nwCheckWord: emit onChallengeMove(aLastMessage["Sender"].toString()); break;
         case nwChallenge: emit onChallengeResult(aLastMessage); break;
         case nwRemoteGames: emit onRemoteGames(aLastMessage); break;
-        case nwBestValues: break; //TODO: bestvalues into gamrcourse
+        case nwBestValues: break; //TODO: network: bestvalues into gamrcourse
         case nwGameResult: {
             if (aLastMessage["Sender"] == m_sName)
                 emit onGameResult(aLastMessage["OldRating"].toInt(), aLastMessage["NewRating"].toInt());

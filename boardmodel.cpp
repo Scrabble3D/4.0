@@ -37,7 +37,7 @@ void boardmodel::updateAllSquares()
      }
 }
 
-void boardmodel::updateAllFields() //TODO: MERGE with func above
+void boardmodel::updateAllFields() //TODO: boardmodel: MERGE with func above
 {
     QModelIndex aIndex;
     int z = m_pBoard->getBoardSize();

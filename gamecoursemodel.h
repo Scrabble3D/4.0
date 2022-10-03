@@ -35,6 +35,7 @@ public:
     int timePerMove(const int nMove) { if (nMove < m_lData.count()) return m_lData[nMove].time; else return 0; }
     void getWinner(QList<int> &result);
     void clear();
+    void zerototal(const uint nPlayer) { m_Total[nPlayer] = 0; }
 
 protected:
     QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;

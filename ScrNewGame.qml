@@ -216,12 +216,12 @@ Dialog {
             gameConfig["TimeControlValue"] = config.timeControlValue
             gameConfig["LimitedExchange"] = 3 //TODO: newgame LimitedExchange
             gameConfig["CambioSecco"] = false //TODO: newgame CambioSecco
-            gameConfig["Whatif"] = false
+            gameConfig["Whatif"] = false //TODO: newgame Whatif
             gameConfig["Add"] = config.addLetters
             gameConfig["Substract"] = config.substractLetters
-            gameConfig["TimePenaltyValue"] = 0 //TODO: newgame TimePenaltyValue
-            gameConfig["TimePenaltyCount"] = 10 //TODO: newgame TimePenaltyCount
-            gameConfig["TimeGameLost"] = true //TODO: newgame TimeGameLost
+            gameConfig["TimePenaltyValue"] = config.buytimepenalty
+            gameConfig["TimePenaltyCount"] = config.buytimecount
+            gameConfig["TimeGameLost"] = config.timegamelost
             gameConfig["WordCheckType"] = config.wordCheckMode
             gameConfig["WordCheckPeriod"] =config.wordCheckPeriod
             gameConfig["WordCheckPenalty"] = config.wordCheckPenalty

@@ -152,6 +152,12 @@ GridLayout {
                 enabled: rbPenalty.checked && rbPenalty.enabled
                 from: 1
                 to: 5000
+                onValueChanged: config.buytimepenalty = value
+                onEnabledChanged:
+                    if (enabled)
+                        config.buytimepenalty = value
+                    else
+                        config.buytimepenalty = 0
             }
             Label {
                 id: lbPenaltyPointsUnit
@@ -171,6 +177,7 @@ GridLayout {
                 enabled: rbPenalty.checked && rbPenalty.enabled
                 from: 1
                 to: 5000
+                onValueChanged: config.buytimecount = value
             }
             Label {
                 id: lbPenaltyCountUnit
@@ -183,6 +190,7 @@ GridLayout {
             id: cbGameEnd
             text: qsTr("Game lost after last timeout")
             enabled: rbPerGame.checked
+            onCheckedChanged: config.timegamelost = checked
         }
     }
 }

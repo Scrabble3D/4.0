@@ -806,7 +806,9 @@ void GamePlay::startNewGame(QVariantMap gameConfig)
     m_bAdd = gameConfig["Add"].toBool();
     m_bSubstract = gameConfig["Substract"].toBool();
     m_nTimePenaltyValue = gameConfig["TimePenaltyValue"].toInt();
-    m_nTimePenaltyCount = gameConfig["TimePenaltyCount"].toInt();
+    m_nTimePenaltyCount.clear();
+    for (uint i = 0; i < m_nPlayerCount; i++)
+        m_nTimePenaltyCount.append( gameConfig["TimePenaltyCount"].toInt() );
     m_bTimeGameLost = gameConfig["TimeGameLost"].toBool();
     m_nScrabbleBonus = gameConfig["ScrabbleBonus"].toInt();
     m_eWordCheckMode = static_cast<WordCheckMode>(gameConfig["WordCheckType"].toInt());
@@ -1027,6 +1029,16 @@ void GamePlay::doGameEnd()
                                     .arg(nAdd)
                                 );
     }
+
+    for (uint nPlayer = 0; nPlayer < m_nPlayerCount; nPlayer++) {
+FIXME
+//        qDebug() << m_pGameCourseModel->timeTotalPerPlayer(nPlayer) << m_nTimeControlValue;
+        if ((m_eTimeControlType == tcPerGame) && //time control per game
+            (m_pGameCourseModel->timeTotalPerPlayer(nPlayer) >= m_nTimeControlValue) &&
+            (m_bTimeGameLost))
+            m_pGameCourseModel->zerototal(nPlayer);
+    }
+
     QList<int> nWinner;
     m_pGameCourseModel->getWinner(nWinner);
     QString sWinner;
@@ -1125,7 +1137,10 @@ void GamePlay::doStartTimer(const bool doRun)
         m_nTimeLeft = m_nTimeControlValue;
     else if (m_eTimeControlType == tcPerGame)
         m_nTimeLeft = m_nTimeControlValue - m_pGameCourseModel->timeTotalPerPlayer(m_nCurrentPlayer);
-    if (doRun) {
+FIXME
+    qDebug() << m_nTimeControlValue << m_pGameCourseModel->timeTotalPerPlayer(m_nCurrentPlayer);
+
+    if (doRun) { //do not run when loading
         if ((m_eTimeControlType != tcNoLimit) && (m_nTimeLeft == 0))
             nextPlayer();
         else
@@ -1228,6 +1243,22 @@ void GamePlay::rollbackLastMove()
 
 void GamePlay::timerEvent(QTimerEvent *event)
 {
+    if ((m_eTimeControlType == tcPerGame) && //time control per game
+        (m_nMoveTime >= m_nTimeLeft) && //no time left
+        (m_nTimePenaltyCount[m_nCurrentPlayer] > 0) && //buying time is possible
+        (m_pGameCourseModel->getScore(m_nCurrentPlayer) > m_nTimePenaltyValue)) { //player has enough points to buy time
+
+        m_nMoveTime -= 60; //add 60s
+        m_nTimePenaltyCount[m_nCurrentPlayer]--; //decrease number of possible additions
+        m_pGameCourseModel->addBonus(m_nCurrentPlayer, -m_nTimePenaltyValue); //add penalty
+        m_pMsgModel->addMessage(tr("Player %1 run out of time and one minute was added at a penalty of %2 points (%3 remaining).")
+                                .arg(m_lPlayerNames.at(m_nCurrentPlayer))
+                                .arg(m_nTimePenaltyValue)
+                                .arg(m_nTimePenaltyCount[m_nCurrentPlayer]));
+        if (m_nStatInfoType == 1)
+            emit statInfoChanged();
+    }
+qDebug() << m_nMoveTime << m_nTimeLeft;
     if ( m_pRackModel->isLocalIsActive() &&
          (m_eTimeControlType != tcNoLimit) && (m_nMoveTime >= m_nTimeLeft))
         nextPlayer();
@@ -1483,7 +1514,10 @@ void GamePlay::saveGame(QString fileName)
         settings.setValue("Add", m_bAdd);
         settings.setValue("Substract", m_bSubstract);
         settings.setValue("TimePenaltyValue", m_nTimePenaltyValue);
-        settings.setValue("TimePenaltyCount", m_nTimePenaltyCount);
+        QStringList aList;
+        for (uint i = 0; i < m_nPlayerCount; i++)
+            aList.append(QString::number(m_nTimePenaltyCount[i]));
+        settings.setValue("TimePenaltyCount", aList.join(","));
         settings.setValue("TimeGameLost", m_bTimeGameLost);
         settings.setValue("WordCheckMode", m_eWordCheckMode);
         settings.setValue("WordCheckPeriod", m_nWordCheckPeriod);
@@ -1592,7 +1626,12 @@ void GamePlay::loadGame(QString fileName)
         m_bAdd = settings.value("Add").toBool();
         m_bSubstract = settings.value("Substract").toBool();
         m_nTimePenaltyValue = settings.value("TimePenaltyValue").toUInt();
-        m_nTimePenaltyCount = settings.value("TimePenaltyCount").toUInt();
+        QStringList aList = settings.value("TimePenaltyCount").toString().split(",");
+        if (aList.count() != m_nPlayerCount)
+            qWarning() << "Penalty count doesn't match player count!";
+        m_nTimePenaltyCount.clear();
+        for (int i = 0; i < aList.count(); i++)
+            m_nTimePenaltyCount.append(aList[i].toUInt());
         m_bTimeGameLost = settings.value("TimeGameLost").toBool();
         m_eWordCheckMode = static_cast<WordCheckMode>(settings.value("WordCheckMode").toInt());
         m_nWordCheckPeriod = settings.value("WordCheckPeriod").toUInt();
