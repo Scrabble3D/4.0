@@ -9,6 +9,7 @@ Window {
     title: qsTr("Configuration")
     width: 680
     height: 540
+    property alias showTips: cbShowTips.checked
 
     property bool bMarkers: true //ScrConfigBoard::cbMarkers.checked
     property bool bColoredPlayers: true //ScrConfigBoard::cbPlayerColors.checked
@@ -31,6 +32,7 @@ Window {
     property int wordCheckPenalty: 0 //set sbPenalty.value in ScrConfigWordCheck
     property int wordCheckBonus: 0 //set sbBonus.value in ScrConfigWordCheck
     property bool clabbers: false //set cbClabbers.toggle in ScrConfigWordCheck
+    property bool canbuytime: false //set per rbGameEnd/rbPenalty in ScrTimeControl
     property int buytimecount: 0 //set per sbPenaltyCount in ScrTimeControl
     property int buytimepenalty: 0 // sbPenaltyPoints in ScrTimeControl
     property bool timegamelost: false // sbPenaltyPoints in ScrTimeControl
@@ -297,6 +299,7 @@ Window {
         ListElement { name: qsTr("Time Control"); imgname: "opttime.png" }
         ListElement { name: qsTr("Rules"); imgname: "optrules.png" }
         ListElement { name: qsTr("Dictionary"); imgname: "optdic.png" }
+        ListElement { name: qsTr("Localization"); imgname: "optui.png" }
     }
     Component {
         id: lViewDelegates
@@ -429,6 +432,10 @@ Window {
                             scrollView.contentWidth = configDictionary.width
                         }
                     }
+                    ScrConfigUI {
+                        id: configUI
+                        visible: lView.currentIndex === 6
+                    }
                 }
             }
         }
@@ -469,6 +476,14 @@ Window {
                     delay: 1000
                     timeout: 5000
                 }
+            }
+            CheckBox {
+                id: cbShowTips
+                anchors.left: btnReset.right
+                anchors.leftMargin: 3
+                anchors.verticalCenter: parent.verticalCenter
+                checked: true
+                text: qsTr("Show tips")
             }
             Button {
                 id: btnClose

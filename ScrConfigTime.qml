@@ -131,17 +131,25 @@ GridLayout {
     }
     ColumnLayout {
         id: layoutPenalty
-        RadioButton {
-            id: rbGameEnd
-            Layout.columnSpan: 2
-            text: qsTr("Game ends on timeout")
-            enabled: rbPerGame.checked
+        RowLayout {
+            RadioButton {
+                id: rbGameEnd
+                Layout.columnSpan: 2
+                text: qsTr("Game ends on timeout")
+                enabled: rbPerGame.checked
+                onCheckedChanged: config.canbuytime = false
+            }
+            InfoTip { tiptext: qsTr("Players who run out of time will pass automatically") }
         }
-        RadioButton {
-            id: rbPenalty
-            Layout.alignment: Qt.AlignLeft | Qt.AlignTop
-            text: qsTr("Penalty on timeout")
-            enabled: rbPerGame.checked
+        RowLayout {
+            RadioButton {
+                id: rbPenalty
+                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                text: qsTr("Penalty on timeout")
+                enabled: rbPerGame.checked
+                onCheckedChanged: config.canbuytime = true
+            }
+            InfoTip { tiptext: qsTr("You 'buy' one minute of time") }
         }
         GridLayout {
             id: layoutPenaltyPoints
@@ -153,11 +161,6 @@ GridLayout {
                 from: 1
                 to: 5000
                 onValueChanged: config.buytimepenalty = value
-                onEnabledChanged:
-                    if (enabled)
-                        config.buytimepenalty = value
-                    else
-                        config.buytimepenalty = 0
             }
             Label {
                 id: lbPenaltyPointsUnit
@@ -186,11 +189,14 @@ GridLayout {
                 text: qsTr("times")
             }
         }
-        CheckBox {
-            id: cbGameEnd
-            text: qsTr("Game lost after last timeout")
-            enabled: rbPerGame.checked
-            onCheckedChanged: config.timegamelost = checked
+        RowLayout {
+            CheckBox {
+                id: cbGameEnd
+                text: qsTr("Game lost after last timeout")
+                enabled: rbPerGame.checked
+                onCheckedChanged: config.timegamelost = checked
+            }
+            InfoTip { tiptext: qsTr("If checked the game result will be set to zero after the last timeout") }
         }
     }
 }

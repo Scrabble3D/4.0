@@ -4,6 +4,7 @@ import QtQuick.Layouts
 
 Dialog {
     id: network
+    //: dialog title
     title: qsTr("Login to game server")
     standardButtons: Dialog.Cancel | Dialog.Ok
     modal: true

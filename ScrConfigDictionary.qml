@@ -65,11 +65,10 @@ GridLayout {
         id: acLoadDictionary
         enabled: loadedDic != selectedDic
         text: GamePlay.dicListModel.data(GamePlay.dicListModel.index(selectedDic,4)) === ""
-                  ? qsTr("Download Dictionary")
-                  : qsTr("Load Dictionary")
+                  ? qsTr("Download dictionary")
+                  : qsTr("Load dictionary")
         onTriggered: {
             var fileName = GamePlay.dicListModel.data(GamePlay.dicListModel.index(selectedDic,2))
-            var dicName = GamePlay.dicListModel.data(GamePlay.dicListModel.index(selectedDic,0))
             if (GamePlay.loadDictionary(fileName)) {
                 GamePlay.addMessage(qsTr("Dictionary \"%1\" successfully loaded.").arg(fileName))
                 //FIXME: configdic/dictionary: downloading dic is finsihed, leading to update before subsequent loading -> distribution not applied
@@ -81,7 +80,7 @@ GridLayout {
     }
     Action {
         id: acDeleteDictionary
-        text: qsTr("Delete Dictionary")
+        text: qsTr("Delete local dictionary")
         enabled: GamePlay.dicListModel.data(GamePlay.dicListModel.index(selectedDic,4)) !== ""
         onTriggered: {
             var fileName = GamePlay.dicListModel.data(GamePlay.dicListModel.index(selectedDic,2))

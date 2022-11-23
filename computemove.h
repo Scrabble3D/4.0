@@ -5,7 +5,6 @@
 #include "dictionary.h"
 #include "move.h"
 
-
 class computemove : public QObject
 {
 public:

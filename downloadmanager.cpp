@@ -77,6 +77,7 @@ void DownloadManager::checkUpdates() {
                 aData.FileName=xmlReader.attributes().value("FileName").toString();
                 dicList::getInfo(&aData);
                 if (aData.InstalledVersionNumber > -1) {
+                    //: Dictionary english.dic: 1.0.2 > 1.0.1
                     m_pParent->setProperty("addMsg", tr("Dictionary %1: %2 %3 %4").arg(
                                                aData.NativeName,
                                                aData.InstalledVersion,
@@ -113,7 +114,9 @@ void DownloadManager::checkUpdates() {
 
     //run updates
     if (bCanUpdate &&
+        //: Updates available /n Do you want to start now?
         QMessageBox::question(nullptr, tr("Updates available"),
+                              //: Updates available /n Do you want to start now?
                               tr("Do you want to start now?")) == QMessageBox::Yes )
     {
         for (int i=0; i<lDictionaries.count(); i++) {
@@ -139,6 +142,7 @@ bool DownloadManager::saveToDisk(const QString &filename, QIODevice *data)
 {
     QFile file(filename);
     if (!file.open(QIODevice::WriteOnly)) {
+        //: Could not open english.dic for writing: disc full.
         m_pParent->setProperty("addMsg", tr("Could not open %1 for writing: %2").arg(
                                    qPrintable(filename),
                                    qPrintable(file.errorString())));
@@ -192,10 +196,11 @@ void DownloadManager::downloadFinished(QNetworkReply *reply)
             aFileName = url.fileName();
 
         if (aFileName.endsWith("dic"))
-            m_pParent->setProperty("dicDownloadFinished", aFileName);
+            emit onFinished(DlType::dmDictionary, aFileName);
+        else if (aFileName.endsWith("qm"))
+            emit onFinished(DlType::dmLocalization, aFileName);
         else if (aFileName.endsWith("conf"))
-            m_pParent->setProperty("confDownloadFinished", "");
-
+            emit onFinished(DlType::dmConfig, aFileName);
     }
     reply->deleteLater();
 }

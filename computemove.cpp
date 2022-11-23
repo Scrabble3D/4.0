@@ -1,5 +1,4 @@
 ﻿#include "computemove.h"
-#include "gameplay.h"
 
 computemove::computemove(QObject* parent, board* aBoard, rackmodel* aRack, dicFile* aDictionary)
     : m_pParent(parent),

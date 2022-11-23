@@ -158,6 +158,7 @@ Item {
         height: 50
         Label {
             Layout.leftMargin: 8
+            //: please keep it short; pos/dim are shown in the cube header
             text: qsTr("Pos: ")
         }
         Slider {
@@ -176,6 +177,7 @@ Item {
         }
         Label {
             Layout.leftMargin: 16
+            //: please keep it short; pos/dim are shown in the cube header
             text: qsTr("Dim: ")
         }
         Rectangle {

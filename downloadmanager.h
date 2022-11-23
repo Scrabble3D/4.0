@@ -2,10 +2,17 @@
 
 #include <QObject>
 #include <QNetworkAccessManager>
-//TODO: downloadmanager: updater
+
+enum class DlType {
+    dmConfig,
+    dmLocalization,
+    dmDictionary
+};
+
 class DownloadManager: public QObject
 {
     Q_OBJECT
+
     QNetworkAccessManager manager;
 
 public:
@@ -13,6 +20,9 @@ public:
     void download(const QString fileName);
     int lastChecked(); //days between now and last check (inf when never)
     void checkUpdates();
+
+signals:
+    void onFinished(DlType fileType, QString fileName);
 
 public slots:
     void downloadFinished(QNetworkReply *reply);

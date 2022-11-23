@@ -141,38 +141,45 @@ GridLayout {
         text: qsTr("Bonus fields:")
         Layout.alignment: Qt.AlignTop | Qt.AlignRight
     }
-    GridLayout {
-        id: glBonusFields
-        columns: sbSize.value
-        columnSpacing: 0
-        rowSpacing: 0
-        antialiasing: true
-        Repeater {
-            model: sbSize.value * sbSize.value
-            Rectangle {
-                Layout.minimumWidth: 10
-                Layout.minimumHeight: 10
-                //TODO: configboard: fit size to parent
-                Layout.preferredWidth: 15// (scrollView.contentWidth - 50) / sbSize.value
-                Layout.preferredHeight: 15//Layout.preferredWidth
-                property int i: index+sbSize.value*sbSize.value*(pos3D.value-1)
-                color: colors.get(config.board[i]).itemColor
-                border.width: 0.1
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        var tmp = []
-                        tmp = config.board
-                        tmp[i] = (config.board[i]+1) % 8
-                        config.board = tmp
-                        checkDefault()
+    RowLayout {
+        GridLayout {
+            id: glBonusFields
+            columns: sbSize.value
+            columnSpacing: 0
+            rowSpacing: 0
+            antialiasing: true
+            Repeater {
+                model: sbSize.value * sbSize.value
+                Rectangle {
+                    Layout.minimumWidth: 10
+                    Layout.minimumHeight: 10
+                    //TODO: configboard: fit size to parent
+                    Layout.preferredWidth: 15// (scrollView.contentWidth - 50) / sbSize.value
+                    Layout.preferredHeight: 15//Layout.preferredWidth
+                    property int i: index+sbSize.value*sbSize.value*(pos3D.value-1)
+                    color: colors.get(config.board[i]).itemColor
+                    border.width: 0.1
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            var tmp = []
+                            tmp = config.board
+                            tmp[i] = (config.board[i]+1) % 8
+                            config.board = tmp
+                            checkDefault()
+                        }
                     }
                 }
             }
+            onWidthChanged: {
+                scrollView.contentHeight = configBoard.height + 50
+                lbBonusFields.height = height
+            }
         }
-        onWidthChanged: {
-            scrollView.contentHeight = configBoard.height + 50
-            lbBonusFields.height = height
+        InfoTip {
+//            anchors.top: glBonusFields.top
+            Layout.alignment: Qt.AlignTop
+            tiptext: qsTr("Click the fields to iterate through types")
         }
     }
     RowLayout {
@@ -193,6 +200,7 @@ GridLayout {
         Label {
             text: pos3D.value
         }
+        InfoTip { tiptext: qsTr("Use the slider to access the levels in the 3D cube") }
     }
     Label {
         id: lbBonusMarker

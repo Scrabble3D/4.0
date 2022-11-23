@@ -28,38 +28,47 @@ GridLayout {
     Label {
         id: lbPasses
         leftPadding: 8
-        Layout.alignment: Qt.AlignRight | Qt.AlignTop
-        text: qsTr("Max passes:")
+        Layout.alignment: Qt.AlignRight | Qt.AlignTopmitspieler
+        text: qsTr("Passes until game end:")
     }
-    SpinBox {
+    RowLayout {
+        SpinBox {
         id: sbPasses
         from: 1
         to: 99
         onValueChanged: config.numberOfPasses = value
     }
+        InfoTip { tiptext: qsTr("The number of moves each player can pass consecutively until the game ends") }
+    }
     Label {
         id: lbBingo
         leftPadding: 8
         Layout.alignment: Qt.AlignRight | Qt.AlignTop
-        text: qsTr("Bingo bonus:")
+        text: qsTr("Bonus for Scrabble/Bingos:")
     }
-    SpinBox {
-        id: sbBingo
-        from: 0
-        to: 999
-        onValueChanged: config.bingoBonus = value
+    RowLayout {
+        SpinBox {
+            id: sbBingo
+            from: 0
+            to: 999
+            onValueChanged: config.bingoBonus = value
+        }
+        InfoTip { tiptext: qsTr("The 'bingo' bonus when all tiles from the rack are placed at once") }
     }
     Label {
         id: lbGameEnd
         leftPadding: 8
         Layout.alignment: Qt.AlignRight | Qt.AlignTop
-        text: qsTr("Game end bonus:")
+        text: qsTr("Bonus on game end:")
     }
-    SpinBox {
-        id: sbGameEnd
-        from: 0
-        to: 999
-        onValueChanged: config.gameEndBonus = value
+    RowLayout {
+        SpinBox {
+            id: sbGameEnd
+            from: 0
+            to: 999
+            onValueChanged: config.gameEndBonus = value
+        }
+        InfoTip { tiptext: qsTr("Extra bonus awarded to the player who ends the game") }
     }
     Label {
         id: lbJokerPenalty
@@ -67,28 +76,40 @@ GridLayout {
         Layout.alignment: Qt.AlignRight | Qt.AlignTop
         text: qsTr("Penalty for left blanks:")
     }
-    SpinBox {
-        id: sbJokerPenalty
-        from: 0
-        to: 999
-        onValueChanged: config.jokerPenalty = value
+    RowLayout {
+        SpinBox {
+            id: sbJokerPenalty
+            from: 0
+            to: 999
+            onValueChanged: config.jokerPenalty = value
+        }
+        InfoTip { tiptext: qsTr("Extra penalty for blank tile on the rack when the game ends") }
     }
-    CheckBox {
-        id: cbAddLetters
+    RowLayout {
         Layout.columnSpan: 2
-        text: qsTr("Add the value of other players letters")
-        onToggled: config.addLetters = checked
+        CheckBox {
+            id: cbAddLetters
+            text: qsTr("Add the value of other players letters")
+            onToggled: config.addLetters = checked
+        }
+        InfoTip { tiptext: qsTr("The sum of remaining tiles from the opponents is added to the result of the player who ended the game") }
     }
-    CheckBox {
-        id: cbSubstractLetters
+    RowLayout {
         Layout.columnSpan: 2
-        text: qsTr("Substract the value of left letters")
-        onToggled: config.substractLetters = checked
+        CheckBox {
+            id: cbSubstractLetters
+            text: qsTr("Substract the value of left letters")
+            onToggled: config.substractLetters = checked
+        }
+        InfoTip { tiptext: qsTr("The value of the remaining tiles is deducted from each player's result") }
     }
-    CheckBox {
-        id: cbChangeIsPass
+    RowLayout {
         Layout.columnSpan: 2
-        text: qsTr("Treat exchange as pass")
-        onToggled: config.changeIsPass = checked
+        CheckBox {
+            id: cbChangeIsPass
+            text: qsTr("Treat exchange as pass")
+            onToggled: config.changeIsPass = checked
+        }
+        InfoTip { tiptext: qsTr("You can decide whether an exchange of letters is counted as pass") }
     }
 }

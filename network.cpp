@@ -107,7 +107,7 @@ void network::doReadyRead()
                 continue;
             if (aLine.count() != 2) {
                 qWarning() << "Cannot parse line" << aLine << ": " << lData.at(i) << ": " << m_aData;
-                break; //FIXME: network: remove break
+                break; //FIXME: network: remove break?
             }
             aLastMessage[aLine[0]] = aLine[1];
         }

@@ -18,6 +18,8 @@ dicFile::dicFile(QObject* parent)
       m_Categories(0),
       m_pParent(parent)
 {
+//    QObject::connect(this, SIGNAL(onDownload(QString)),
+//                     parent, SLOT(doDownloadDictionary(QString)));
 }
 
 QString decrypt(QString aLine, QString aKey)
@@ -151,6 +153,7 @@ bool dicFile::loadDictionary(const QString fileName)
         if (!bHasStandardCategory) {
             CatInfo aCatInfo;
             aCatInfo.value = -1;
+            //: default category name if not defined in the dictionary
             aCatInfo.name = QObject::tr("Standard");
             aCatInfo.enabled = true;
             m_CategoryNames.insert(0, aCatInfo);
@@ -164,6 +167,7 @@ bool dicFile::loadDictionary(const QString fileName)
         msgBox.setIcon(QMessageBox::Question);
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
         if (msgBox.exec() == QMessageBox::Yes)
+//            emit onDownload(fileName + ".zip");
             m_pParent->setProperty("downloadFile", "Dictionaries/raw/main/" + fileName + ".zip");
         return false;
     }
@@ -418,6 +422,7 @@ QVariantList dicFile::getLetterDistribution(QVariantList currentDistribution)
         }
         if (aResult != currentDistribution) {
             QMessageBox msgBox;
+            //: dialog title
             msgBox.setWindowTitle(QObject::tr("Letter Distribution") );
             msgBox.setText( QObject::tr("Letter distribution in dictionary does not match the current configuration.") );
             msgBox.setInformativeText( QObject::tr("Do you want to update the letter set?") );
@@ -443,6 +448,7 @@ dicList::dicList(QObject *parent)
 {
     dictionary = new dicFile(m_pParent);
     updateList();
+
 }
 
 QHash<int, QByteArray> dicList::roleNames() const

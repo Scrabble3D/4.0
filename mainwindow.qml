@@ -17,6 +17,7 @@ ApplicationWindow {
         property alias y: scrabble3D.y
         property alias width: scrabble3D.width
         property alias height: scrabble3D.height
+        property alias showTips: config.showTips
     }
 
     property alias main: mainLoader.item
@@ -120,7 +121,7 @@ ApplicationWindow {
     }
     Action {
         id: acComputeMove
-        text: qsTr("Compute Move")
+        text: qsTr("Compute move")
         shortcut: StandardKey.Find
         property string tip: text
         enabled: GamePlay.isRunning && GamePlay.bestMoveCount === 0 && !GamePlay.isConnected
@@ -129,15 +130,10 @@ ApplicationWindow {
         onTriggered: GamePlay.computeMove()
     }
     Action {
-        id: acLocalize
-        text: qsTr("Localize")
-        onTriggered: GamePlay.localize("german.qm")
-    }
-    Action {
         id: acNetwork
         checked: GamePlay.isConnected
         checkable: GamePlay.isConnected
-        text: qsTr("Network")
+        text: "" //set on menus to avoid showing up at toolbar on l10n
         icon.source: GamePlay.isConnected
                      ? "qrc:///resources/netw_disco.png"
                      : "qrc:///resources/netw_connect.png"

@@ -15,6 +15,7 @@ SOURCES += \
         dictionary.cpp \
         downloadmanager.cpp \
         gamecoursemodel.cpp \
+        locmodel.cpp \
         move.cpp \
         main.cpp \
         gameplay.cpp \
@@ -34,6 +35,7 @@ HEADERS += \
         dictionary.h \
         downloadmanager.h \
         gamecoursemodel.h \
+        locmodel.h \
         move.h \
         gameplay.h \
         letter.h \

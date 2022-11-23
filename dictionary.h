@@ -2,8 +2,9 @@
 
 #include <QAbstractTableModel>
 
-class dicFile
+class dicFile : QObject
 {
+Q_OBJECT
 
 public:
     explicit dicFile(QObject* parent);

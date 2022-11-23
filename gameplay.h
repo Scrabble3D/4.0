@@ -20,6 +20,8 @@
 #include "playersmodel.h"
 #include "remotegamesmodel.h"
 #include "configpath.h"
+#include "locmodel.h"
+#include "downloadmanager.h"
 
 enum WordCheckMode {wcAsk=0,
                     wcPoll=1,
@@ -39,6 +41,7 @@ class GamePlay : public QObject
     Q_PROPERTY(msgmodel* msgModel READ msgModel CONSTANT)
     Q_PROPERTY(gamecoursemodel* gamecourseModel READ gamecourseModel CONSTANT)
     Q_PROPERTY(dicList* dicListModel READ dicListModel CONSTANT)
+    Q_PROPERTY(locList* locListModel READ locListModel CONSTANT)
     Q_PROPERTY(playersTree* playersTreeModel READ playersTreeModel CONSTANT)
 //    Q_PROPERTY(remoteGamesProxy* remoteGames READ remoteGames CONSTANT)
     Q_PROPERTY(remoteGamesModel* remoteGames READ remoteGames CONSTANT)
@@ -59,8 +62,8 @@ class GamePlay : public QObject
 
     //TODO: gameplay: make it a signal/slot
     Q_PROPERTY(QString addMsg WRITE addMessage);
-    Q_PROPERTY(QString dicDownloadFinished WRITE dicDownloadFinished);
-    Q_PROPERTY(QString confDownloadFinished WRITE confDownloadFinished);
+//    Q_PROPERTY(QString dicDownloadFinished WRITE dicDownloadFinished);
+//    Q_PROPERTY(QString confDownloadFinished WRITE confDownloadFinished);
     Q_PROPERTY(QString downloadFile WRITE download);
     //compute move
     Q_PROPERTY(int computeProgress READ getComputeProgress WRITE setComputeProgress NOTIFY computeProgressChanged)
@@ -100,7 +103,8 @@ signals:
 public:
     explicit GamePlay(QQmlEngine *engine);
 
-    Q_INVOKABLE void localize(QString fileName);
+    Q_INVOKABLE void localize(const QString fileName);
+    Q_INVOKABLE bool deleteLocFile(const QString fileName) { return m_pLocListModel->removeLocFile(fileName); };
     Q_INVOKABLE void connect(QString name, QString password, QString email, QString country, QString city);
     Q_INVOKABLE void disconnect();
     Q_INVOKABLE void chat(QString aMessage);
@@ -114,10 +118,8 @@ public:
 
     Q_INVOKABLE void saveConfig(QString fileName, QVariantMap configData);
     Q_INVOKABLE QVariantMap loadConfig(QString fileName);
-    Q_INVOKABLE void saveGame(QString fileName);/* { saveGame(QUrl::fromLocalFile(fileName)); }
-    void saveGame(const QUrl &fileName);*/
-    Q_INVOKABLE void loadGame(QString fileName);/* {loadGame(QUrl::fromLocalFile(fileName)); }
-    void loadGame(const QUrl &fileName);*/
+    Q_INVOKABLE void saveGame(QString fileName);
+    Q_INVOKABLE void loadGame(QString fileName);
     Q_INVOKABLE void getRemoteGames() {
         addMessage( tr("Requesting saved games from server...") );
         emit onSend(network::nwRemoteGames, m_pNetwork->localPlayerName(), "");
@@ -164,6 +166,7 @@ public:
     msgmodel *msgModel();
     gamecoursemodel *gamecourseModel();
     dicList *dicListModel();
+    locList *locListModel();
     playersTree *playersTreeModel();
 //    remoteGamesProxy *remoteGames();
     remoteGamesModel *remoteGames();
@@ -181,8 +184,7 @@ public slots:
     void removeLetter(const uint boardIndex);
     void removeLetter(Letter aLetter);
     void setJokerLetter(const uint boardIndex, const QString aWhat);
-    void dicDownloadFinished(const QString aFileName) {m_pDicListModel->updateList(); if (!aFileName.isEmpty()) loadDictionary(aFileName); }
-    void confDownloadFinished(const QString aFileName);
+    void doDownloadFinished(DlType fileType, QString fileName);
 
 private:
     enum PollType {ptNone, ptNewGame, ptNextPlayer, ptChallenge};
@@ -303,6 +305,7 @@ private:
     msgmodel *m_pMsgModel;
     gamecoursemodel *m_pGameCourseModel;
     dicList *m_pDicListModel;
+    locList *m_pLocListModel;
     playersTree *m_PlayersTreeModel;
     remoteGamesModel *m_RemoteGamesModel;
 //    remoteGamesProxy *m_RemoteGamesProxy;

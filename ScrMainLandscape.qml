@@ -29,7 +29,7 @@ ColumnLayout {
             MenuItem { action: acChallenge }
             MenuItem { action: acComputeMove }
             MenuSeparator { }
-            MenuItem { action: acNetwork; icon.source: "" }
+            MenuItem { action: acNetwork; text: qsTr("Network") }
         }
         Menu {
             id: viewMenu
@@ -48,7 +48,6 @@ ColumnLayout {
         Menu {
             id: helpMenu
             title: qsTr("&Help")
-//            MenuItem { action: acLocalize } //TODO: mainwindow localize
             MenuItem { action: acAbout }
         }
     }

@@ -96,7 +96,7 @@ ColumnLayout {
                         MenuItem { action: acLoadGame }
                         MenuItem { action: acSaveGame }
                         MenuSeparator { }
-                        MenuItem { action: acNetwork; icon.source: "" }
+                        MenuItem { action: acNetwork; icon.source: ""; text: qsTr("Network") }
                         MenuSeparator { }
                         MenuItem { action: acConfiguration }
                         Menu {

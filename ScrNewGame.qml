@@ -138,6 +138,7 @@ Dialog {
                         id: header
                         Label  {
                             leftPadding: 25 //~ width(radiobutton) + spacing
+                            // hash symbol indicating the number of players in the new_game-dialog
                             text: "#"
                             font.bold: true
                         }
@@ -220,7 +221,7 @@ Dialog {
             gameConfig["Add"] = config.addLetters
             gameConfig["Substract"] = config.substractLetters
             gameConfig["TimePenaltyValue"] = config.buytimepenalty
-            gameConfig["TimePenaltyCount"] = config.buytimecount
+            gameConfig["TimePenaltyCount"] = config.canbuytime ? config.buytimecount : 0
             gameConfig["TimeGameLost"] = config.timegamelost
             gameConfig["WordCheckType"] = config.wordCheckMode
             gameConfig["WordCheckPeriod"] =config.wordCheckPeriod

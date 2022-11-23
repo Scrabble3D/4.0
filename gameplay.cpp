@@ -25,6 +25,9 @@ GamePlay::GamePlay(QQmlEngine *engine)
 
     //TODO: download: check all files for updates
     m_pDownloadManager = new DownloadManager(this);
+    QObject::connect(m_pDownloadManager, SIGNAL(onFinished(DlType,QString)),
+                     this, SLOT(doDownloadFinished(DlType,QString)));
+
     if (m_pDownloadManager->lastChecked() > 7)
         download("Binaries/raw/main/Scrabble3D.conf");
 
@@ -35,10 +38,20 @@ GamePlay::GamePlay(QQmlEngine *engine)
     m_pMsgModel = new msgmodel(this);
     m_pGameCourseModel = new gamecoursemodel(this);
     m_pDicListModel = new dicList(this);
+    m_pLocListModel = new locList(this);
     m_pComputeMove = new computemove(this, m_pBoard, m_pRackModel, m_pDicListModel->dictionary);
     m_bIsConnected = false;
     m_PlayersTreeModel = new playersTree();
     m_RemoteGamesModel = new remoteGamesModel(this);
+
+    QSettings settings(config::ini(), QSettings::IniFormat);
+    QString locFile = settings.value("General/110n", "").toString();
+    if (!locFile.isEmpty()) {
+        QFileInfo finfo(config::file(locFile));
+        if (finfo.exists()) //loading a l10n-file that has been deleted triggers a download confirmation, but shouldn't on startup
+            localize(locFile);
+    }
+
 /*    m_RemoteGamesProxy = new remoteGamesProxy(this);
     m_RemoteGamesProxy->setSourceModel(m_RemoteGamesModel);
     m_RemoteGamesProxy->setDynamicSortFilter(true);
@@ -178,7 +191,7 @@ void GamePlay::doNetworkInvite(QVariantMap aMsg)
     msgBox.setWindowTitle("Scrabble3D");
     switch ( aMsg["JoinMode"].toInt() ) {
     case 0: {
-        msgBox.setText( tr("%1 invites you to a new game").arg(aMsg["Sender"].toString()) );
+        msgBox.setText( tr("%1 invites you to a new game.").arg(aMsg["Sender"].toString()) );
         msgBox.setInformativeText(
             tr("Language: %1").arg(aMsg["Language"].toString()) + "\n" +
             tr("Country: %1").arg(aMsg["Country"].toString()) + "\n" +
@@ -389,7 +402,6 @@ void GamePlay::doNetworkNextPlayer(QVariantMap aMsg)
         emit onSend(network::nwRefresh, "", ""); //update move number in players tree
     }
 }
-
 
 void GamePlay::doNetworkRemoteGames(QVariantMap aMsg)
 {
@@ -658,23 +670,32 @@ void GamePlay::doNetworkLogin(QVariantMap aMsg)
     }
 }
 
-//TODO: main: finish l10n
-void GamePlay::localize(QString fileName)
+void GamePlay::localize(const QString fileName)
 {
-    if ( m_pTranslator->load(fileName, config::file("")) ) {
-        qApp->installTranslator(m_pTranslator);
-        m_pEngine->retranslate();
+    QFileInfo finfo(config::file(fileName));
+    if (finfo.exists()) {
+        qApp->removeTranslator(m_pTranslator);
+        if ( m_pTranslator->load(fileName, config::file("")) ) {
+            qApp->installTranslator(m_pTranslator);
+            m_pEngine->retranslate();
+            m_pLocListModel->setIsLoaded(fileName);
 
-    } else
-        qWarning() << "Failed to load translation file";
-}
+            QSettings settings(config::ini(), QSettings::IniFormat);
+            settings.setValue("General/110n", fileName);
 
-//TODO: main: download signal-slot
-void GamePlay::confDownloadFinished(const QString aFileName)
-{
-    Q_UNUSED(aFileName);
-    m_pDownloadManager->checkUpdates();
-    m_pDicListModel->updateList();
+            addMessage(tr("Localization %1 successfully loaded.").arg(fileName));
+        } else
+            addMessage(tr("Failed to load localization %1.").arg(fileName));
+    } else {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Scrabble3D");
+        msgBox.setText( QObject::tr("Localization %1 is not locally available.").arg(fileName) );
+        msgBox.setInformativeText( QObject::tr("Do you want to download it now?") );
+        msgBox.setIcon(QMessageBox::Question);
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        if (msgBox.exec() == QMessageBox::Yes)
+            download("Localizations/raw/main/" + fileName);
+    };
 }
 
 rackmodel *GamePlay::rackModel()
@@ -705,6 +726,11 @@ gamecoursemodel *GamePlay::gamecourseModel()
 dicList *GamePlay::dicListModel()
 {
     return m_pDicListModel;
+}
+
+locList *GamePlay::locListModel()
+{
+    return m_pLocListModel;
 }
 
 playersTree *GamePlay::playersTreeModel()
@@ -805,11 +831,11 @@ void GamePlay::startNewGame(QVariantMap gameConfig)
     m_bWhatif = gameConfig["Whatif"].toBool();
     m_bAdd = gameConfig["Add"].toBool();
     m_bSubstract = gameConfig["Substract"].toBool();
+    m_bTimeGameLost = gameConfig["TimeGameLost"].toBool();
     m_nTimePenaltyValue = gameConfig["TimePenaltyValue"].toInt();
     m_nTimePenaltyCount.clear();
     for (uint i = 0; i < m_nPlayerCount; i++)
-        m_nTimePenaltyCount.append( gameConfig["TimePenaltyCount"].toInt() );
-    m_bTimeGameLost = gameConfig["TimeGameLost"].toBool();
+        m_nTimePenaltyCount.append(!m_bTimeGameLost ? gameConfig["TimePenaltyCount"].toInt() : 0);
     m_nScrabbleBonus = gameConfig["ScrabbleBonus"].toInt();
     m_eWordCheckMode = static_cast<WordCheckMode>(gameConfig["WordCheckType"].toInt());
     m_nWordCheckPeriod = gameConfig["WordCheckPeriod"].toInt();
@@ -869,6 +895,7 @@ void GamePlay::nextPlayer(const bool bIsLoading)
     //result message
     if ((!bIsLoading) &&
         (!m_lMoves.last()->PlacedWord.isEmpty()))
+        //: <Player 1> places <Foo> <<and>> <Far, Faz> and receives 42 points. ("and" is only added if the connected words = %2 are not empty)
         m_pMsgModel->addMessage(tr("%1 places %2 %3 and receives %4 points.")
                                     .arg(m_lPlayerNames[m_nCurrentPlayer])
                                     .arg(m_lMoves.last()->PlacedWord)
@@ -991,7 +1018,7 @@ void GamePlay::doGameEnd()
     // first call of setGameEndBonus() will also find the winner, after adding the game end bonus
     if ( (m_nPasses < m_nNumberOfPasses) && (m_nGameEndBonus > 0) ) {
         m_pGameCourseModel->addBonus(m_nCurrentPlayer, m_nGameEndBonus);
-        m_pMsgModel->addMessage(tr("%1 has ended the game and receives a bonus of %2 points")
+        m_pMsgModel->addMessage(tr("%1 has ended the game and receives a bonus of %2 points.")
                                     .arg(m_lPlayerNames[m_nCurrentPlayer])
                                     .arg(m_nGameEndBonus)
                                 );
@@ -1031,10 +1058,8 @@ void GamePlay::doGameEnd()
     }
 
     for (uint nPlayer = 0; nPlayer < m_nPlayerCount; nPlayer++) {
-FIXME
-//        qDebug() << m_pGameCourseModel->timeTotalPerPlayer(nPlayer) << m_nTimeControlValue;
         if ((m_eTimeControlType == tcPerGame) && //time control per game
-            (m_pGameCourseModel->timeTotalPerPlayer(nPlayer) >= m_nTimeControlValue) &&
+            (m_pGameCourseModel->timeTotalPerPlayer(nPlayer) >= int(m_nTimeControlValue)) &&
             (m_bTimeGameLost))
             m_pGameCourseModel->zerototal(nPlayer);
     }
@@ -1043,7 +1068,7 @@ FIXME
     m_pGameCourseModel->getWinner(nWinner);
     QString sWinner;
     if (nWinner.count() > 1) {
-        sWinner = tr("Draw between ");
+        sWinner = tr("Draw between")+" ";
         for (int i = 0; i < nWinner.count(); i++) {
             sWinner += m_lPlayerNames[nWinner[i]];
             if (i < nWinner.count()-1)
@@ -1137,8 +1162,6 @@ void GamePlay::doStartTimer(const bool doRun)
         m_nTimeLeft = m_nTimeControlValue;
     else if (m_eTimeControlType == tcPerGame)
         m_nTimeLeft = m_nTimeControlValue - m_pGameCourseModel->timeTotalPerPlayer(m_nCurrentPlayer);
-FIXME
-    qDebug() << m_nTimeControlValue << m_pGameCourseModel->timeTotalPerPlayer(m_nCurrentPlayer);
 
     if (doRun) { //do not run when loading
         if ((m_eTimeControlType != tcNoLimit) && (m_nTimeLeft == 0))
@@ -1161,7 +1184,7 @@ bool GamePlay::canDrag()
     for (int i=0; i<m_pRackModel->rackSize(); i++)
         if (m_pRackModel->getLetter(i).IsExchange) {
             //TODO: gameplay: message to statusbar
-            m_pMsgModel->addMessage(tr("Letters have been marked for exchange"));
+            m_pMsgModel->addMessage(tr("No placing possible after tiles have been marked for exchange."));
             return false;
         }
     return true;
@@ -1171,7 +1194,7 @@ void GamePlay::exchangeLetter(const unsigned int rackIndex)
 {
     //bag needs to have letters left
     if (m_lBag.count() < m_pRackModel->rackSize()) {
-        m_pMsgModel->addMessage(tr("Not enough tile left to exchange letters."));
+        m_pMsgModel->addMessage(tr("Not enough tiles left."));
         return;
     }
     //no letter must have been placed
@@ -1180,7 +1203,7 @@ void GamePlay::exchangeLetter(const unsigned int rackIndex)
         for (int i=0; i<m_pRackModel->rackSize(); i++)
             if (m_pRackModel->getLetter(i).IsEmpty()) {
                 //TODO: gameplay: message to statusbar
-                m_pMsgModel->addMessage(tr("Exchanging letters is not possible."));
+                m_pMsgModel->addMessage(tr("No tile exchange possible after placing."));
                 return;
             }
     }
@@ -1244,11 +1267,11 @@ void GamePlay::rollbackLastMove()
 void GamePlay::timerEvent(QTimerEvent *event)
 {
     if ((m_eTimeControlType == tcPerGame) && //time control per game
-        (m_nMoveTime >= m_nTimeLeft) && //no time left
+        (m_nMoveTime >= m_nTimeLeft) &&      //no time left
         (m_nTimePenaltyCount[m_nCurrentPlayer] > 0) && //buying time is possible
-        (m_pGameCourseModel->getScore(m_nCurrentPlayer) > m_nTimePenaltyValue)) { //player has enough points to buy time
+        (m_pGameCourseModel->getScore(m_nCurrentPlayer) > int(m_nTimePenaltyValue))) { //player has enough points to buy time
 
-        m_nMoveTime -= 60; //add 60s
+        m_nMoveTime -= 60; //deduct 60s from current move time
         m_nTimePenaltyCount[m_nCurrentPlayer]--; //decrease number of possible additions
         m_pGameCourseModel->addBonus(m_nCurrentPlayer, -m_nTimePenaltyValue); //add penalty
         m_pMsgModel->addMessage(tr("Player %1 run out of time and one minute was added at a penalty of %2 points (%3 remaining).")
@@ -1258,7 +1281,7 @@ void GamePlay::timerEvent(QTimerEvent *event)
         if (m_nStatInfoType == 1)
             emit statInfoChanged();
     }
-qDebug() << m_nMoveTime << m_nTimeLeft;
+
     if ( m_pRackModel->isLocalIsActive() &&
          (m_eTimeControlType != tcNoLimit) && (m_nMoveTime >= m_nTimeLeft))
         nextPlayer();
@@ -1285,10 +1308,13 @@ QString GamePlay::getStatInfoType(const int aType)
     }
     case 2: {
         QTime aTime(0,0,0);
-        if (m_eTimeControlType == tcNoLimit)
-            aTime = aTime.addSecs(m_nMoveTime);
-        else
-            aTime = aTime.addSecs(m_nTimeLeft - m_nMoveTime);
+
+        if (m_bIsRunning) {
+            if (m_eTimeControlType == tcNoLimit)
+                aTime = aTime.addSecs(m_nMoveTime);
+            else
+                aTime = aTime.addSecs(m_nTimeLeft - m_nMoveTime);
+        }
 
         if (m_eTimeControlType == tcPerGame)
             return aTime.toString();
@@ -1345,6 +1371,29 @@ void GamePlay::setJokerLetter(const uint boardIndex, const QString aWhat)
     m_lMoves.last()->checkMove(); //re-check to update placeword
     Letter aLetter = m_pBoard->getLetter(z);
     m_pBoardModel->updateSquare(aLetter.Point);
+}
+
+void GamePlay::doDownloadFinished(DlType fileType, QString fileName)
+{
+    switch (fileType) {
+    case DlType::dmConfig: {
+        m_pDownloadManager->checkUpdates();
+        m_pDicListModel->updateList();
+        break;
+    }
+    case DlType::dmDictionary: {
+        m_pDicListModel->updateList();
+        if (!fileName.isEmpty())
+            loadDictionary(fileName);
+        break;
+    }
+    case DlType::dmLocalization: {
+        m_pLocListModel->updateList();
+        if (!fileName.isEmpty())
+            localize(fileName);
+        break;
+    }
+    } //switch
 }
 
 void GamePlay::removeLetter(const uint boardIndex)
@@ -1584,7 +1633,7 @@ void GamePlay::saveGame(QString fileName)
     }
     settings.endGroup();
 
-    m_pMsgModel->addMessage(tr("Game saved to %1").arg(fileName));
+    m_pMsgModel->addMessage(tr("Game saved to %1.").arg(fileName));
 }
 
 void GamePlay::loadGame(QString fileName)
@@ -1756,7 +1805,7 @@ void GamePlay::loadGame(QString fileName)
     else
         m_nTimerID = startTimer(1000);
 
-    m_pMsgModel->addMessage(tr("Successfully loaded game from %1").arg(fileName));
+    m_pMsgModel->addMessage(tr("Successfully loaded game from %1.").arg(fileName));
 }
 
 void GamePlay::computeMove()

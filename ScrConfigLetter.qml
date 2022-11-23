@@ -230,37 +230,48 @@ GridLayout {
                 text: qsTr("Total number of letters:")
                 Layout.alignment: Qt.AlignRight
             }
-            Label {
-                id: lbNumberOfLetters
+            RowLayout {
+                Label { id: lbNumberOfLetters }
+                InfoTip { tiptext: qsTr("The total number of tiles in the distribution excluding blanks and random letters") }
             }
         }
+
     }
     Label {
         id: lbJoker
         Layout.alignment: Qt.AlignRight
         text: qsTr("Blank tiles:")
     }
-    SpinBox {
-        id: sbJoker
-        onValueChanged: config.numberOfJokers = value
+    RowLayout {
+        SpinBox {
+            id: sbJoker
+            onValueChanged: config.numberOfJokers = value
+        }
+        InfoTip { tiptext: qsTr("The number of blank tiles, also known as jokers, will be added to the letter set") }
     }
     Label {
         id: lbPieces
         Layout.alignment: Qt.AlignRight
         text: qsTr("Letters on rack:")
     }
-    SpinBox {
-        id: sbPieces
-        onValueChanged: config.numberOfLettersOnRack = value
+    RowLayout {
+        SpinBox {
+            id: sbPieces
+            onValueChanged: config.numberOfLettersOnRack = value
+        }
+        InfoTip { tiptext: qsTr("You can define how many tiles should be available on the rack") }
     }
     Label {
         id: lbRandoms
         Layout.alignment: Qt.AlignRight
         text: qsTr("Random letters:")
     }
-    SpinBox {
-        id: sbRandoms
-        onValueChanged: config.numberOfRandomLetters = value
+    RowLayout {
+        SpinBox {
+            id: sbRandoms
+            onValueChanged: config.numberOfRandomLetters = value
+        }
+        InfoTip { tiptext: qsTr("Random letters are picked from the distribution, also in case of zero count, and will be added to the letter set") }
     }
     Label {
         id: lbReadingDirection

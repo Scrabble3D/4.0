@@ -311,5 +311,9 @@
         <file>resources/optwordcheck.png</file>
         <file>ScrConfigWordCheck.qml</file>
         <file>resources/challenge.png</file>
+        <file>resources/info.png</file>
+        <file>InfoTip.qml</file>
+        <file>ScrConfigUI.qml</file>
+        <file>resources/optui.png</file>
     </qresource>
 </RCC>

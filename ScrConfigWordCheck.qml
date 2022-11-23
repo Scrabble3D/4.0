@@ -34,24 +34,33 @@ GridLayout {
         columns: 3
         Layout.bottomMargin: 8
 
-        RadioButton {
-            id: rbTakeback
+        RowLayout {
             Layout.columnSpan: 3
-            text: qsTr("Takeback")
-            checked: true
-            onCheckedChanged: if (checked) config.wordCheckMode = 0
+            RadioButton {
+                id: rbTakeback
+                text: qsTr("Takeback")
+                checked: true
+                onCheckedChanged: if (checked) config.wordCheckMode = 0
+            }
+            InfoTip { tiptext: qsTr("The program checks the move and asks in case of unknown words for confirmation before the next player takes over") }
         }
-        RadioButton {
-            id: rbPoll
+        RowLayout {
             Layout.columnSpan: 3
-            text: qsTr("Poll")
-            onCheckedChanged: if (checked) config.wordCheckMode = 1
+            RadioButton {
+                id: rbPoll
+                text: qsTr("Poll")
+                onCheckedChanged: if (checked) config.wordCheckMode = 1
+            }
+            InfoTip { tiptext: qsTr("All players in the group are asked to confirm if a placed word has not been found in a dictionary") }
         }
-        RadioButton {
-            id: rbChallenge
+        RowLayout {
             Layout.columnSpan: 3
-            text: qsTr("Challenge")
-            onCheckedChanged: if (checked) config.wordCheckMode = 2
+            RadioButton {
+                id: rbChallenge
+                text: qsTr("Challenge")
+                onCheckedChanged: if (checked) config.wordCheckMode = 2
+            }
+            InfoTip { tiptext: qsTr("The move needs to be challenged manually by one player to start the verification, which runs as a poll then") }
         }
         Label {
             id: lbPeriod
@@ -67,13 +76,15 @@ GridLayout {
             to: 300 //5min
             onValueChanged: config.wordCheckPeriod = value
         }
-        Label {
-            id: lbPeriodUnit
-            enabled: rbChallenge.checked
-            color: enabled ? config.myPalette.windowText : config.myPalette.mid
-            text: qsTr("seconds")
+        RowLayout {
+            Label {
+                id: lbPeriodUnit
+                enabled: rbChallenge.checked
+                color: enabled ? config.myPalette.windowText : config.myPalette.mid
+                text: qsTr("seconds")
+            }
+            InfoTip { tiptext: qsTr("Time span in which the challenge can be started") }
         }
-
         Label {
             id: lbPenlty
             leftPadding: 24
@@ -88,13 +99,15 @@ GridLayout {
             to: 100
             onValueChanged: config.wordCheckPenalty = value
         }
-        Label {
-            id: lbPenaltyUnit
-            enabled: rbChallenge.checked
-            color: enabled ? config.myPalette.windowText : config.myPalette.mid
-            text: qsTr("points")
+        RowLayout {
+            Label {
+                id: lbPenaltyUnit
+                enabled: rbChallenge.checked
+                color: enabled ? config.myPalette.windowText : config.myPalette.mid
+                text: qsTr("points")
+            }
+            InfoTip { tiptext: qsTr("Penalty given to the challenging player if the word is accepted") }
         }
-
         Label {
             id: lbBonus
             leftPadding: 24
@@ -109,11 +122,14 @@ GridLayout {
             to: 100
             onValueChanged: config.wordCheckBonus = value
         }
-        Label {
-            id: lbsbBonusUnit
-            enabled: rbChallenge.checked
-            color: enabled ? config.myPalette.windowText : config.myPalette.mid
-            text: qsTr("points")
+        RowLayout {
+            Label {
+                id: lbsbBonusUnit
+                enabled: rbChallenge.checked
+                color: enabled ? config.myPalette.windowText : config.myPalette.mid
+                text: qsTr("points")
+            }
+            InfoTip { tiptext: qsTr("Bonus given to the challenging player if the word is rejected") }
         }
     }
     Label {
@@ -121,12 +137,16 @@ GridLayout {
         leftPadding: 8
         Layout.alignment: Qt.AlignRight | Qt.AlignTop
         Layout.topMargin: cbClabbers.topPadding
+        enabled: false //TODO: CLABBERS
         text: qsTr("Options:")
     }
-    CheckBox {
-        id: cbClabbers
-        text: qsTr("CLABBERS variant")
-        onToggled: config.clabbers = checked
+    RowLayout {
+        CheckBox {
+            id: cbClabbers
+            text: qsTr("CLABBERS variant")
+            enabled: false //TODO: CLABBERS
+            onToggled: config.clabbers = checked
+        }
+        InfoTip { tiptext: qsTr("Enable this option to allow scrambled letters like SCRABBLE -> CLABBERS\nThis option is not yet implemented") }
     }
-
 }
