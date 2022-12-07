@@ -6,6 +6,7 @@ GridLayout {
     columns: 2
     columnSpacing: 8
     rowSpacing: 8
+
     property int defaultLetterSet: 0
     onDefaultLetterSetChanged: {
         sbPasses.value = defaults.languages[defaultLetterSet].numberOfPasses
@@ -87,6 +88,7 @@ GridLayout {
     }
     RowLayout {
         Layout.columnSpan: 2
+        Layout.leftMargin: 8
         CheckBox {
             id: cbAddLetters
             text: qsTr("Add the value of other players letters")
@@ -96,6 +98,7 @@ GridLayout {
     }
     RowLayout {
         Layout.columnSpan: 2
+        Layout.leftMargin: 8
         CheckBox {
             id: cbSubstractLetters
             text: qsTr("Substract the value of left letters")
@@ -105,6 +108,7 @@ GridLayout {
     }
     RowLayout {
         Layout.columnSpan: 2
+        Layout.leftMargin: 8
         CheckBox {
             id: cbChangeIsPass
             text: qsTr("Treat exchange as pass")

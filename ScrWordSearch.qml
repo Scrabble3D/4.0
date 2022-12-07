@@ -74,9 +74,11 @@ Dialog {
             }
             Label {
                 text: qsTr("Category:")
+                Layout.alignment: Qt.AlignTop
             }
             Label {
                 id: dicCategory
+                wrapMode: Text.WordWrap
                 Layout.preferredWidth: 150
                 elide: Text.ElideRight
             }

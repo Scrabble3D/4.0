@@ -18,6 +18,7 @@ GridLayout {
         model: GamePlay.locListModel
         Layout.leftMargin: 8
         Layout.columnSpan: 2
+        boundsBehavior: Flickable.StopAtBounds
 
         delegate: Rectangle {
             implicitWidth: text.implicitWidth + 4
@@ -38,6 +39,7 @@ GridLayout {
     //TODO: localization: hide last column with filename
     TableView {
         id: locTable
+        boundsBehavior: Flickable.StopAtBounds
         Layout.fillHeight: true
         Layout.preferredWidth: scrollView.width
         Layout.minimumHeight: 200

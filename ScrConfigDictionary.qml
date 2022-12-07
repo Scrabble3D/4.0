@@ -99,6 +99,7 @@ GridLayout {
         model: GamePlay.dicListModel
         Layout.leftMargin: 8
         Layout.columnSpan: 2
+        boundsBehavior: Flickable.StopAtBounds
 
         delegate: Rectangle {
             implicitWidth: text.implicitWidth + 4
@@ -126,8 +127,9 @@ GridLayout {
 
     TableView {
         id: dictTable
+        boundsBehavior: Flickable.StopAtBounds
         Layout.fillHeight: true
-        Layout.preferredWidth: scrollView.width + sbDictTable.width
+        Layout.preferredWidth: contentWidth + sbDictTable.width
         Layout.minimumHeight: 200 //in case of long comments or many categories
         Layout.leftMargin: 8
         Layout.columnSpan: 2

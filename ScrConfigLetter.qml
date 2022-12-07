@@ -136,6 +136,7 @@ GridLayout {
         }
         TableView {
             id: tvLetterSet
+            boundsBehavior: Flickable.StopAtBounds
             Layout.preferredWidth: contentWidth + sbLetterSet.width
             Layout.minimumHeight: 200
             Layout.fillHeight: true
@@ -273,20 +274,24 @@ GridLayout {
         }
         InfoTip { tiptext: qsTr("Random letters are picked from the distribution, also in case of zero count, and will be added to the letter set") }
     }
+    //todo: configletter: reading direction not yet implemented
     Label {
         id: lbReadingDirection
         Layout.alignment: Qt.AlignRight
         text: qsTr("Reading direction:")
+        enabled: false
     }
     RowLayout {
         id: layoutReadingDirection
         RadioButton {
             id: rbReadingDirectionLTR
             text: qsTr("left to right")
+            enabled: false
         }
         RadioButton {
             id: rbReadingDirectionRTL
             text: qsTr("right to left")
+            enabled: false
         }
     }
 }

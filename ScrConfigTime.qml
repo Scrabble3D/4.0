@@ -60,15 +60,18 @@ GridLayout {
         id: layoutTimeControl
         columns: 2
         Layout.bottomMargin: 8
+        ButtonGroup {id: rbTimeGroup}
         RadioButton {
             id: rbNoLimit
             Layout.columnSpan: 2
             text: qsTr("No Limit")
+            ButtonGroup.group: rbTimeGroup
             onCheckedChanged: if (checked) config.timeControl = 0
         }
         RadioButton {
             id: rbPerMove
             text: qsTr("Per Move")
+            ButtonGroup.group: rbTimeGroup
             onCheckedChanged: if (checked) {
                 config.timeControl = 1
                 tiPerMove.textChanged()
@@ -97,6 +100,7 @@ GridLayout {
         RadioButton {
             id: rbPerGame
             text: qsTr("Per Game")
+            ButtonGroup.group: rbTimeGroup
             onCheckedChanged: if (checked) {
                 config.timeControl = 2
                 tiPerGame.textChanged()
@@ -131,10 +135,12 @@ GridLayout {
     }
     ColumnLayout {
         id: layoutPenalty
+        ButtonGroup { id: rbPenaltyGroup }
         RowLayout {
             RadioButton {
                 id: rbGameEnd
                 Layout.columnSpan: 2
+                ButtonGroup.group: rbPenaltyGroup
                 text: qsTr("Game ends on timeout")
                 enabled: rbPerGame.checked
                 onCheckedChanged: config.canbuytime = false
@@ -145,6 +151,7 @@ GridLayout {
             RadioButton {
                 id: rbPenalty
                 Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                ButtonGroup.group: rbPenaltyGroup
                 text: qsTr("Penalty on timeout")
                 enabled: rbPerGame.checked
                 onCheckedChanged: config.canbuytime = true

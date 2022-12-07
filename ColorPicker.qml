@@ -3,6 +3,8 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Qt.labs.platform
 
+//todo: colorpicker: missing expander triangle on windows
+
 RowLayout {
     property ListModel pickerColors:({})
 

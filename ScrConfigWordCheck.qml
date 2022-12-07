@@ -33,13 +33,14 @@ GridLayout {
         id: layoutWordCheckModes
         columns: 3
         Layout.bottomMargin: 8
-
+        ButtonGroup { id: radioGroup }
         RowLayout {
             Layout.columnSpan: 3
             RadioButton {
                 id: rbTakeback
                 text: qsTr("Takeback")
                 checked: true
+                ButtonGroup.group: radioGroup
                 onCheckedChanged: if (checked) config.wordCheckMode = 0
             }
             InfoTip { tiptext: qsTr("The program checks the move and asks in case of unknown words for confirmation before the next player takes over") }
@@ -49,6 +50,7 @@ GridLayout {
             RadioButton {
                 id: rbPoll
                 text: qsTr("Poll")
+                ButtonGroup.group: radioGroup
                 onCheckedChanged: if (checked) config.wordCheckMode = 1
             }
             InfoTip { tiptext: qsTr("All players in the group are asked to confirm if a placed word has not been found in a dictionary") }
@@ -58,6 +60,7 @@ GridLayout {
             RadioButton {
                 id: rbChallenge
                 text: qsTr("Challenge")
+                ButtonGroup.group: radioGroup
                 onCheckedChanged: if (checked) config.wordCheckMode = 2
             }
             InfoTip { tiptext: qsTr("The move needs to be challenged manually by one player to start the verification, which runs as a poll then") }

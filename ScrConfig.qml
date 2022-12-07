@@ -447,6 +447,9 @@ Window {
             color: "transparent"
             Button {
                 id: btnLoad
+                leftPadding: 8
+                rightPadding: 8
+                spacing: 2
                 action: acLoadConfig
                 icon.width: 16; icon.height: 16 //needed on macOS
                 anchors.leftMargin: 10
@@ -454,6 +457,9 @@ Window {
             }
             Button {
                 id: btnSave
+                leftPadding: 8
+                rightPadding: 8
+                spacing: 2
                 action: acSaveConfig
                 icon.width: 16; icon.height: 16
                 anchors.left: btnLoad.right
@@ -487,6 +493,9 @@ Window {
             }
             Button {
                 id: btnClose
+                leftPadding: 8
+                rightPadding: 8
+                spacing: 2
                 action: acClose
                 icon.width: 16; icon.height: 16
                 anchors.right: parent.right

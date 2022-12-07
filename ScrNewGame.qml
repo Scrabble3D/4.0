@@ -82,7 +82,7 @@ Dialog {
             id: playerDelegate
             Row {
                 id: layout
-                spacing: 1
+                spacing: 4
                 RadioButton {
                     id: rbPlayerCount
                     text: (index + 1)
@@ -90,6 +90,7 @@ Dialog {
                     enabled: !GamePlay.isConnected
                     onCheckedChanged: rbIndex = index + 1
                     ButtonGroup.group: radioGroup
+                    //todo: newgame: indicator of radiobutton not padded under windows
                     topPadding: tiName.topPadding
                 }
                 Column {
