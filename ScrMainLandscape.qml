@@ -44,7 +44,7 @@ ColumnLayout {
                 MenuItem { action: acLandscapeView }
                 MenuItem { action: acPortraitView }
             }
-            MenuItem { action: acUpdate }
+//            MenuItem { action: acUpdate } //testing purpose
         }
         Menu {
             id: helpMenu

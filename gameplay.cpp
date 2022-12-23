@@ -15,12 +15,6 @@
 #include <QDebug>
 #endif
 
-void GamePlay::checkForUpdates()
-{
-    download("Binaries/raw/main/Scrabble3D.conf");
-}
-
-
 GamePlay::GamePlay(QQmlEngine *engine)
 {
 
@@ -35,7 +29,7 @@ GamePlay::GamePlay(QQmlEngine *engine)
                      this, SLOT(doDownloadFinished(DlType,QString)));
 
     if (m_pDownloadManager->lastChecked() > 7)
-        download("Binaries/raw/main/Scrabble3D.conf");
+        checkForUpdates();
 
     m_pBoard = new board();
     m_pRackModel = new rackmodel(this);
@@ -66,6 +60,11 @@ GamePlay::GamePlay(QQmlEngine *engine)
 #ifdef Q_OS_ANDROID
     emit loadGame(config::file("debug.ssg"));
 #endif
+}
+
+void GamePlay::checkForUpdates()
+{
+    download("Binaries/raw/main/Scrabble3D.conf");
 }
 
 void GamePlay::connect(QString name, QString password, QString email, QString country, QString city)
