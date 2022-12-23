@@ -103,6 +103,8 @@ signals:
 public:
     explicit GamePlay(QQmlEngine *engine);
 
+    Q_INVOKABLE void checkForUpdates();
+
     Q_INVOKABLE void localize(const QString fileName);
     Q_INVOKABLE bool deleteLocFile(const QString fileName) { return m_pLocListModel->removeLocFile(fileName); };
     Q_INVOKABLE void connect(QString name, QString password, QString email, QString country, QString city);

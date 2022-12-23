@@ -1,5 +1,6 @@
 #include "locmodel.h"
 #include "configpath.h"
+#include "version.h"
 
 #include <QXmlStreamReader>
 #include <QSettings>
@@ -132,6 +133,7 @@ void locList::updateList()
     QFile file(config::conf());
 
     m_LocFiles.clear();
+    m_CanUpdate.clear();
 
     //content in .conf file retrieved from github via downloadmanager at program start
     beginResetModel();
@@ -147,9 +149,10 @@ void locList::updateList()
                 (xmlReader.name().toString() == "localization"))
             {
                 locListData aData;
-                aData.NativeName=xmlReader.attributes().value("Native").toString();
-                aData.EnglishName=xmlReader.attributes().value("English").toString();
-                aData.AvailableVersion=xmlReader.attributes().value("RemoteVersion").toString();
+                aData.NativeName = xmlReader.attributes().value("Native").toString();
+                aData.EnglishName = xmlReader.attributes().value("English").toString();
+                aData.AvailableVersion = xmlReader.attributes().value("RemoteVersion").toString();
+                aData.AvailableVersionNumber = version::fromString( aData.AvailableVersion );
                 aData.FileName=xmlReader.attributes().value("FileName").toString();
                 //content in *.qm file
                 if ( m_pTranslator->load(aData.FileName, config::file("")) ) {
@@ -158,11 +161,19 @@ void locList::updateList()
                     //: replace by the current version of this localization
                     l10n_Version = tr("0.0.0");
                     aData.InstalledVersion = qApp->translate("", l10n_Version.toLocal8Bit().data() );
+                    aData.InstalledVersionNumber = version::fromString(aData.InstalledVersion);
                     QString l10n_Author;
                     //: replaced by the name of the translation author
                     l10n_Author = tr("unknown");
                     aData.Author = qApp->translate("", l10n_Author.toLocal8Bit().data() );
                     qApp->removeTranslator(m_pTranslator);
+                    if (aData.InstalledVersionNumber < aData.AvailableVersionNumber) {
+                        m_pParent->setProperty("addMsg", tr("Localization %1: %2 < %3").arg(
+                                                             aData.NativeName,
+                                                             aData.InstalledVersion,
+                                                             aData.AvailableVersion));
+                        m_CanUpdate.append("Localizations/raw/main/" + aData.FileName);
+                    }
                 }
                 m_LocFiles.append(aData);
             }

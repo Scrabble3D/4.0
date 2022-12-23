@@ -535,6 +535,7 @@ void dicList::updateList()
     QFile file(config::conf());
 
     m_Dictionaries.clear();
+    m_CanUpdate.clear();
 
     beginResetModel();
     if ( file.open(QIODevice::ReadOnly) )
@@ -552,6 +553,7 @@ void dicList::updateList()
                 aData.NativeName=xmlReader.attributes().value("Native").toString();
                 aData.EnglishName=xmlReader.attributes().value("English").toString();
                 aData.AvailableVersion=xmlReader.attributes().value("RemoteVersion").toString();
+                aData.AvailableVersionNumber=version::fromString(aData.AvailableVersion);
                 aData.FileName=xmlReader.attributes().value("FileName").toString();
                 getInfo(&aData);
                 m_Dictionaries.append(aData);
@@ -600,6 +602,16 @@ void dicList::getInfo(dicListData *aData)
         aData->License = settings.value("Header/Licence").toString();
         aData->Release = settings.value("Header/Release").toString();
         aData->Comment = settings.value("Header/Comment").toString();
+        // update?
+        if ((aData->InstalledVersionNumber > -1) &&
+            (aData->InstalledVersionNumber < aData->AvailableVersionNumber))
+        {
+            m_pParent->setProperty("addMsg", tr("Dictionary %1: %2 < %3").arg(
+                                                 aData->NativeName,
+                                                 aData->InstalledVersion,
+                                                 aData->AvailableVersion));
+            m_CanUpdate.append("Dictionaries/raw/main/" + aData->FileName + ".zip");
+        }
     }
     else {
         aData->InstalledVersion = "";

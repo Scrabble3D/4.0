@@ -15,6 +15,12 @@
 #include <QDebug>
 #endif
 
+void GamePlay::checkForUpdates()
+{
+    download("Binaries/raw/main/Scrabble3D.conf");
+}
+
+
 GamePlay::GamePlay(QQmlEngine *engine)
 {
 
@@ -1377,8 +1383,36 @@ void GamePlay::doDownloadFinished(DlType fileType, QString fileName)
 {
     switch (fileType) {
     case DlType::dmConfig: {
-        m_pDownloadManager->checkUpdates();
         m_pDicListModel->updateList();
+        m_pLocListModel->updateList();
+
+        QStringList canUpdate;
+
+        QFile rFile(config::conf());
+        if ( rFile.open(QIODevice::ReadOnly) ) {
+            QXmlStreamReader xmlReader;
+            xmlReader.setDevice(&rFile);
+            while (!xmlReader.atEnd()) {
+                xmlReader.readNext();
+                if (xmlReader.isStartElement() &&
+                    (xmlReader.name().toString() == "version"))
+                {
+                    QString sRemoteVersion = xmlReader.readElementText();
+                    if ( version::fromString( version::current() ) <
+                         version::fromString( sRemoteVersion ) ) {
+                        m_pMsgModel->addMessage( tr("Application: %1 < %2").arg(
+                                                     version::current(), sRemoteVersion));
+                        if (!InstFileName.isEmpty())
+                            canUpdate.append("Binaries/raw/main/" + InstFileName);
+                    }
+                }
+            } //start
+            rFile.close();
+        }
+        canUpdate << m_pLocListModel->canUpdate()
+                  << m_pDicListModel->canUpdate();
+        canUpdate.removeAll({}); //clear empty entries
+        m_pDownloadManager->checkUpdates(canUpdate);
         break;
     }
     case DlType::dmDictionary: {
@@ -1391,6 +1425,11 @@ void GamePlay::doDownloadFinished(DlType fileType, QString fileName)
         m_pLocListModel->updateList();
         if (!fileName.isEmpty())
             localize(fileName);
+        break;
+    }
+    case DlType::dmBinary: {
+        QProcess aProcess; // = new QProcess();
+        aProcess.start(fileName);
         break;
     }
     } //switch

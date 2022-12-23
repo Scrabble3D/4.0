@@ -37,6 +37,7 @@ public:
     void setIsLoaded(const QString fileName);
     bool removeLocFile(const QString fileName);
     void updateList();
+    QStringList canUpdate() { return m_CanUpdate; }
 
 protected:
     QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
@@ -47,5 +48,5 @@ private:
     QObject* m_pParent;
     int m_nCurrentLocFile; //index of currently active dic
     QList<locListData> m_LocFiles;
-
+    QStringList m_CanUpdate;
 };

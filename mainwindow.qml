@@ -174,6 +174,11 @@ ApplicationWindow {
         onTriggered: dictionary.open()
     }
     Action {
+        id: acUpdate
+        text: qsTr("Check for updates")
+        onTriggered: GamePlay.checkForUpdates()
+    }
+    Action {
         id: acAbout
         text: qsTr("About Scrabble3D")
         onTriggered: about.open()

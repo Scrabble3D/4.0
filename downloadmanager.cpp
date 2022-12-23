@@ -1,6 +1,4 @@
 #include "downloadmanager.h"
-#include "dictionary.h"
-#include "version.h"
 #include "configpath.h"
 #include "zip.h" //https://github.com/kuba--/zip
 
@@ -50,80 +48,16 @@ int DownloadManager::lastChecked()
 }
 
 //write all data or use qdomdocument
-void DownloadManager::checkUpdates() {
-
-    QList<dicListData> lDictionaries;
-    dicListData aData;
-
-    bool bCanUpdate = false;
-
-    //read remote info and add local data
-    QFile rFile(config::conf());
-    if ( rFile.open(QIODevice::ReadOnly) )
-    {
-        QXmlStreamReader xmlReader;
-        xmlReader.setDevice(&rFile);
-
-        while (!xmlReader.atEnd())
-        {
-            xmlReader.readNext();
-
-            if (xmlReader.isStartElement() &&
-               (xmlReader.name().toString() == "dictionary"))
-            {
-                aData.NativeName=xmlReader.attributes().value("Native").toString();
-                aData.EnglishName=xmlReader.attributes().value("English").toString();
-                aData.AvailableVersion=xmlReader.attributes().value("RemoteVersion").toString();
-                aData.FileName=xmlReader.attributes().value("FileName").toString();
-                dicList::getInfo(&aData);
-                if (aData.InstalledVersionNumber > -1) {
-                    //: Dictionary english.dic: 1.0.2 > 1.0.1
-                    m_pParent->setProperty("addMsg", tr("Dictionary %1: %2 %3 %4").arg(
-                                               aData.NativeName,
-                                               aData.InstalledVersion,
-                                               aData.InstalledVersionNumber > aData.AvailableVersionNumber
-                                               ? " > "
-                                               : aData.InstalledVersionNumber < aData.AvailableVersionNumber
-                                                 ? " < "
-                                                 : " = ",
-                                               aData.AvailableVersion));
-                    bCanUpdate = bCanUpdate || (aData.InstalledVersionNumber < aData.AvailableVersionNumber);
-                }
-                version::fromString(aData.AvailableVersion);
-                lDictionaries.append(aData);
-            } //Dictionaries
-
-            if (xmlReader.isStartElement() &&
-               (xmlReader.name().toString() == "version"))
-            {
-                QString sRemoteVersion = xmlReader.readElementText();
-                int nRemoteVersion = version::fromString( sRemoteVersion );
-                int nLocalVersion = version::fromString( version::current() );
-                m_pParent->setProperty("addMsg", tr("Program version: %1 %2 %3").arg(
-                                           sRemoteVersion,
-                                           nRemoteVersion > nLocalVersion
-                                           ? " > "
-                                           : nRemoteVersion < nLocalVersion
-                                             ? " < " : " = ",
-                                           version::current() ) );
-                bCanUpdate = bCanUpdate || (nRemoteVersion > nLocalVersion);
-            }
-        } //start
-        rFile.close();
-    };
-
+void DownloadManager::checkUpdates(QStringList canUpdate) {
     //run updates
-    if (bCanUpdate &&
+    if (!canUpdate.isEmpty() &&
         //: Updates available /n Do you want to start now?
         QMessageBox::question(nullptr, tr("Updates available"),
                               //: Updates available /n Do you want to start now?
                               tr("Do you want to start now?")) == QMessageBox::Yes )
     {
-        for (int i=0; i<lDictionaries.count(); i++) {
-            if (lDictionaries[i].InstalledVersionNumber < lDictionaries[i].AvailableVersionNumber)
-                download(lDictionaries[i].FileName+".zip");
-        }
-        //TODO: updater: update program
+        for (int i=0; i<canUpdate.count(); i++)
+            download( canUpdate[i] );
     }
 
     //last update
@@ -168,7 +102,6 @@ void DownloadManager::sslErrors(const QList<QSslError> &sslErrors)
 
 void DownloadManager::downloadFinished(QNetworkReply *reply)
 {
-
     m_pParent->setProperty("computeProgress", 0); //zero progress bar
 
     QUrl url = reply->url();
@@ -181,8 +114,9 @@ void DownloadManager::downloadFinished(QNetworkReply *reply)
         m_pParent->setProperty("addMsg",reply->errorString() );
     } else
     if (saveToDisk(tmpFile, reply)) {
-        m_pParent->setProperty("addMsg", tr("%1 successfully downloaded.").arg(
-                                   qPrintable(url.fileName())));
+        if (!url.fileName().endsWith("conf"))
+            m_pParent->setProperty("addMsg", tr("%1 successfully downloaded.").arg(
+                                                 qPrintable(url.fileName())));
 
         QString aFileName;
         //extract
@@ -194,13 +128,30 @@ void DownloadManager::downloadFinished(QNetworkReply *reply)
             aFileName = url.fileName().left( url.fileName().length() - 4 );
         } else
             aFileName = url.fileName();
-
+/*
+#ifdef Q_OS_Windows
+        QString sBinaryEnding = "exe";
+#elif defined(Q_OS_Android)
+        QString sBinaryEnding = "apk";
+#elif defined(Q_OS_MACOS)
+        QString sBinaryEnding = "dmg";
+#elif defined(Q_OS_LINUX)
+#ifdef IS_STATIC_BUILD
+        QString sBinaryEnding = "zip";
+#else
+        QString sBinaryEnding = "bin";
+#endif
+#endif
+*/
         if (aFileName.endsWith("dic"))
             emit onFinished(DlType::dmDictionary, aFileName);
         else if (aFileName.endsWith("qm"))
             emit onFinished(DlType::dmLocalization, aFileName);
         else if (aFileName.endsWith("conf"))
             emit onFinished(DlType::dmConfig, aFileName);
+        else // if (aFileName.endsWith(exe|apk|dmg|zip|bin))
+            emit onFinished(DlType::dmBinary, aFileName);
+
     }
     reply->deleteLater();
 }

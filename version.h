@@ -1,13 +1,25 @@
 #pragma once
 
 #include <QString>
+#include <QStringLiteral>
+
+#ifdef Q_OS_Windows
+    const QString InstFileName = "Scrabble3D_Windows.exe"
+#elif defined(Q_OS_Android)
+    const QString InstFileName = "Scrabble3D_Android.apk"
+#elif defined(Q_OS_MACOS)
+    const QString InstFileName = "Scrabble3D_macOS.dmg"
+#elif defined(Q_OS_LINUX)
+    const QString InstFileName = ""; //pointless to download a binary under Linux
+//    const QString InstFileName = "Scrabble3D_Linux.bin" // static build with installer
+#endif
 
 class version
 {
 
 #define VERSION_MAJOR 4
 #define VERSION_MINOR 0
-#define VERSION_BUILD 3
+#define VERSION_BUILD 1 //FIXME!!!!
 
 public:
     version() {};

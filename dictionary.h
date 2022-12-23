@@ -106,7 +106,7 @@ public:
     void setCategory(const QString catName, const bool isChecked) {dictionary->setCategoryChecked(catName, isChecked);}
     bool getCategory(const QString catName) const {return dictionary->getCategoryChecked(catName); }
     void updateList();
-    static void getInfo(dicListData *aData); //used also in downloadmanager::update()
+    const QStringList canUpdate() { return dicList::m_CanUpdate; }
 
 protected:
     QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
@@ -116,4 +116,6 @@ private:
     QObject* m_pParent;
     int m_nCurrentDictionary; //index of currently active dic
     QList<dicListData> m_Dictionaries;
+    void getInfo(dicListData *aData); //used also in downloadmanager::update()
+    QStringList m_CanUpdate;
 };

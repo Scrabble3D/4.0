@@ -6,7 +6,8 @@
 enum class DlType {
     dmConfig,
     dmLocalization,
-    dmDictionary
+    dmDictionary,
+    dmBinary
 };
 
 class DownloadManager: public QObject
@@ -19,7 +20,7 @@ public:
     DownloadManager(QObject* parent);
     void download(const QString fileName);
     int lastChecked(); //days between now and last check (inf when never)
-    void checkUpdates();
+    void checkUpdates(QStringList canUpdate);
 
 signals:
     void onFinished(DlType fileType, QString fileName);
