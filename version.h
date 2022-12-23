@@ -3,12 +3,12 @@
 #include <QString>
 #include <QStringLiteral>
 
-#ifdef Q_OS_Windows
-    const QString InstFileName = "Scrabble3D_Windows.exe"
-#elif defined(Q_OS_Android)
-    const QString InstFileName = "Scrabble3D_Android.apk"
+#ifdef 	Q_OS_WINDOWS
+    const QString InstFileName = "Scrabble3D_Windows.exe";
+#elif defined(Q_OS_ANDROID)
+    const QString InstFileName = "Scrabble3D_Android.apk";
 #elif defined(Q_OS_MACOS)
-    const QString InstFileName = "Scrabble3D_macOS.dmg"
+    const QString InstFileName = "Scrabble3D_macOS.dmg";
 #elif defined(Q_OS_LINUX)
     const QString InstFileName = ""; //pointless to download a binary under Linux
 //    const QString InstFileName = "Scrabble3D_Linux.bin" // static build with installer
