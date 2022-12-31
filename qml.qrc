@@ -3,7 +3,6 @@
         <file>mainwindow.qml</file>
         <file>ScrBoard.qml</file>
         <file>ScrConfig.qml</file>
-        <file>qtquickcontrols2.conf</file>
         <file>ScrCube.qml</file>
         <file>ScrPiece.qml</file>
         <file>ColorPicker.qml</file>

@@ -10,7 +10,12 @@ ApplicationWindow {
     height: 800
     visible: true
     title: "Scrabble3D"
-
+/*
+    background: Rectangle {
+        anchors.fill: parent
+        color: config.myPalette.window
+    }
+*/
     Settings {
         fileName: GamePlay.config()
         property alias x: scrabble3D.x
@@ -90,9 +95,7 @@ ApplicationWindow {
         id: acConfiguration
         text: qsTr("Configuration...")
         shortcut: StandardKey.Preferences
-        onTriggered: Qt.platform.os === "android"
-                     ? config.showFullScreen()
-                     : config.show()
+        onTriggered: config.show()
     }
     Action {
         id: acSaveGame

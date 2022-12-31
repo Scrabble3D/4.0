@@ -7,8 +7,8 @@ Window {
     visible: false //show per action acConfiguration
     modality: Qt.ApplicationModal
     title: qsTr("Configuration")
-    width: 680
-    height: 540
+    width: 680 > screen.width ? screen.width : 680
+    height: 540 > screen.height ? screen.height : 540
     property alias showTips: cbShowTips.checked
 
     property bool bMarkers: true //ScrConfigBoard::cbMarkers.checked
@@ -125,18 +125,14 @@ Window {
         configData["categories"] = aCat.toString()
         return configData;
     }
-
-    function saveConfig(fileName)
-    {
+    function saveConfig(fileName) {
         GamePlay.saveConfig(fileName, getConfigData())
     }
-    function loadConfig(fileName)
-    {
+    function loadConfig(fileName) {
         //reset calls applyConfig({})
         applyConfig( GamePlay.loadConfig(fileName) )
     }
-    function applyConfig(configData)
-    {
+    function applyConfig(configData) {
         function getConfigValue(key, def) {
             return configData[key] || def;
         }
@@ -239,7 +235,6 @@ Window {
         id: scrPlayerColors
         dynamicRoles: true
     }
-
     FileDialog {
         id: fileDialog
         folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
@@ -451,6 +446,13 @@ Window {
                 rightPadding: 8
                 spacing: 2
                 action: acLoadConfig
+                display: config.width < 500
+                   ? AbstractButton.IconOnly
+                   : AbstractButton.TextBesideIcon
+                width: display == AbstractButton.IconOnly
+                   ? height
+                   : Math.max(implicitBackgroundWidth + leftInset + rightInset,
+                              implicitContentWidth + leftPadding + rightPadding)
                 icon.width: 16; icon.height: 16 //needed on macOS
                 anchors.leftMargin: 10
                 anchors.verticalCenter: parent.verticalCenter
@@ -461,6 +463,14 @@ Window {
                 rightPadding: 8
                 spacing: 2
                 action: acSaveConfig
+                display:
+                    config.width < 500
+                    ? AbstractButton.IconOnly
+                    : AbstractButton.TextBesideIcon
+                width: display == AbstractButton.IconOnly
+                   ? height
+                   : Math.max(implicitBackgroundWidth + leftInset + rightInset,
+                              implicitContentWidth + leftPadding + rightPadding)
                 icon.width: 16; icon.height: 16
                 anchors.left: btnLoad.right
                 anchors.leftMargin: 3

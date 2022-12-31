@@ -421,7 +421,6 @@ void GamePlay::doNetworkGameResult(int oldRating, int newRating)
                               .arg(newRating));
 }
 
-//void GamePlay::doNetworkPoll(QVariantMap aMsg)
 void GamePlay::startPoll(GamePlay::PollType pollType)
 {
     //TODO: gameplay/network: suspend game, stop clock, exclude kibitzes

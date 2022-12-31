@@ -36,12 +36,12 @@ GridLayout {
             }
         }
     }
-    //TODO: localization: hide last column with filename
+
     TableView {
         id: locTable
         boundsBehavior: Flickable.StopAtBounds
         Layout.fillHeight: true
-        Layout.preferredWidth: scrollView.width
+        Layout.fillWidth: true
         Layout.minimumHeight: 200
         Layout.leftMargin: 8
         Layout.columnSpan: 2
@@ -49,8 +49,10 @@ GridLayout {
         clip: true;
         columnWidthProvider: function(column) {
             return column < 2
-                    ? configUI.width * 1/4
-                    : configUI.width * 1/8
+                ? Math.floor((configUI.width - 12) * 1/3) //names
+                : column < 4 //hide column with filename
+                    ? Math.floor((configUI.width - 12) * 1/6) //versions
+                    : 0
         }
         model: GamePlay.locListModel
         selectionModel: ItemSelectionModel {

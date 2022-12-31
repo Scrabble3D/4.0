@@ -4,7 +4,9 @@ import QtQuick.Layouts
 //TODO: dictionary rework from ground; QTreeView or QConcatenateTablesProxyModel
 GridLayout {
     columns: 2
-
+    //TODO: config: responsive width
+    // Layout.fillWidth: true
+    // Layout.fillHeight: true
     width: scrollView.width
     height: scrollView.height
     onWidthChanged: dictTable.forceLayout()
@@ -129,7 +131,7 @@ GridLayout {
         id: dictTable
         boundsBehavior: Flickable.StopAtBounds
         Layout.fillHeight: true
-        Layout.preferredWidth: contentWidth + sbDictTable.width
+        Layout.fillWidth: true
         Layout.minimumHeight: 200 //in case of long comments or many categories
         Layout.leftMargin: 8
         Layout.columnSpan: 2
@@ -137,8 +139,10 @@ GridLayout {
         clip: true;
         columnWidthProvider: function(column) {
             return column < 2
-                    ? configDictionary.width * 1/4
-                    : configDictionary.width * 1/8
+                ? Math.floor((configDictionary.width - 12) * 1/3) //names
+                : column > 2 //hide column with filename
+                    ? Math.floor((configDictionary.width - 12) * 1/6) //versions
+                    : 0
         }
         model: GamePlay.dicListModel
         selectionModel: ItemSelectionModel {

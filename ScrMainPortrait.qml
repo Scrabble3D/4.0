@@ -21,22 +21,25 @@ ColumnLayout {
                 id: btnNewGame
                 action: acNewGame
                 size: 38
+                text: ""
             }
             ToolbarButton {
                 id: btnNextPlayer
                 action: acNextPlayer
                 size: 38
+                text: ""
             }
             ToolbarButton {
                 id: btnChallenge
                 action: acChallenge
                 size: 38
+                text: ""
             }
-
             ToolbarButton {
                 id: btnComputeMove
                 action: acComputeMove
                 size: 38
+                text: ""
             }
             Row {
                 id: spinner // Spinbox font color is invisible on Android
@@ -48,6 +51,7 @@ ColumnLayout {
                 ToolbarButton {
                     id: tbSpinBoxDown
                     size: 38
+                    text: ""
                     enabled: lbSpinBox.enabled && spinner.value > 0
                     onClicked: spinner.value--
                     icon.source: "qrc:///resources/down.png"
@@ -67,49 +71,15 @@ ColumnLayout {
                 ToolbarButton {
                     id: tbSpinBoxUp
                     size: 38
+                    text: ""
                     enabled: lbSpinBox.enabled && spinner.value < spinner.max
                     onClicked: spinner.value++
                     icon.source: "qrc:///resources/up.png"
                 }
             }
-
             Rectangle { //dummy spacer
                 Layout.fillWidth: true
                 color: "transparent"
-            }
-            ToolbarButton {
-                size: 38
-                icon.source: "qrc:///resources/hamburger.png"
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        contextMenu.popup()
-                    }
-                    Menu {
-                        id: contextMenu
-                        MenuItem { action: acNewGame }
-                        MenuItem { action: acNextPlayer }
-                        MenuItem { action: acChallenge }
-                        MenuItem { action: acComputeMove }
-                        MenuItem { action: acDictionary }
-                        MenuSeparator { }
-                        MenuItem { action: acLoadGame }
-                        MenuItem { action: acSaveGame }
-                        MenuSeparator { }
-                        MenuItem { action: acNetwork; icon.source: ""; text: qsTr("Network") }
-                        MenuSeparator { }
-                        MenuItem { action: acConfiguration }
-                        Menu {
-                            title: qsTr("View Mode")
-                            MenuItem { action: acAutomaticView }
-                            MenuItem { action: acLandscapeView }
-                            MenuItem { action: acPortraitView }
-                        }
-                        MenuItem { action: acAbout }
-                        MenuSeparator { }
-                        MenuItem { action: acExit }
-                    }
-                }
             }
         }
     }
@@ -127,6 +97,57 @@ ColumnLayout {
         ScrMessages { id: messages }
         ScrGameCourse { id: statistics }
         ScrPlayers { id: players; visible: GamePlay.isConnected }
+    }
+    RoundButton {
+        id: actionButton
+        implicitWidth: 50
+        implicitHeight: 50
+        Layout.alignment: Qt.AlignRight
+        Layout.topMargin: -50
+        Layout.rightMargin: 10
+        display: AbstractButton.IconOnly
+        icon.width: 32
+        icon.height: 32
+        icon.source: "qrc:///resources/hamburger.png"
+        onPressed: contextMenu.popup()
+        background: Rectangle {
+            anchors.fill: parent
+            radius: width / 2
+            gradient: Gradient {
+                GradientStop {
+                    position: 1.0
+                    color: "darkgreen"
+                }
+                GradientStop {
+                    position: 0.0
+                    color: "limegreen"
+                }
+            }
+        }
+        Menu {
+            id: contextMenu
+            MenuItem { action: acNewGame }
+            MenuItem { action: acNextPlayer }
+            MenuItem { action: acChallenge }
+            MenuItem { action: acComputeMove }
+            MenuItem { action: acDictionary }
+            MenuSeparator { }
+            MenuItem { action: acLoadGame }
+            MenuItem { action: acSaveGame }
+            MenuSeparator { }
+            MenuItem { action: acNetwork; icon.source: ""; text: qsTr("Network") }
+            MenuSeparator { }
+            MenuItem { action: acConfiguration }
+            Menu {
+                title: qsTr("View Mode")
+                MenuItem { action: acAutomaticView }
+                MenuItem { action: acLandscapeView }
+                MenuItem { action: acPortraitView }
+            }
+            MenuItem { action: acAbout }
+            MenuSeparator { }
+            MenuItem { action: acExit }
+        }
     }
     TabBar {
         id: footerBar
@@ -169,6 +190,5 @@ ColumnLayout {
         }
         //TODO: main views: add statistics
     }
-
     ScrStatusbar { id: footerBarPt }
 }

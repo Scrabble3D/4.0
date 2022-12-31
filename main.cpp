@@ -1,7 +1,8 @@
 #include <QApplication>
-#include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QIcon>
+#include <QStyle>
 
 #include <gameplay.h>
 
@@ -14,8 +15,12 @@ int main(int argc, char *argv[])
 
     scrabble3D.setWindowIcon(QIcon(":/resources/app.ico"));
 
+    //BUG: without this line the back- and foreground colors are not distinctive
+    scrabble3D.setPalette(scrabble3D.style()->standardPalette());
+
     QQmlApplicationEngine engine;
 
+    //qml -> qt connections
     GamePlay* _GamePlay = new GamePlay(&engine);
     engine.rootContext()->setContextProperty("GamePlay", _GamePlay);
 
@@ -26,7 +31,7 @@ int main(int argc, char *argv[])
         if (!obj && url == objUrl)
             QCoreApplication::exit(-1);
     }, Qt::QueuedConnection);
-    engine.load(url);
 
+    engine.load(url);
     return scrabble3D.exec();
 }

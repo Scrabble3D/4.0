@@ -13,6 +13,13 @@ ColumnLayout {
 
     MenuBar {
         id: menuBar
+        //TODO: main: dark mode
+/*
+        background: Rectangle {
+            anchors.fill: parent
+            color: config.myPalette.window
+        }
+*/
         Menu {
             id: fileMenu
             title: qsTr("&File")
