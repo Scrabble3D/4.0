@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 GridLayout {
+    palette: config.myPalette
     columns: 2
 
     width: scrollView.width
@@ -24,8 +25,8 @@ GridLayout {
             implicitWidth: text.implicitWidth + 4
             implicitHeight: Math.max(locHeader.height,
                                      text.implicitHeight + 4)
-            color: myPalette.mid
-            border.color: myPalette.midlight
+            color: palette.mid
+            border.color: palette.midlight
             Text {
                 id: text
                 text: model[locHeader.textRole]
@@ -64,16 +65,19 @@ GridLayout {
             required property bool selected
             implicitWidth: parent.width
             implicitHeight: delText.height + 2
-            color: isLoaded ? myPalette.highlight
-                            : selected ? Qt.lighter(myPalette.highlight)
-                                       : myPalette.light
-            border.color: myPalette.midlight
+            color: isLoaded ? palette.highlight
+                            : selected ? Qt.lighter(palette.highlight)
+                                       : palette.window
+            border.color: palette.midlight
 
             Text {
                 id: delText
                 width: parent.width
                 padding: 2
-                color: isDark(parent.color) ? "white" : "black"
+                color: isLoaded ? palette.highlightedText
+                                : selected ? isDark(parent.color)
+                                             ? "white" : "black"
+                                           : palette.windowText
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
                 text: display

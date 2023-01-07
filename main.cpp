@@ -2,7 +2,6 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QIcon>
-#include <QStyle>
 
 #include <gameplay.h>
 
@@ -14,9 +13,6 @@ int main(int argc, char *argv[])
     QThread::currentThread()->setObjectName("Main Thread");
 
     scrabble3D.setWindowIcon(QIcon(":/resources/app.ico"));
-
-    //BUG: without this line the back- and foreground colors are not distinctive
-    scrabble3D.setPalette(scrabble3D.style()->standardPalette());
 
     QQmlApplicationEngine engine;
 

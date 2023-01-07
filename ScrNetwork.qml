@@ -12,6 +12,8 @@ Dialog {
     y: (scrabble3D.height - network.height) / 2
     padding: 12
 
+    palette: config.myPalette
+
     ListModel {
         id: countriesModel
         ListElement {country:"Afghanistan";flag:"af.png"}
@@ -278,10 +280,13 @@ Dialog {
         email.text = configData["nw_mail"]
         countryBox.currentIndex = configData["nw_country"]
         city.text = configData["nw_city"]
+        network.focus = true
     }
 
     contentItem: FocusScope {
+        id: focus //required to receive return key
         Keys.onReturnPressed: accept()
+        focus: standardButton(Dialog.Ok)
         ColumnLayout {
             anchors.fill: parent
             spacing: 6
@@ -304,13 +309,13 @@ Dialog {
                 id: password
                 Layout.fillWidth: true
                 echoMode: TextInput.Password
-                color: config.myPalette.buttonText
+                color: palette.buttonText
                 KeyNavigation.tab: email
                 ToolButton {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     icon.source: "qrc:///resources/eye.png"
-                    icon.color: config.myPalette.buttonText
+                    icon.color: palette.buttonText
                     TapHandler {
                         onPressedChanged: pressed
                              ? password.echoMode = TextInput.Normal

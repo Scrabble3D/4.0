@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 ColumnLayout {
+    palette: config.myPalette
 
     property alias board: board
     property alias cube: cube
@@ -13,13 +14,7 @@ ColumnLayout {
 
     MenuBar {
         id: menuBar
-        //TODO: main: dark mode
-/*
-        background: Rectangle {
-            anchors.fill: parent
-            color: config.myPalette.window
-        }
-*/
+        //NOTE: main: test dark mode
         Menu {
             id: fileMenu
             title: qsTr("&File")
@@ -59,8 +54,10 @@ ColumnLayout {
             MenuItem { action: acAbout }
         }
     }
+
     ToolBar {
         id: toolBar
+        palette: config.myPalette
         background: Rectangle { color: "transparent" }
         RowLayout {
             spacing: 3
@@ -160,19 +157,22 @@ ColumnLayout {
                 }
                 TabBar {
                     id: tabs
+                    background: Rectangle {
+                        color: "transparent"
+                    }
                     onCurrentIndexChanged:
                         if (currentIndex === 0) messages.newMessage = false
                     TabButton {
                         text: qsTr("Messages")
                         width: contentItem.implicitWidth + leftPadding + 2*rightPadding
-                        indicator: Rectangle {
+                        indicator: Rectangle { //showing a red dot on new messages
                             property int size: 5
                             width: size; height: size; radius: size
                             anchors.right: parent.right
                             anchors.top: parent.top
                             anchors.rightMargin: 2
                             anchors.topMargin: 2
-                            color: "#FF0000" //config.myPalette.highlight
+                            color: "#FF0000"
                             visible: messages.newMessage
                         }
                     }

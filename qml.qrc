@@ -23,10 +23,10 @@
         <file>ShadowText.qml</file>
         <file>ScrMainLandscape.qml</file>
         <file>ScrMainPortrait.qml</file>
-        <file>ScrConfigRules.qml</file>
-        <file>ScrConfigBoard.qml</file>
-        <file>ScrConfigLetter.qml</file>
-        <file>ScrConfigDictionary.qml</file>
+        <file>ConfigRules.qml</file>
+        <file>ConfigBoard.qml</file>
+        <file>ConfigLetter.qml</file>
+        <file>ConfigDictionary.qml</file>
         <file>ScrNewGame.qml</file>
         <file>resources/wheelchair.png</file>
         <file>ScrWordSearch.qml</file>
@@ -304,15 +304,22 @@
         <file>ScrRemoteGames.qml</file>
         <file>resources/change.png</file>
         <file>resources/create.png</file>
-        <file>ScrConfigTime.qml</file>
+        <file>ConfigTime.qml</file>
         <file>resources/opttime.png</file>
         <file>resources/dice.png</file>
         <file>resources/optwordcheck.png</file>
-        <file>ScrConfigWordCheck.qml</file>
+        <file>ConfigWordCheck.qml</file>
         <file>resources/challenge.png</file>
         <file>resources/info.png</file>
         <file>InfoTip.qml</file>
-        <file>ScrConfigUI.qml</file>
+        <file>ConfigUI.qml</file>
         <file>resources/optui.png</file>
+        <file>ColorComboBox.qml</file>
+        <file>ColorSpinBox.qml</file>
+        <file>ColorLabel.qml</file>
+        <file>ColorCheckBox.qml</file>
+        <file>ColorButton.qml</file>
+        <file>ColorRadioButton.qml</file>
+        <file>ColorTextField.qml</file>
     </qresource>
 </RCC>

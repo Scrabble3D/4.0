@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 GridLayout {
+    palette: config.myPalette
     //aliases required for save/loadConfig in ScrConfig
     property alias cbMarkers: cbMarkers;
     property alias rb2D: rb2D;
@@ -29,14 +30,16 @@ GridLayout {
             cbDefaultBoard.currentIndex = 4;
     }
 
-    Label {
+    ColorLabel {
         id: lbPreset
         leftPadding: 8
         text: qsTr("Preset:")
         Layout.alignment: Qt.AlignRight
     }
-    ComboBox {
+    ColorComboBox {
         id: cbDefaultBoard
+
+        Layout.minimumWidth: 100
         Layout.preferredWidth: 250
         model:
             [ qsTr("Classic"),
@@ -72,7 +75,7 @@ GridLayout {
                 sbSize.value = Math.round(Math.cbrt(config.board.length)) //cubic root = 14.99999
         }
     }
-    Label {
+    ColorLabel {
         id: lbDimensions
         leftPadding: 8
         text: qsTr("Dimension:")
@@ -80,25 +83,25 @@ GridLayout {
     }
     RowLayout {
         id: rl2D3D
-        RadioButton {
+        ColorRadioButton {
             id: rb2D
             checked: true
             text: qsTr("2D")
             onCheckedChanged: config.bIs3D = false
         }
-        RadioButton {
+        ColorRadioButton {
             id: rb3D
             text: qsTr("3D")
             onCheckedChanged: config.bIs3D = true
         }
     }
-    Label {
+    ColorLabel {
         id: lbBoardSize
         leftPadding: 8
         text: qsTr("Board size:")
         Layout.alignment: Qt.AlignRight
     }
-    SpinBox {
+    ColorSpinBox {
         id: sbSize
         onValueChanged: {
             var tmp = [] //new Array(sbSize.value*sbSize.value)
@@ -135,7 +138,7 @@ GridLayout {
             checkDefault()
         }
     }
-    Label {
+    ColorLabel {
         id: lbBonusFields
         leftPadding: 8
         text: qsTr("Bonus fields:")
@@ -187,7 +190,7 @@ GridLayout {
         Layout.column: 1
         Layout.row: 4
         visible: rb3D.checked
-        Label {
+        ColorLabel {
             text: qsTr("Level:")
         }
         Slider {
@@ -197,23 +200,23 @@ GridLayout {
             snapMode: Slider.SnapAlways
             stepSize: 1
         }
-        Label {
+        ColorLabel {
             text: pos3D.value
         }
         InfoTip { tiptext: qsTr("Use the slider to access the levels in the 3D cube") }
     }
-    Label {
+    ColorLabel {
         id: lbBonusMarker
         leftPadding: 8
         text: qsTr("Bonus markers:")
         Layout.alignment: Qt.AlignRight
     }
-    CheckBox {
+    ColorCheckBox {
         id: cbMarkers
         text: qsTr("Enabled")
         onCheckedChanged: config.bMarkers = checked
     }
-    Label {
+    ColorLabel {
         id: lbColors
         leftPadding: 8
         text: qsTr("Colors:")
@@ -223,7 +226,7 @@ GridLayout {
         id: cpColors
         pickerColors: config.colors
     }
-    Label {
+    ColorLabel {
         id: lbPlayerColors
         leftPadding: 8
         text: qsTr("Player colors:")
@@ -233,11 +236,11 @@ GridLayout {
         id: cpPlayerColors
         pickerColors: config.playercolors
     }
-    Label {
+    ColorLabel {
         id: lbDummy
         text: ""
     }
-    CheckBox {
+    ColorCheckBox {
         id: cbPlayerColors
         text: qsTr("Use on board")
         checkState: Qt.Checked

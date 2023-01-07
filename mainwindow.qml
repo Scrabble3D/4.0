@@ -10,12 +10,13 @@ ApplicationWindow {
     height: 800
     visible: true
     title: "Scrabble3D"
-/*
+    //TODO: main: dark mode
+
     background: Rectangle {
         anchors.fill: parent
         color: config.myPalette.window
     }
-*/
+
     Settings {
         fileName: GamePlay.config()
         property alias x: scrabble3D.x
@@ -208,10 +209,10 @@ ApplicationWindow {
     ScrDefaults    { id: defaults }
     ScrNewGame     { id: newgame }
     ScrWordSearch  { id: dictionary }
-    ScrConfig      { id: config }
     ScrAbout       { id: about }
     ScrNetwork     { id: network }
     ScrRemoteGames { id: remotegames}
+    ScrConfig      { id: config } //needs to come last trigger system palette change
 
     onWidthChanged: if (acAutomaticView.checked) {
         height > width

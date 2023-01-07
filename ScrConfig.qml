@@ -11,27 +11,27 @@ Window {
     height: 540 > screen.height ? screen.height : 540
     property alias showTips: cbShowTips.checked
 
-    property bool bMarkers: true //ScrConfigBoard::cbMarkers.checked
-    property bool bColoredPlayers: true //ScrConfigBoard::cbPlayerColors.checked
-    property bool bIs3D: false //ScrConfigBoard::rb3D.checked
+    property bool bMarkers: true //ConfigBoard::cbMarkers.checked
+    property bool bColoredPlayers: true //ConfigBoard::cbPlayerColors.checked
+    property bool bIs3D: false //ConfigBoard::rb3D.checked
 
-    property int numberOfLettersOnRack: 7 //ScrConfigLetter::sbPieces.value
-    property int numberOfRandomLetters: 0 //ScrConfigLetter::sbRandoms.value
-    property int numberOfJokers: 2 // set in onValueChange of ScrConfigLetter::sbJoker.value
-    property int numberOfPasses: 3 // set in onValueChange of ScrConfigTime::sbPasses
-    property int timeControl: 0 // set in onToggled of ScrConfigTime::rbNoLimit/rbPerMove/rbPerGame
-    property int timeControlValue: 10 // set in onToggled of ScrConfigTime::rbNoLimit/rbPerMove/rbPerGame
-    property int bingoBonus: 50 // set in onValueChange of ScrConfigRules::sbBingo
-    property int gameEndBonus: 0 // set in onValueChange of ScrConfigRules::sbGameEnd
-    property bool addLetters: true // set in onToggled of ScrConfigRules::sbGameEnd
-    property bool substractLetters: true // set in onToggled of ScrConfigRules::sbGameEnd
-    property int jokerPenalty: 0 // set in onValueChange of ScrConfigRules::sbJokerPanelty
-    property bool changeIsPass: false // set in onToggled of ScrConfigRules::cbChangeIsPass
-    property int wordCheckMode: 0 //set via rbTakeback = 0, rbPoll = 1, rbChallenge = 2 in ScrConfigWordCheck
-    property int wordCheckPeriod: 0 //set sbPeriod.value in ScrConfigWordCheck
-    property int wordCheckPenalty: 0 //set sbPenalty.value in ScrConfigWordCheck
-    property int wordCheckBonus: 0 //set sbBonus.value in ScrConfigWordCheck
-    property bool clabbers: false //set cbClabbers.toggle in ScrConfigWordCheck
+    property int numberOfLettersOnRack: 7 //ConfigLetter::sbPieces.value
+    property int numberOfRandomLetters: 0 //ConfigLetter::sbRandoms.value
+    property int numberOfJokers: 2 // set in onValueChange of ConfigLetter::sbJoker.value
+    property int numberOfPasses: 3 // set in onValueChange of ConfigTime::sbPasses
+    property int timeControl: 0 // set in onToggled of ConfigTime::rbNoLimit/rbPerMove/rbPerGame
+    property int timeControlValue: 10 // set in onToggled of ConfigTime::rbNoLimit/rbPerMove/rbPerGame
+    property int bingoBonus: 50 // set in onValueChange of ConfigRules::sbBingo
+    property int gameEndBonus: 0 // set in onValueChange of ConfigRules::sbGameEnd
+    property bool addLetters: true // set in onToggled of ConfigRules::sbGameEnd
+    property bool substractLetters: true // set in onToggled of ConfigRules::sbGameEnd
+    property int jokerPenalty: 0 // set in onValueChange of ConfigRules::sbJokerPanelty
+    property bool changeIsPass: false // set in onToggled of ConfigRules::cbChangeIsPass
+    property int wordCheckMode: 0 //set via rbTakeback = 0, rbPoll = 1, rbChallenge = 2 in ConfigWordCheck
+    property int wordCheckPeriod: 0 //set sbPeriod.value in ConfigWordCheck
+    property int wordCheckPenalty: 0 //set sbPenalty.value in ConfigWordCheck
+    property int wordCheckBonus: 0 //set sbBonus.value in ConfigWordCheck
+    property bool clabbers: false //set cbClabbers.toggle in ConfigWordCheck
     property bool canbuytime: false //set per rbGameEnd/rbPenalty in ScrTimeControl
     property int buytimecount: 0 //set per sbPenaltyCount in ScrTimeControl
     property int buytimepenalty: 0 // sbPenaltyPoints in ScrTimeControl
@@ -250,7 +250,6 @@ Window {
     Action {
         id: acClose
         text: qsTr("Close")
-        icon.source: "qrc:///resources/nextplayer.png"
         onTriggered: config.close()
     }
     Action {
@@ -282,8 +281,42 @@ Window {
         onTriggered: applyConfig({})
     }
 
-    SystemPalette { id: myPalette; colorGroup: SystemPalette.Active }
+    SystemPalette { id: aPalette; colorGroup: SystemPalette.Active }
+    SystemPalette { id: bPalette; colorGroup: SystemPalette.Disabled }
+    Palette {
+        id: myPalette
+        alternateBase: aPalette.alternateBase
+        base: aPalette.base
+        button: aPalette.button
+        buttonText: aPalette.buttonText
+        dark: aPalette.dark
+        highlight: aPalette.highlighted
+        highlightedText: aPalette.highlightedText
+        light: aPalette.light
+        mid: aPalette.mid
+        midlight: aPalette.midlight
+        placeholderText: aPalette.placeholderText
+        shadow: aPalette.shadow
+        text: aPalette.text
+        window: aPalette.window
+        windowText: aPalette.windowText
 
+        disabled.alternateBase: bPalette.alternateBase
+        disabled.base: bPalette.base
+        disabled.button: bPalette.button
+        disabled.buttonText: bPalette.buttonText
+        disabled.dark: bPalette.dark
+        disabled.highlight: bPalette.highlighted
+        disabled.highlightedText: bPalette.highlightedText
+        disabled.light: bPalette.light
+        disabled.mid: bPalette.mid
+        disabled.midlight: bPalette.midlight
+        disabled.placeholderText: bPalette.placeholderText
+        disabled.shadow: bPalette.shadow
+        disabled.text: bPalette.text
+        disabled.window: bPalette.window
+        disabled.windowText: bPalette.windowText
+    }
     color: myPalette.base
 
     ListModel {
@@ -328,6 +361,7 @@ Window {
 
         SplitView {
             id: splitView
+//TODO: config: hide splitview handle in portrait mode
             orientation: mainLoader.state === "landscape"
                          ? Qt.Horizontal
                          : Qt.Vertical
@@ -352,7 +386,7 @@ Window {
                     delegate: lViewDelegates
                 }
             }
-            ComboBox {
+            ColorComboBox {
                 id: catSelector
                 visible: mainLoader.state === "portrait"
                 model: lmCategories
@@ -369,7 +403,7 @@ Window {
                     anchors.fill: parent
                     topPadding: 10
                     clip: true
-                    ScrConfigBoard {
+                    ConfigBoard {
                         id: configBoard
                         visible: lView.currentIndex === 0
                         onVisibleChanged: { heightChanged() }
@@ -378,7 +412,7 @@ Window {
                             scrollView.contentWidth = configBoard.width
                         }
                     }
-                    ScrConfigLetter {
+                    ConfigLetter {
                         id: configLetter
                         visible: lView.currentIndex === 1
                         onVisibleChanged: {
@@ -386,7 +420,7 @@ Window {
                             scrollView.contentWidth = configLetter.width
                         }
                     }
-                    ScrConfigWordCheck {
+                    ConfigWordCheck {
                         id: configWordCheck
                         visible: lView.currentIndex === 2
                         defaultLetterSet: configLetter.cbLetterSet.currentIndex > -1
@@ -397,7 +431,7 @@ Window {
                             scrollView.contentWidth = configWordCheck.width
                         }
                     }
-                    ScrConfigTime {
+                    ConfigTime {
                         id: configTime
                         visible: lView.currentIndex === 3
                         defaultLetterSet: configLetter.cbLetterSet.currentIndex > -1
@@ -408,7 +442,7 @@ Window {
                             scrollView.contentWidth = configRules.width
                         }
                     }
-                    ScrConfigRules {
+                    ConfigRules {
                         id: configRules
                         visible: lView.currentIndex === 4
                         defaultLetterSet: configLetter.cbLetterSet.currentIndex > -1
@@ -419,7 +453,7 @@ Window {
                             scrollView.contentWidth = configRules.width
                         }
                     }
-                    ScrConfigDictionary {
+                    ConfigDictionary {
                         id: configDictionary
                         visible: lView.currentIndex === 5
                         onVisibleChanged: {
@@ -427,7 +461,7 @@ Window {
                             scrollView.contentWidth = configDictionary.width
                         }
                     }
-                    ScrConfigUI {
+                    ConfigUI {
                         id: configUI
                         visible: lView.currentIndex === 6
                     }
@@ -440,7 +474,7 @@ Window {
             Layout.minimumHeight: btnClose.height+12
             Layout.fillWidth: true
             color: "transparent"
-            Button {
+            ColorButton {
                 id: btnLoad
                 leftPadding: 8
                 rightPadding: 8
@@ -457,7 +491,7 @@ Window {
                 anchors.leftMargin: 10
                 anchors.verticalCenter: parent.verticalCenter
             }
-            Button {
+            ColorButton {
                 id: btnSave
                 leftPadding: 8
                 rightPadding: 8
@@ -476,7 +510,7 @@ Window {
                 anchors.leftMargin: 3
                 anchors.verticalCenter: parent.verticalCenter
             }
-            Button {
+            ColorButton {
                 id: btnReset
                 action: acResetConfig
                 icon.width: 16; icon.height: 16
@@ -493,7 +527,7 @@ Window {
                     timeout: 5000
                 }
             }
-            CheckBox {
+            ColorCheckBox {
                 id: cbShowTips
                 anchors.left: btnReset.right
                 anchors.leftMargin: 3
@@ -501,7 +535,7 @@ Window {
                 checked: true
                 text: qsTr("Show tips")
             }
-            Button {
+            ColorButton {
                 id: btnClose
                 leftPadding: 8
                 rightPadding: 8

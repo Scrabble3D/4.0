@@ -9,6 +9,7 @@ Rectangle {
     property alias text: theText.text
     Text {
         id: theText
+        color: config.myPalette.windowText
         text: ""
         linkColor: isDark(config.myPalette.window) ? Qt.lighter("#0000FF") : "#0000FF"
         onLinkActivated: Qt.openUrlExternally(link)

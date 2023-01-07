@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import Qt.labs.qmlmodels
 
 GridLayout {
+    palette: config.myPalette
 
     property alias cbLetterSet: cbLetterSet
     property alias sbJoker: sbJoker
@@ -82,17 +83,18 @@ GridLayout {
         TableModelColumn { display: "count" }
     }
 
-    Label {
+    ColorLabel {
         id: lbLetterSet
         Layout.alignment: Qt.AlignRight
         text: qsTr("Letter set:")
     }
-    ComboBox {
+    ColorComboBox {
         id: cbLetterSet
         Layout.minimumWidth: 100
         Layout.preferredWidth: tvLetterSet.width - sbLetterSet.width
         model: defaults.languages
         textRole: "nativeName"
+
         onCurrentIndexChanged: {
             if ( currentIndex >= 0 )
                 setLetterSet( defaults.languages[currentIndex].letters )
@@ -106,7 +108,7 @@ GridLayout {
             }
         }
     }
-    Label {
+    ColorLabel {
         id: lbLetterDistribution
         Layout.alignment: Qt.AlignTop | Qt.AlignRight
         Layout.topMargin: horizontalHeader.height/2 - font.pixelSize /2
@@ -206,12 +208,12 @@ GridLayout {
             columns: 2
             Layout.alignment: Qt.AlignRight
             Layout.rightMargin: 10
-            Label {
+            ColorLabel {
                 id: lbMultiplier
                 text: qsTr("Multiplier:")
                 Layout.alignment: Qt.AlignRight
             }
-            SpinBox {
+            ColorSpinBox {
                 id: sbMultiplier
                 Layout.preferredWidth: 75
                 from: 1
@@ -227,55 +229,55 @@ GridLayout {
                     multiplier = value
                 }
             }
-            Label {
+            ColorLabel {
                 text: qsTr("Total number of letters:")
                 Layout.alignment: Qt.AlignRight
             }
             RowLayout {
-                Label { id: lbNumberOfLetters }
+                ColorLabel { id: lbNumberOfLetters }
                 InfoTip { tiptext: qsTr("The total number of tiles in the distribution excluding blanks and random letters") }
             }
         }
 
     }
-    Label {
+    ColorLabel {
         id: lbJoker
         Layout.alignment: Qt.AlignRight
         text: qsTr("Blank tiles:")
     }
     RowLayout {
-        SpinBox {
+        ColorSpinBox {
             id: sbJoker
             onValueChanged: config.numberOfJokers = value
         }
         InfoTip { tiptext: qsTr("The number of blank tiles, also known as jokers, will be added to the letter set") }
     }
-    Label {
+    ColorLabel {
         id: lbPieces
         Layout.alignment: Qt.AlignRight
         text: qsTr("Letters on rack:")
     }
     RowLayout {
-        SpinBox {
+        ColorSpinBox {
             id: sbPieces
             onValueChanged: config.numberOfLettersOnRack = value
         }
         InfoTip { tiptext: qsTr("You can define how many tiles should be available on the rack") }
     }
-    Label {
+    ColorLabel {
         id: lbRandoms
         Layout.alignment: Qt.AlignRight
         text: qsTr("Random letters:")
     }
     RowLayout {
-        SpinBox {
+        ColorSpinBox {
             id: sbRandoms
             onValueChanged: config.numberOfRandomLetters = value
         }
         InfoTip { tiptext: qsTr("Random letters are picked from the distribution, also in case of zero count, and will be added to the letter set") }
     }
     //todo: configletter: reading direction not yet implemented
-    Label {
+    ColorLabel {
         id: lbReadingDirection
         Layout.alignment: Qt.AlignRight
         text: qsTr("Reading direction:")
@@ -283,12 +285,12 @@ GridLayout {
     }
     RowLayout {
         id: layoutReadingDirection
-        RadioButton {
+        ColorRadioButton {
             id: rbReadingDirectionLTR
             text: qsTr("left to right")
             enabled: false
         }
-        RadioButton {
+        ColorRadioButton {
             id: rbReadingDirectionRTL
             text: qsTr("right to left")
             enabled: false

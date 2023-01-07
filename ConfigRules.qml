@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 GridLayout {
+    palette: config.myPalette
     columns: 2
     columnSpacing: 8
     rowSpacing: 8
@@ -26,14 +27,14 @@ GridLayout {
     property alias sbJokerPenalty: sbJokerPenalty
     property alias cbChangeIsPass: cbChangeIsPass
 
-    Label {
+    ColorLabel {
         id: lbPasses
         leftPadding: 8
         Layout.alignment: Qt.AlignRight | Qt.AlignTopmitspieler
         text: qsTr("Passes until game end:")
     }
     RowLayout {
-        SpinBox {
+        ColorSpinBox {
         id: sbPasses
         from: 1
         to: 99
@@ -41,14 +42,14 @@ GridLayout {
     }
         InfoTip { tiptext: qsTr("The number of moves each player can pass consecutively until the game ends") }
     }
-    Label {
+    ColorLabel {
         id: lbBingo
         leftPadding: 8
         Layout.alignment: Qt.AlignRight | Qt.AlignTop
         text: qsTr("Bonus for Scrabble/Bingos:")
     }
     RowLayout {
-        SpinBox {
+        ColorSpinBox {
             id: sbBingo
             from: 0
             to: 999
@@ -56,14 +57,14 @@ GridLayout {
         }
         InfoTip { tiptext: qsTr("The 'bingo' bonus when all tiles from the rack are placed at once") }
     }
-    Label {
+    ColorLabel {
         id: lbGameEnd
         leftPadding: 8
         Layout.alignment: Qt.AlignRight | Qt.AlignTop
         text: qsTr("Bonus on game end:")
     }
     RowLayout {
-        SpinBox {
+        ColorSpinBox {
             id: sbGameEnd
             from: 0
             to: 999
@@ -71,14 +72,14 @@ GridLayout {
         }
         InfoTip { tiptext: qsTr("Extra bonus awarded to the player who ends the game") }
     }
-    Label {
+    ColorLabel {
         id: lbJokerPenalty
         leftPadding: 8
         Layout.alignment: Qt.AlignRight | Qt.AlignTop
         text: qsTr("Penalty for left blanks:")
     }
     RowLayout {
-        SpinBox {
+        ColorSpinBox {
             id: sbJokerPenalty
             from: 0
             to: 999
@@ -89,7 +90,7 @@ GridLayout {
     RowLayout {
         Layout.columnSpan: 2
         Layout.leftMargin: 8
-        CheckBox {
+        ColorCheckBox {
             id: cbAddLetters
             text: qsTr("Add the value of other players letters")
             onToggled: config.addLetters = checked
@@ -99,7 +100,7 @@ GridLayout {
     RowLayout {
         Layout.columnSpan: 2
         Layout.leftMargin: 8
-        CheckBox {
+        ColorCheckBox {
             id: cbSubstractLetters
             text: qsTr("Substract the value of left letters")
             onToggled: config.substractLetters = checked
@@ -109,7 +110,7 @@ GridLayout {
     RowLayout {
         Layout.columnSpan: 2
         Layout.leftMargin: 8
-        CheckBox {
+        ColorCheckBox {
             id: cbChangeIsPass
             text: qsTr("Treat exchange as pass")
             onToggled: config.changeIsPass = checked

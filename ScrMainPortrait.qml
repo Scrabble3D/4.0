@@ -3,6 +3,8 @@ import QtQuick.Layouts
 import QtQuick.Controls
 
 ColumnLayout {
+    palette: config.myPalette
+
     property alias board: board
     property alias messages: messages
     property alias cube: cube
@@ -42,7 +44,7 @@ ColumnLayout {
                 text: ""
             }
             Row {
-                id: spinner // Spinbox font color is invisible on Android
+                id: spinner
                 property int max: GamePlay.bestMoveCount
                 onMaxChanged: value = 0
                 property int value: 0
@@ -168,14 +170,14 @@ ColumnLayout {
         TabButton {
             text: qsTr("Messages")
             width: contentItem.implicitWidth + leftPadding + 2*rightPadding
-            indicator: Rectangle {
+            indicator: Rectangle { // red dot on new messages
                 property int size: 5
                 width: size; height: size; radius: size
                 anchors.right: parent.right
                 anchors.top: parent.top
                 anchors.rightMargin: 2
                 anchors.topMargin: 2
-                color: "#FF0000" //config.myPalette.highlight
+                color: "#FF0000"
                 visible: messages.newMessage
             }
         }

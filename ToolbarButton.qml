@@ -5,10 +5,7 @@ import QtQuick.Controls.impl
 T.ToolButton {
     id: control
 
-    SystemPalette {
-        id: myPalette
-        colorGroup: enabled ? SystemPalette.Active : SystemPalette.Disabled
-    }
+    palette: config.myPalette
 
     property int size: 28
     implicitWidth: size
@@ -18,9 +15,10 @@ T.ToolButton {
 
     icon.width: size - 6
     icon.height: size - 6
-    icon.color: Color.transparent(isDark(myPalette.base)
-                                  ? "white"
-                                  : "black", enabled ? 1.0 : 0.2)
+    icon.color: Color.transparent(isDark(palette.base)
+                                     ? "white"
+                                     : "black",
+                                  enabled ? 1.0 : 0.2)
 
     contentItem: IconLabel {
         spacing: control.spacing
@@ -30,7 +28,7 @@ T.ToolButton {
         icon: control.icon
         text: control.text
         font: control.font
-        color: Color.transparent(isDark(myPalette.base)
+        color: Color.transparent(isDark(palette.base)
                                  ? "white"
                                  : "black", enabled ? 1.0 : 0.2)
     }
@@ -38,10 +36,10 @@ T.ToolButton {
     background: Rectangle {
         id: backRect
         color: control.enabled && control.hovered
-                ? control.pressed ? myPalette.dark
-                                  : myPalette.mid
+                ? control.pressed ? palette.dark
+                                  : palette.mid
                 : "transparent"
-        border.color: myPalette.dark
+        border.color: palette.dark
         border.width: control.enabled && control.hovered ? 1 : 0
     }
 }

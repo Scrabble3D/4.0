@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 GridLayout {
+    palette: config.myPalette
     columns: 2
     columnSpacing: 8
     rowSpacing: 8
@@ -22,7 +23,7 @@ GridLayout {
     property alias sbBonus: sbBonus
     property alias cbClabbers: cbClabbers
 
-    Label {
+    ColorLabel {
         id: lMode
         leftPadding: 8
         Layout.alignment: Qt.AlignRight | Qt.AlignTop
@@ -36,7 +37,7 @@ GridLayout {
         ButtonGroup { id: radioGroup }
         RowLayout {
             Layout.columnSpan: 3
-            RadioButton {
+            ColorRadioButton {
                 id: rbTakeback
                 text: qsTr("Takeback")
                 checked: true
@@ -47,7 +48,7 @@ GridLayout {
         }
         RowLayout {
             Layout.columnSpan: 3
-            RadioButton {
+            ColorRadioButton {
                 id: rbPoll
                 text: qsTr("Poll")
                 ButtonGroup.group: radioGroup
@@ -57,7 +58,7 @@ GridLayout {
         }
         RowLayout {
             Layout.columnSpan: 3
-            RadioButton {
+            ColorRadioButton {
                 id: rbChallenge
                 text: qsTr("Challenge")
                 ButtonGroup.group: radioGroup
@@ -65,14 +66,13 @@ GridLayout {
             }
             InfoTip { tiptext: qsTr("The move needs to be challenged manually by one player to start the verification, which runs as a poll then") }
         }
-        Label {
+        ColorLabel {
             id: lbPeriod
             leftPadding: 24
             enabled: rbChallenge.checked
-            color: enabled ? config.myPalette.windowText : config.myPalette.mid
             text: qsTr("Period:")
         }
-        SpinBox {
+        ColorSpinBox {
             id: sbPeriod
             enabled: rbChallenge.checked
             from: 0 //0sec
@@ -80,22 +80,20 @@ GridLayout {
             onValueChanged: config.wordCheckPeriod = value
         }
         RowLayout {
-            Label {
+            ColorLabel {
                 id: lbPeriodUnit
                 enabled: rbChallenge.checked
-                color: enabled ? config.myPalette.windowText : config.myPalette.mid
                 text: qsTr("seconds")
             }
             InfoTip { tiptext: qsTr("Time span in which the challenge can be started") }
         }
-        Label {
+        ColorLabel {
             id: lbPenlty
             leftPadding: 24
             enabled: rbChallenge.checked
-            color: enabled ? config.myPalette.windowText : config.myPalette.mid
             text: qsTr("Penalty:")
         }
-        SpinBox {
+        ColorSpinBox {
             id: sbPenalty
             enabled: rbChallenge.checked
             from: 0 //points
@@ -103,22 +101,20 @@ GridLayout {
             onValueChanged: config.wordCheckPenalty = value
         }
         RowLayout {
-            Label {
+            ColorLabel {
                 id: lbPenaltyUnit
                 enabled: rbChallenge.checked
-                color: enabled ? config.myPalette.windowText : config.myPalette.mid
                 text: qsTr("points")
             }
             InfoTip { tiptext: qsTr("Penalty given to the challenging player if the word is accepted") }
         }
-        Label {
+        ColorLabel {
             id: lbBonus
             leftPadding: 24
             enabled: rbChallenge.checked
-            color: enabled ? config.myPalette.windowText : config.myPalette.mid
             text: qsTr("Bonus:")
         }
-        SpinBox {
+        ColorSpinBox {
             id: sbBonus
             enabled: rbChallenge.checked
             from: 0 //points
@@ -126,16 +122,15 @@ GridLayout {
             onValueChanged: config.wordCheckBonus = value
         }
         RowLayout {
-            Label {
+            ColorLabel {
                 id: lbsbBonusUnit
                 enabled: rbChallenge.checked
-                color: enabled ? config.myPalette.windowText : config.myPalette.mid
                 text: qsTr("points")
             }
             InfoTip { tiptext: qsTr("Bonus given to the challenging player if the word is rejected") }
         }
     }
-    Label {
+    ColorLabel {
         id: lbOptions
         leftPadding: 8
         Layout.alignment: Qt.AlignRight | Qt.AlignTop
@@ -144,7 +139,7 @@ GridLayout {
         text: qsTr("Options:")
     }
     RowLayout {
-        CheckBox {
+        ColorCheckBox {
             id: cbClabbers
             text: qsTr("CLABBERS variant")
             enabled: false //TODO: CLABBERS

@@ -8,8 +8,9 @@ import Qt.labs.platform
 RowLayout {
     property ListModel pickerColors:({})
 
-    ComboBox {
+    ColorComboBox {
         id: cbColors
+
         model: pickerColors
         Layout.preferredWidth: 200
         Layout.preferredHeight: 28
@@ -17,7 +18,7 @@ RowLayout {
         delegate: Rectangle {
             height: 32
             width: parent.width
-            color: myPalette.button
+            color: config.myPalette.button
             Rectangle {
                 id: delegateColorDot
                 width: parent.height * 0.75
@@ -32,7 +33,8 @@ RowLayout {
                 id: delegateColorName
                 leftPadding: parent.height * 1.25
                 text: itemName
-                color: myPalette.buttonText
+                color: config.myPalette.buttonText
+                font: cbColors.font
                 anchors.verticalCenter: parent.verticalCenter
             }
             MouseArea {
@@ -48,9 +50,26 @@ RowLayout {
 
         background: Rectangle {
             id: rcBackground
+            anchors.fill: parent
             Rectangle {
                 anchors.fill: parent
-                color: myPalette.button
+                gradient: Gradient {
+                    GradientStop {
+                        position: 0.0
+                        color: !cbColors.down ? Qt.lighter(config.myPalette.button, 1.2) : config.myPalette.button
+                    }
+                    GradientStop {
+                        position: 0.2
+                        color: config.myPalette.button
+                    }
+                    GradientStop {
+                        position: 0.8
+                        color: !cbColors.down ? Qt.darker(config.myPalette.button, 1.2) : config.myPalette.button
+                    }
+                }
+                border.width: cbColors.hovered ? 2 : 0
+                border.color: config.myPalette.button
+
                 Rectangle {
                     id: rcColorDot
                     width: parent.height * 0.75
@@ -62,7 +81,8 @@ RowLayout {
                 }
                 Text {
                     id: lbColorName
-                    color: myPalette.buttonText
+                    color: config.myPalette.buttonText
+                    font: cbColors.font
                     leftPadding: parent.height * 1.25
                     anchors.verticalCenter: parent.verticalCenter
                 }
@@ -80,13 +100,15 @@ RowLayout {
 
     Button {
         id: btnColors
+        Layout.preferredHeight: 28
+        Layout.preferredWidth: 28
         text: "..."
         onClicked: colorDialog.open()
     }
 
     ColorDialog {
         id: colorDialog
-        title: "Please choose a color"
+        title: qsTr("Please choose a color")
         color: rcColorDot.color
         onAccepted: {
             pickerColors.setProperty(cbColors.currentIndex, "itemColor", colorDialog.color)

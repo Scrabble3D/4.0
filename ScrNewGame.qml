@@ -4,12 +4,14 @@ import QtQuick.Layouts
 
 Dialog {
     id: newgame
+    //: dialog title
     title: qsTr("Start a new game")
     modal: true
     footer: DialogButtonBox {
         id: buttons
         standardButtons: Dialog.Ok | Dialog.Cancel
     }
+    palette: config.myPalette
 
     property alias playerNames: playerNames //used at poll
 

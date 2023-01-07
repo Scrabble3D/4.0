@@ -2,7 +2,10 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+//CRASH: word search: searching in empty dictionary
 Dialog {
+    palette: config.myPalette
+
     title: qsTr("Search for words")
     standardButtons: Dialog.Close
     x: (parent.width - width) / 2
@@ -16,7 +19,7 @@ Dialog {
         dicCategory.text = dicEntry["category"]
         dicMeaning.text = dicEntry["meaning"]
         dicWord.bgcolor = dicEntry["included"]
-                ? config.myPalette.light : "yellow"
+                ? palette.light : "yellow"
         dicWord.color = dicEntry["included"]
                 ? palette.text : "black"
     }
@@ -24,7 +27,7 @@ Dialog {
     function isWordInDic(sWord) {
         var index = GamePlay.indexByWord(sWord)
         if (index > -1) {
-            if (dicIndex.value == index+1)
+            if (dicIndex.value === index+1)
                 dicIndex.valueChanged() //just emit signal if the value hasn't changed
             else
                 dicIndex.value = index+1
@@ -49,16 +52,17 @@ Dialog {
             //TODO: wordsearch: digraph replacement (Espanol -> 1ACA = LLACA)
             TextField {
                 id: dicWord
-                property string bgcolor: config.myPalette.light
+                property string bgcolor: "white"
                 Layout.preferredWidth: 150
                 Layout.preferredHeight: font.pixelSize + 10
                 verticalAlignment: Text.AlignVCenter
                 font.capitalization: Font.AllUppercase
                 leftPadding: 3
+                placeholderText: qsTr("Enter word")
                 background: Rectangle {
                     anchors.fill: parent
                     color: parent.bgcolor
-                    border.color: config.myPalette.mid
+                    border.color: palette.mid
                 }
                 onTextChanged: isWordInDic(dicWord.text)
             }
@@ -106,13 +110,14 @@ Dialog {
                 Layout.preferredWidth: 150
                 Layout.preferredHeight: font.pixelSize + 10
                 text: ""
+                placeholderText: qsTr("Enter letters")
                 verticalAlignment: Text.AlignVCenter
                 font.capitalization: Font.AllUppercase
                 leftPadding: 3
                 background: Rectangle {
                     anchors.fill: parent
-                    border.color: config.myPalette.mid
-                    color: config.myPalette.light
+                    border.color: palette.mid
+                    color: "white"
                 }
                 color: palette.windowText
                 onTextChanged: {
@@ -137,14 +142,14 @@ Dialog {
                     height: delegateText.font.pixelSize + 8
                     width: dicPattern.width
                     //TODO: ScrWordSearch: palette at search not working with dark themes
-                    color: ListView.isCurrentItem ? config.myPalette.highlight : config.myPalette.window
+                    color: ListView.isCurrentItem ? palette.highlight : palette.window
                     Text {
                         id: delegateText
                         text: word
                         anchors.fill: parent
                         leftPadding: 3
                         verticalAlignment: Text.AlignVCenter
-                        color: dicSearchResult.currentIndex == index ? config.myPalette.highlightedText : config.myPalette.windowText
+                        color: dicSearchResult.currentIndex == index ? palette.highlightedText : palette.windowText
                     }
                     MouseArea {
                         anchors.fill: parent

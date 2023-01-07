@@ -48,7 +48,8 @@ HEADERS += \
         zip.h
 
 RESOURCES += \
-        qml.qrc
+        qml.qrc \
+#        qss_icons/dark/darkstyle.qrc
 
 TARGET = Scrabble3D
 

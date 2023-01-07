@@ -1,8 +1,10 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+
 //TODO: dictionary rework from ground; QTreeView or QConcatenateTablesProxyModel
 GridLayout {
+    palette: config.myPalette
     columns: 2
     //TODO: config: responsive width
     // Layout.fillWidth: true
@@ -107,8 +109,8 @@ GridLayout {
             implicitWidth: text.implicitWidth + 4
             implicitHeight: Math.max(dictHeader.height,
                                      text.implicitHeight + 4)
-            color: myPalette.mid
-            border.color: myPalette.midlight
+            color: palette.mid
+            border.color: palette.midlight
             Text {
                 id: text
                 text: model[dictHeader.textRole]
@@ -155,16 +157,19 @@ GridLayout {
             required property bool selected
             implicitWidth: parent.width
             implicitHeight: delText.height + 2
-            color: isLoaded ? myPalette.highlight
-                            : selected ? Qt.lighter(myPalette.highlight)
-                                       : myPalette.light
-            border.color: myPalette.midlight
+            color: isLoaded ? palette.highlight
+                            : selected ? Qt.lighter(palette.highlight)
+                                       : palette.window
+            border.color: palette.midlight
 
             Text {
                 id: delText
                 width: parent.width
                 padding: 2
-                color: isDark(parent.color) ? "white" : "black"
+                color: isLoaded ? palette.highlightedText
+                                : selected ? isDark(parent.color)
+                                             ? "white" : "black"
+                                           : palette.windowText
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
                 text: display
@@ -227,19 +232,19 @@ GridLayout {
         onPressed: acLoadDictionary.trigger()
     }
 
-    Label { Layout.leftMargin: 16; text: qsTr("Author:"); }
-    Label { id: lbAuthor }
-    Label { Layout.leftMargin: 16; text: qsTr("License:"); }
-    Label { id: lbLicense }
-    Label { Layout.leftMargin: 16; text: qsTr("Release:"); }
-    Label { id: lbRelease }
-    Label {
+    ColorLabel { Layout.leftMargin: 16; text: qsTr("Author:") }
+    ColorLabel { id: lbAuthor }
+    ColorLabel { Layout.leftMargin: 16; text: qsTr("License:"); }
+    ColorLabel { id: lbLicense }
+    ColorLabel { Layout.leftMargin: 16; text: qsTr("Release:"); }
+    ColorLabel { id: lbRelease }
+    ColorLabel {
         Layout.leftMargin: 16
         Layout.bottomMargin: 32
         Layout.alignment: Qt.AlignTop
         text: qsTr("Comment:")
     }
-    Label {
+    ColorLabel {
         Layout.bottomMargin: 32
         Layout.fillWidth: true
         wrapMode: Text.WordWrap
@@ -248,7 +253,7 @@ GridLayout {
     ListModel {
         id: categoriesModel
     }
-    Label {
+    ColorLabel {
         Layout.alignment: Qt.AlignTop
         Layout.leftMargin: 16
         text: qsTr("Categories:")
@@ -258,7 +263,7 @@ GridLayout {
         Repeater {
             id: categoriesRepeater
             model: categoriesModel
-            delegate: CheckBox {
+            delegate: ColorCheckBox {
                 enabled: index>0 //first category is the default
                 checked: GamePlay.getCategory(name)
                 //NOTE: configdictionary: categories should be static during the game but that implies to also keep the dictionary loaded
