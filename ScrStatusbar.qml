@@ -15,26 +15,34 @@ RowLayout {
         Layout.fillWidth: mainLoader.state === "portrait" //messages are hidden in portrait mode
         border.color: config.myPalette.mid
         color: config.myPalette.window
-        Column {
+        ProgressBar {
+            // show a native progress bar while computing
+            // and make it indeterminate at 100% (threads are still working)
+            id: progress
             anchors.fill: parent
-            spacing: 1
-            Rectangle {
-                property int computeProgress: GamePlay.computeProgress
-                color: "skyblue"
-                height: parent.height
-                onComputeProgressChanged: {
-                    width = Math.round(parent.width * computeProgress/100)
-                    tip = qsTr("Progress: %1 %").arg(computeProgress)
-                }
+            property int computeProgress: GamePlay.computeProgress
+            onComputeProgressChanged: progress.value = computeProgress
+            from: 0
+            to: 100
+            background: Rectangle {
+                anchors.fill: progress
+                color: "transparent"
+                border.color: config.myPalette.mid
+                border.width: 1
             }
-            Rectangle {
-                property int placedValue: GamePlay.placedValue
-                height: parent.height
-                color: "lightgreen"
-                onPlacedValueChanged: {
-                    width = Math.round(parent.width * placedValue/50)
-                    tip = qsTr("Score: %1 points").arg(placedValue)
-                }
+            visible: value > 0
+            indeterminate: value > 99
+        }
+        Rectangle {
+            // show a flat rectangle if letters are placed up to 50 points
+            property int placedValue: GamePlay.placedValue
+            height: parent.height - 2
+            y: 1
+            color: "lightgreen"
+            visible: !progress.visible
+            onPlacedValueChanged: {
+                width = placedValue > 50 ? parent.width : Math.round(parent.width * placedValue/50)
+                tip = qsTr("Score: %1 points").arg(placedValue)
             }
         }
         MouseArea {

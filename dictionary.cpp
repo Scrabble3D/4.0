@@ -448,7 +448,6 @@ dicList::dicList(QObject *parent)
 {
     dictionary = new dicFile(m_pParent);
     updateList();
-
 }
 
 QHash<int, QByteArray> dicList::roleNames() const

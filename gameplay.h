@@ -114,7 +114,7 @@ public:
     Q_INVOKABLE bool canDrop(const unsigned int boardIndex); // check if field is empty
     Q_INVOKABLE bool canDrag(); // block dragging if letters have been marked to exchange
     Q_INVOKABLE void exchangeLetter(const unsigned int rackIndex); // check whether letters have been placed and mark for exchange otherwise
-    Q_INVOKABLE QString getLastError() { if (m_lMoves.count()>0) return m_lMoves.last()->LastError(); else return ""; }
+    Q_INVOKABLE QString getLastError() { if (m_pMoves.count()>0) return m_pMoves.last()->LastError(); else return ""; }
     Q_INVOKABLE QString getPlayerName(const int index) { if (index<m_lPlayerNames.count()) return m_lPlayerNames[index]; else return ""; }
     Q_INVOKABLE void addMessage(QString aWhat, QString aWho = "") { m_pMsgModel->addMessage(aWhat, aWho); }
 
@@ -235,7 +235,7 @@ private:
     int getComputeProgress() { return m_nProgress; }
     void setComputeProgress(const int aProgress);
     void doComputeMove();
-    int getPlacedValue() { return m_lMoves.count()>0 ? m_lMoves.last()->Value() : 0; }
+    int getPlacedValue() { return m_pMoves.count()>0 ? m_pMoves.last()->Value() : 0; }
     void resetPieces(); //removeLetter(*)
     void rollbackLastMove();
     void doGameEnd();
@@ -276,8 +276,7 @@ private:
     int m_nWordCheckBonus;                    // bonus for correct objection
     int m_nScrabbleBonus;                     // bonus when all pieces are placed, usually 50
     bool m_bIsCLABBERS;                       // //TODO: gameplay: whether CLABBER variant is allowed
-    QList<move*> m_lMoves;
-
+    QList<sharedMove> m_pMoves;
     int m_nCurrentMove;
     int m_nCurrentPlayer;
     uint m_nPasses;

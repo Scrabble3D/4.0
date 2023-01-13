@@ -14,7 +14,6 @@ ColumnLayout {
 
     MenuBar {
         id: menuBar
-        //NOTE: main: test dark mode
         Menu {
             id: fileMenu
             title: qsTr("&File")

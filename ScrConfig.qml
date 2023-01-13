@@ -214,7 +214,6 @@ Window {
         configRules.cbAddLetters.checked = getConfigValue("cbAddLetters", "true") === "true"
         configRules.cbSubstractLetters.checked = getConfigValue("cbSubstractLetters", "true") === "true"
         configRules.cbChangeIsPass.checked = getConfigValue("cbChangeIsPass", "false") === "true"
-
         // dictionary
         var aFileName = getConfigValue("dictionary","")
         if (configDictionary.loadFromName(aFileName)) {

@@ -166,10 +166,7 @@ GridLayout {
                 id: delText
                 width: parent.width
                 padding: 2
-                color: isLoaded ? palette.highlightedText
-                                : selected ? isDark(parent.color)
-                                             ? "white" : "black"
-                                           : palette.windowText
+                color: isDark(parent.color) ? "white" : "black"
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
                 text: display

@@ -71,7 +71,7 @@ FieldType board::getFieldtype(const int index)
         return m_Fieldtypes[index];
     else
     {
-        qFatal( "Field index %d out of bounds (%llu)", index, m_Fieldtypes.count() ); //"%l64u" on windows?
+        qFatal( "Field index %d out of bounds (%d)", index, m_Fieldtypes.count() ); //"%l64u" on windows?
         return ftDefault;
     }
 }
@@ -88,7 +88,7 @@ Letter board::getLetter(const int index)
         return m_Letters[index];
     else
     {
-        qFatal( "Letter index %d out of bounds (%llu)", index, m_Letters.count());
+        qFatal( "Letter index %d out of bounds (%d)", index, m_Letters.count());
         return EmptyLetter;
     }
 }
@@ -116,7 +116,7 @@ void board::removeLetter(const int aLetterIndex)
     if ( aLetterIndex < m_Letters.count() )
         m_Letters[aLetterIndex] = EmptyLetter;
     else
-        qFatal( "Remove index %d out of bounds (%llu)", aLetterIndex, m_Letters.count());
+        qFatal( "Remove index %d out of bounds (%d)", aLetterIndex, m_Letters.count());
 }
 
 int board::pointToWhere(const Point3D nPoint)
@@ -285,5 +285,5 @@ void board::setJokerLetter(const int aLetterIndex, const QString aWhat)
     if (aLetterIndex < m_Letters.count())
         m_Letters[aLetterIndex].What = aWhat;
     else
-        qFatal( "Joker index at %d out of bounds (%llu)", aLetterIndex, m_Letters.count());
+        qFatal( "Joker index at %d out of bounds (%d)", aLetterIndex, m_Letters.count());
 }

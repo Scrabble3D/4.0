@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
 
     //qml -> qt connections
-    GamePlay* _GamePlay = new GamePlay(&engine);
+    GamePlay* _GamePlay( new GamePlay(&engine) );
     engine.rootContext()->setContextProperty("GamePlay", _GamePlay);
 
     const QUrl url(QStringLiteral("qrc:/mainwindow.qml"));

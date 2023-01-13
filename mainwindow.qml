@@ -43,7 +43,7 @@ ApplicationWindow {
             remotegames.open() }
         function onNewGame(isLoading) {
             newgame.open()
-            if (isLoading) newgame.accept()
+            if (isLoading) newgame.done(Dialog.Accepted)
         }
         function onLoadGame(fileName) {
             config.loadConfig("")
@@ -146,7 +146,6 @@ ApplicationWindow {
                      ? GamePlay.disconnect()
                      : network.open()
     }
-
     ActionGroup {
         id: acViewType
         exclusive: true

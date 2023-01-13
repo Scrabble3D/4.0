@@ -1,6 +1,7 @@
 #include "downloadmanager.h"
 #include "configpath.h"
 #include "zip.h" //https://github.com/kuba--/zip
+#include "version.h"
 
 #include <QNetworkReply>
 #include <QXmlStreamReader>
@@ -17,7 +18,6 @@ DownloadManager::DownloadManager(QObject* parent)
 
 void DownloadManager::download(const QString fileName)
 {
-    const QString server = "https://github.com/Scrabble3D/";
 
     QUrl url(server + fileName);
     QNetworkRequest request(url);
@@ -128,30 +128,13 @@ void DownloadManager::downloadFinished(QNetworkReply *reply)
             aFileName = url.fileName().left( url.fileName().length() - 4 );
         } else
             aFileName = url.fileName();
-/*
-#ifdef Q_OS_Windows
-        QString sBinaryEnding = "exe";
-#elif defined(Q_OS_Android)
-        QString sBinaryEnding = "apk";
-#elif defined(Q_OS_MACOS)
-        QString sBinaryEnding = "dmg";
-#elif defined(Q_OS_LINUX)
-#ifdef IS_STATIC_BUILD
-        QString sBinaryEnding = "zip";
-#else
-        QString sBinaryEnding = "bin";
-#endif
-#endif
-*/
+
         if (aFileName.endsWith("dic"))
             emit onFinished(DlType::dmDictionary, aFileName);
         else if (aFileName.endsWith("qm"))
             emit onFinished(DlType::dmLocalization, aFileName);
         else if (aFileName.endsWith("conf"))
             emit onFinished(DlType::dmConfig, aFileName);
-        else // if (aFileName.endsWith(exe|apk|dmg|zip|bin))
-            emit onFinished(DlType::dmBinary, aFileName);
-
     }
     reply->deleteLater();
 }

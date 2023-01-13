@@ -69,21 +69,49 @@ ColumnLayout {
 
             ToolTip {
                 id: toolTip
-
-                contentItem: GridLayout {
-                    columns: 2
-                    rowSpacing: 1
-                    Label { text: qsTr("Country:");    Layout.alignment: Qt.AlignRight } Label { text: getText(model.country) }
-                    Label { text: qsTr("City:");       Layout.alignment: Qt.AlignRight } Label { text: getText(model.city) }
-                    Label { text: qsTr("Language:");   Layout.alignment: Qt.AlignRight } Label { text: getText(model.menuLang) }
-                    Label { text: qsTr("Rating:");     Layout.alignment: Qt.AlignRight } Label { text: getText(model.rating) }
-                    Label { text: qsTr("#Games:");     Layout.alignment: Qt.AlignRight } Label { text: getText(model.gamesPlayed) }
-                    Label { text: qsTr("Registered:"); Layout.alignment: Qt.AlignRight } Label { text: getText(model.registered) }
-                    Label { text: qsTr("Release:");    Layout.alignment: Qt.AlignRight } Label { text: getText(model.release) }
-                }
                 visible: false
                 delay: 1000
                 timeout: 5000
+
+                background: Rectangle {
+                    border.width: 0
+                    color: "#f6f6b9" // ensure black font color on light yellow background
+                }
+
+                property var names: [qsTr("Country:"), qsTr("City:"), qsTr("Language:"),
+                                     qsTr("Rating:"), qsTr("#Games:"), qsTr("Registered:"),
+                                     qsTr("Release:")]
+                property var values: []
+                onAboutToShow: {
+                    values = [ getText(model.country), getText(model.city), getText(model.menuLang),
+                               getText(model.rating), getText(model.gamesPlayed), getText(model.registered),
+                               getText(model.release) ]
+                }
+                contentItem: GridLayout {
+                    columns: 2
+                    rowSpacing: 1
+                    Repeater {
+                        model: toolTip.names
+                        Label {
+                            Layout.row: index
+                            Layout.column: 0
+                            text: modelData
+                            color: "black"
+                            Layout.alignment: Qt.AlignRight
+                        }
+                    }
+                    Repeater {
+                        model: toolTip.values
+                        Label {
+                            Layout.row: index
+                            Layout.column: 1
+                            text: modelData
+                            color: "black"
+                            Layout.alignment: Qt.AlignLeft
+                        }
+
+                    }
+                } //GridLayout
             }
             HoverHandler {
                 id: hoverHandler

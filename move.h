@@ -3,16 +3,13 @@
 #include "letter.h"
 #include "board.h"
 
-class move : public QObject
+class move
 {
-    Q_OBJECT
-
 public:
     move(bool IsFirstMove, board* aBoard);
 
     QString PlacedWord;
     QString ConnectedWords;
-
     QString LastError() { return m_LastError; }
     unsigned int Value() {return m_Value + m_nBonusValue; }
     void setBonus(unsigned int nBonus, bool bIsScrabble) { m_nBonusValue = nBonus; m_IsScrabble = bIsScrabble; }
@@ -52,3 +49,5 @@ private:
     board* m_pBoard;
     QString m_LastError;
 };
+
+typedef QSharedPointer<move> sharedMove;

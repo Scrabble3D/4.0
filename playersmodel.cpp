@@ -460,7 +460,7 @@ void playersTree::updateTree()
                 gameNode->setData(tr("joined"), playerName);
             invisibleRootItem()->appendRow(gameNode);
         }
-
+//FIXME: playersmodel new -> delete
         QStandardItem *aNode = new QStandardItem();
         aNode->setData(m_lPlayers[i].playerName, playerName);
         aNode->setData(m_lPlayers[i].menuLang, menuLang);

@@ -32,13 +32,22 @@ TableView {
         Text {
             id: msgText
             text: display //TODO: messages: emoticons :-) = U+1F600
+            onLinkActivated: (link)=> Qt.openUrlExternally(link)
             width: delegateRect.width
             wrapMode: (model.column === 1)
-               ? Text.WordWrap //wrap only the message
-               : Text.NoWrap
+                       ? Text.WordWrap //wrap only the message
+                       : Text.NoWrap
             color: isDark(parent.color) //isDark() in mainwindow.qmlx
-               ? "white"
-               : "black"
+                       ? "white"
+                       : "black"
+            linkColor: isDark(config.myPalette.window)
+                       ? Qt.lighter("#0000FF")
+                       : "#0000FF"
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.NoButton
+                cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+            }
         }
     }
     //FIXME: messages: contentheight signal not emitted in portrait mode

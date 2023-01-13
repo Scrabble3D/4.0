@@ -14,13 +14,14 @@ ComboBox {
             text: control.textRole
                 ? (Array.isArray(control.model) ? modelData[control.textRole] : model[control.textRole])
                 : modelData
-            color: highlighted ? palette.highlightedText : palette.windowText
+            color: isDark(bg.color) ? "white" : "black"
             font: control.font
             elide: Text.ElideRight
             verticalAlignment: Text.AlignVCenter
         }
 
         background: Rectangle {
+            id: bg
             width: control.width
             implicitHeight: contentItem.implicitHeight
             color: highlighted ? palette.highlight : palette.window
@@ -46,18 +47,19 @@ ComboBox {
             context.lineTo(width, 0);
             context.lineTo(width / 2, height);
             context.closePath();
-            context.fillStyle = control.pressed ? palette.highlightedText : palette.windowText;
+            context.fillStyle = text.color;
             context.fill();
         }
     }
 
     contentItem: Text {
+        id: text
         leftPadding: 6
         rightPadding: control.indicator.width + control.spacing
 
         text: control.displayText
         font: control.font
-        color: control.pressed ? palette.highlightedText : palette.buttonText;
+        color: isDark(palette.button) ? "white" : "black"
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
     }
@@ -80,7 +82,7 @@ ComboBox {
             }
         }
         border.width: control.hovered ? 1 : 0
-        border.color: config.myPalette.button
+        border.color: palette.button
     }
 
     popup: Popup {

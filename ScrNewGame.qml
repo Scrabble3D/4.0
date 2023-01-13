@@ -52,18 +52,34 @@ Dialog {
             configData = GamePlay.loadConfig("")
             rbIndex = configData["playerCount"] || 1
             playerNames.clear()
-            playerNames.append({"playerName": configData["player1"] || qsTr("1st Player"),
-                                   "isChecked": rbIndex === 1,
-                                   "isComputer": false})
-            playerNames.append({"playerName": configData["player2"] || qsTr("2nd Player"),
-                                   "isChecked": rbIndex === 2,
-                                   "isComputer": configData["comp2"] === "true" || false})
-            playerNames.append({"playerName": configData["player3"] || qsTr("3rd Player"),
-                                   "isChecked": rbIndex === 3,
-                                   "isComputer": configData["comp3"] === "true" || false})
-            playerNames.append({"playerName": configData["player4"] || qsTr("4th Player"),
-                                   "isChecked": rbIndex === 4,
-                                   "isComputer": configData["comp4"] === "true" || false})
+            if (GamePlay.isDemo) {
+                playerNames.append({"playerName": qsTr("1st Player"),
+                                       "isChecked": rbIndex === 1,
+                                       "isComputer": false})
+                playerNames.append({"playerName": qsTr("2nd Player"),
+                                       "isChecked": rbIndex === 2,
+                                       "isComputer": false})
+                playerNames.append({"playerName": qsTr("3rd Player"),
+                                       "isChecked": rbIndex === 3,
+                                       "isComputer": false})
+                playerNames.append({"playerName": qsTr("4th Player"),
+                                       "isChecked": rbIndex === 4,
+                                       "isComputer": false})
+            } else
+            {
+                playerNames.append({"playerName": configData["player1"] || qsTr("1st Player"),
+                                       "isChecked": rbIndex === 1,
+                                       "isComputer": false})
+                playerNames.append({"playerName": configData["player2"] || qsTr("2nd Player"),
+                                       "isChecked": rbIndex === 2,
+                                       "isComputer": configData["comp2"] === "true" || false})
+                playerNames.append({"playerName": configData["player3"] || qsTr("3rd Player"),
+                                       "isChecked": rbIndex === 3,
+                                       "isComputer": configData["comp3"] === "true" || false})
+                playerNames.append({"playerName": configData["player4"] || qsTr("4th Player"),
+                                       "isChecked": rbIndex === 4,
+                                       "isComputer": configData["comp4"] === "true" || false})
+            }
             cbRandomized.checked = configData["randomized"] === "true" || false
         }
         buttons.enabled = true //disabled on okay while waiting on network poll

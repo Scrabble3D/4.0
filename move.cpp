@@ -51,7 +51,7 @@ bool move::checkMove()
     if (m_PlacedLetters.count()>0)
     {
         if (m_IsFirstMove && !checkFirstMove()) {
-            m_LastError = tr("At the first move, place a piece on the start square");
+            m_LastError = QObject::tr("At the first move, place a piece on the start square");
             return false;
         }
 
@@ -59,11 +59,11 @@ bool move::checkMove()
 
         if (m_PlacedLetters.count()>1) {
             if (!checkOneRowColumn()) {
-                m_LastError = tr("Place pieces in one row or column");
+                m_LastError = QObject::tr("Place pieces in one row or column");
                 return false;
             }
             if (!checkConsecutive()) {
-                m_LastError = tr("Place pieces consecutively without gaps");
+                m_LastError = QObject::tr("Place pieces consecutively without gaps");
                 return false;
             }
         }
@@ -93,7 +93,7 @@ bool move::checkMove()
         //connected words are gathered per getResults() in checkConnection()
         if (!m_IsFirstMove && !checkConnection())
         {
-            m_LastError = tr("Pieces need to be connected with previous");
+            m_LastError = QObject::tr("Pieces need to be connected with previous");
             m_Value = 0;
             PlacedWord = "";
             ConnectedWords = "";
