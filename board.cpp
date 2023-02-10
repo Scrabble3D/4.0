@@ -52,12 +52,16 @@ void board::initialize(const QVariantList fieldTypeArray, const bool Is3D)
     }
 }
 
-void board::initialize(const board *aParentBoard)
+void board::initialize(const board *aParentBoard, const int nMove)
 {
     m_nBoardSize = aParentBoard->m_nBoardSize;
     m_nFieldSize = aParentBoard->m_nFieldSize;
     m_Letters.clear();
-    m_Letters.append(aParentBoard->m_Letters);
+    for (int i = 0; i < aParentBoard->m_Letters.count(); i++)
+       if ((nMove < 0) || (aParentBoard->m_Letters[i].When < nMove))
+            m_Letters.append(aParentBoard->m_Letters[i]);
+        else
+            m_Letters.append(EmptyLetter);
     m_Fieldtypes.clear();
     m_Fieldtypes.append(aParentBoard->m_Fieldtypes);
     m_eActiveDimension = aParentBoard->m_eActiveDimension;
@@ -70,10 +74,7 @@ FieldType board::getFieldtype(const int index)
     if (index<m_Fieldtypes.count())
         return m_Fieldtypes[index];
     else
-    {
-        qFatal( "Field index %d out of bounds (%d)", index, m_Fieldtypes.count() ); //"%l64u" on windows?
         return ftDefault;
-    }
 }
 
 void board::setLetter(Letter &aLetter)
@@ -84,13 +85,10 @@ void board::setLetter(Letter &aLetter)
 
 Letter board::getLetter(const int index)
 {
-    if (index<m_Letters.count())
+    if (index < m_Letters.count())
         return m_Letters[index];
     else
-    {
-        qFatal( "Letter index %d out of bounds (%d)", index, m_Letters.count());
         return EmptyLetter;
-    }
 }
 
 Letter board::getLetter(const Point3D aWhere)
@@ -115,8 +113,6 @@ void board::removeLetter(const int aLetterIndex)
 {
     if ( aLetterIndex < m_Letters.count() )
         m_Letters[aLetterIndex] = EmptyLetter;
-    else
-        qFatal( "Remove index %d out of bounds (%d)", aLetterIndex, m_Letters.count());
 }
 
 int board::pointToWhere(const Point3D nPoint)
@@ -135,8 +131,6 @@ int board::pointToPlane(const Point3D nPoint)
         return nPoint.y() + nPoint.z() * m_nBoardSize;
       case dmApplicate:
         return nPoint.x() + nPoint.z() * m_nBoardSize;
-      default:
-        qFatal( "Dimension not defined" );
     }
 }
 
@@ -156,8 +150,6 @@ Point3D board::pos3D(int nIndex2D)
         return Point3D(m_nActivePosition, nIndex2D % m_nBoardSize, nIndex2D / m_nBoardSize);
       case dmApplicate:
         return Point3D(nIndex2D % m_nBoardSize, m_nActivePosition, nIndex2D / m_nBoardSize);
-      default:
-        qFatal( "Dimension not defined" );
     }
 }
 
@@ -282,8 +274,6 @@ QString board::getWordsAt(const int index)
 
 void board::setJokerLetter(const int aLetterIndex, const QString aWhat)
 {
-    if (aLetterIndex < m_Letters.count())
+    if ( aLetterIndex < m_Letters.count() )
         m_Letters[aLetterIndex].What = aWhat;
-    else
-        qFatal( "Joker index at %d out of bounds (%d)", aLetterIndex, m_Letters.count());
 }

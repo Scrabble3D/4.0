@@ -16,21 +16,24 @@ ApplicationWindow {
         anchors.fill: parent
         color: config.myPalette.window
     }
+    property int gcSplitter: -1 //preferredHeight of gamecourse:totalStat
 
     Settings {
+        id: settings
         fileName: GamePlay.config()
         property alias x: scrabble3D.x
         property alias y: scrabble3D.y
         property alias width: scrabble3D.width
         property alias height: scrabble3D.height
         property alias showTips: config.showTips
+        property alias gcSplitter: scrabble3D.gcSplitter
     }
 
     property alias main: mainLoader.item
 
     property color iconColor: isDark(config.myPalette.window) ? "white" : "black"
 
-    //helper function used in ScrMessages, ScrConfigDictionary, ScrWordSearch
+    //helper function used in ScrMessages, ScrConfigDictionary, ScrWordSearch...
     function isDark(aColor) {
         var temp = Qt.darker(aColor, 1) //Force conversion to color QML type object
         var a = 1 - ( 0.299 * temp.r + 0.587 * temp.g + 0.114 * temp.b);
@@ -70,7 +73,7 @@ ApplicationWindow {
         id: acNextPlayer
         text: qsTr("Next Player")
         shortcut: StandardKey.NextChild
-        enabled: GamePlay.isRunning && GamePlay.isAccepted
+        enabled: GamePlay.isRunning && GamePlay.isAccepted && !GamePlay.isHistory && !GamePlay.isComputing
         property string tip: enabled ? text : GamePlay.getLastError()
         icon.source: "qrc:///resources/nextplayer.png"
         icon.color: iconColor
@@ -128,7 +131,10 @@ ApplicationWindow {
         text: qsTr("Compute move")
         shortcut: StandardKey.Find
         property string tip: text
-        enabled: GamePlay.isRunning && GamePlay.bestMoveCount === 0 && !GamePlay.isConnected
+        enabled: !GamePlay.isConnected && !GamePlay.isComputing &&
+                 ((GamePlay.isRunning && GamePlay.bestMoveCount === 0) ||
+                  (GamePlay.isHistory))
+
         icon.source: "qrc:///resources/wheelchair.png"
         icon.color: iconColor
         onTriggered: GamePlay.computeMove()

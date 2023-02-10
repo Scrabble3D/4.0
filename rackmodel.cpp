@@ -89,6 +89,7 @@ void rackmodel::setActivePlayer(const int nPlayer)
 {
     if (nPlayer<m_nPlayerCount) {
         beginResetModel();
+        //update current player
         m_nActivePlayer = nPlayer;
         endResetModel();
     }
@@ -102,6 +103,10 @@ void rackmodel::setLocalPlayer(const int nPlayer)
         if (nPlayer != m_nLocalPlayer) {
             beginResetModel();
             m_nLocalPlayer = nPlayer;
+            //store the initial rack
+            m_pInitialRack.clear();
+            for (int i = 0; i < m_nRackSize; i++)
+                m_pInitialRack.append(m_lPieces[m_nLocalPlayer][i]);
             endResetModel();
         }
     }
@@ -150,8 +155,7 @@ QVariant rackmodel::data(const QModelIndex &index, int role) const
         qFatal("Invalid rackmodel request");
         return QVariant();
     }
-
-    const Letter aLetter = m_lPieces[m_nLocalPlayer][index.row()];
+    const Letter aLetter(m_lPieces[m_nLocalPlayer][index.row()]);
     switch (role) {
       case WhatRole: return replaceLetter.value(aLetter.What, aLetter.What); break;
       case ValueRole: return aLetter.Value; break;
@@ -168,4 +172,19 @@ int rackmodel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
     return m_nRackSize;
+}
+
+void rackmodel::setInitialRack(QList<Letter> aLetters)
+{
+    m_pInitialRack.clear();
+    for (int i = 0; i < aLetters.count(); i++)
+        m_pInitialRack.append(aLetters[i]);
+}
+
+void rackmodel::setRack(QList<Letter> aLetters)
+{
+    beginResetModel();
+    for (int i = 0; i < m_nRackSize; i++)
+        m_lPieces[m_nActivePlayer][i] = aLetters[i];
+    endResetModel();
 }

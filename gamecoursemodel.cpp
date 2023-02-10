@@ -3,7 +3,7 @@
 
 gamecoursemodel::gamecoursemodel(QObject *parent)
     : QAbstractTableModel(parent),
-      m_lData(0)
+      m_pData(0)
 {
 }
 
@@ -12,11 +12,11 @@ QVariant gamecoursemodel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    const int i = m_lData.count() - index.row() - 1;
-    if ((i<0) || (i>m_lData.count()-1))
+    const int i = m_pData.count() - index.row() - 1;
+    if ((i<0) || (i>m_pData.count()-1))
         return QVariant();
 
-    ModelData aData = m_lData[i];
+    ModelData aData = m_pData[i];
 
     switch (role) {
       case Qt::DisplayRole:
@@ -47,6 +47,9 @@ QVariant gamecoursemodel::data(const QModelIndex &index, int role) const
       case TimeRole:
         return aData.time;
         break;
+      case SelectedRole:
+        return m_nSelected;
+        break;
     }
 
     return QVariant();
@@ -74,7 +77,7 @@ QVariant gamecoursemodel::headerData(int section, Qt::Orientation orientation, i
 int gamecoursemodel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    return m_lData.count();
+    return m_pData.count();
 }
 
 int gamecoursemodel::columnCount(const QModelIndex &parent) const
@@ -92,7 +95,22 @@ QHash<int, QByteArray> gamecoursemodel::roleNames() const
     roles[IsScrabbleRole] = "isScrabble";
     roles[BestValueRole] = "bonus";
     roles[TimeRole] = "time";
+    roles[SelectedRole] = "selected";
     return roles;
+}
+
+void gamecoursemodel::setSelected(const int nSelected)
+{
+    beginResetModel();
+    if (m_nSelected == nSelected)
+        m_nSelected = -1;
+    else if ((nSelected >= 0) && (nSelected < m_pData.count()))
+        m_nSelected = nSelected;
+    endResetModel();
+    //change board & rack via gameplay
+    emit onSelectedMoveChanged( m_nSelected == -1
+                                ? -1
+                                : m_pData.count() - m_nSelected );
 }
 
 void gamecoursemodel::clear()
@@ -100,11 +118,19 @@ void gamecoursemodel::clear()
     beginResetModel();
     for (int i=0; i<MaxPlayers; i++)
         m_Total[i] = 0;
-    m_lData.clear();
+    m_pData.clear();
+    m_nSelected = -1;
     endResetModel();
 }
 
-void gamecoursemodel::addMove(QString PlacedWord, QString ConnectedWords, uint Who, int value, int bestValue, bool IsScrabble, int moveTime)
+void gamecoursemodel::addMove(QString PlacedWord,
+                              QString ConnectedWords,
+                              uint Who,
+                              int value,
+                              int bestValue,
+                              bool IsScrabble,
+                              int moveTime,
+                              QList<Letter> rack)
 {
     ModelData aData;
     aData.placedWord = PlacedWord;
@@ -115,10 +141,11 @@ void gamecoursemodel::addMove(QString PlacedWord, QString ConnectedWords, uint W
     aData.bestValue = bestValue;
     aData.isScrabble = IsScrabble;
     aData.time = moveTime;
+    aData.rack << rack;
 
-    const int i = m_lData.count();
+    const int i = m_pData.count();
     beginInsertRows(QModelIndex(), i, i);
-    m_lData.append(aData);
+    m_pData.append(aData);
     endInsertRows();
 }
 
@@ -127,21 +154,21 @@ void gamecoursemodel::clearLastMove()
     ModelData aData;
     aData.placedWord = "";
     aData.connectedWords = "";
-    aData.who = m_lData.last().who;
-    m_Total[m_lData.last().who] -= m_lData.last().value;
+    aData.who = m_pData.last().who;
+    m_Total[m_pData.last().who] -= m_pData.last().value;
     aData.value = 0;
     aData.bestValue = 0;
     aData.isScrabble = false;
     aData.time = 0;
 
-    int i = m_lData.count();
+    int i = m_pData.count();
     beginRemoveRows(QModelIndex(), i, i);
-    m_lData.removeLast();
+    m_pData.removeLast();
     endRemoveRows();
 
     i--;
     beginInsertRows(QModelIndex(), i, i);
-    m_lData.append(aData);
+    m_pData.append(aData);
     endInsertRows();
 
 }
@@ -159,9 +186,9 @@ int gamecoursemodel::getScore(const int nPlayer)
 int gamecoursemodel::timeTotalPerPlayer(const uint nPlayer)
 {
     int nResult = 0;
-    for (int i = 0; i < m_lData.count(); i++)
-        if (m_lData[i].who == nPlayer)
-            nResult += m_lData[i].time;
+    for (int i = 0; i < m_pData.count(); i++)
+        if (m_pData[i].who == nPlayer)
+            nResult += m_pData[i].time;
     return nResult;
 }
 

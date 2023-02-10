@@ -13,7 +13,7 @@ int boardmodel::rowCount(const QModelIndex &parent) const
     return m_pBoard->getBoardSize() * m_pBoard->getBoardSize();
 }
 
-void boardmodel::update()
+void boardmodel::reset()
 {
     beginResetModel();
     endResetModel();
@@ -77,7 +77,6 @@ QVariant boardmodel::data(const QModelIndex &index, int role) const
          (role == IsJokerRole) || (role == IsRandomRole)
         ) && (z < m_pBoard->getFieldSize()) //if board is not yet initialized
        ) aLetter = m_pBoard->getLetter(z);
-
     switch (role) {
       case WhatRole:      return replaceLetter.value(aLetter.What, aLetter.What);  break;
       case ValueRole:     return aLetter.Value; break;

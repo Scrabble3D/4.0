@@ -48,17 +48,20 @@ class GamePlay : public QObject
 
     Q_PROPERTY(bool isChallenge READ getIsChallenge NOTIFY isChallengeChanged)
     Q_PROPERTY(bool isRunning READ getIsRunning NOTIFY isRunningChanged)
+    Q_PROPERTY(bool isComputing READ getIsComputing NOTIFY isComputingChanged)
+    Q_PROPERTY(bool isHistory READ getIsHistory NOTIFY isHistoryChanged)
     Q_PROPERTY(bool isInitialized READ getIsInitialized NOTIFY isInitializedChanged)
     Q_PROPERTY(bool is3D READ getIs3D NOTIFY is3DChanged)
     Q_PROPERTY(int boardSize READ getBoardSize NOTIFY boardSizeChanged)
     Q_PROPERTY(bool isAccepted READ getIsAccepted NOTIFY isAcceptedChanged)
-    Q_PROPERTY(int currentMove READ getCurrentMove CONSTANT)
+    Q_PROPERTY(int currentMove READ getCurrentMove NOTIFY currentMoveChanged)
     Q_PROPERTY(int currentPlayer READ getCurrentPlayer NOTIFY currentPlayerChanged)
     Q_PROPERTY(int numberOfPlayers READ getNumberOfPlayers NOTIFY numberOfPlayersChanged)
     Q_PROPERTY(int activeDimension READ getActiveDimension WRITE setActiveDimension NOTIFY activeDimensionChanged)
     Q_PROPERTY(int activePosition READ getActivePosition WRITE setActivePosition NOTIFY activePositionChanged)
     Q_PROPERTY(QString lastError READ getLastError NOTIFY lastErrorChanged)
     Q_PROPERTY(QString statInfo READ getStatInfo NOTIFY statInfoChanged)
+    Q_PROPERTY(QVariantList statTotal READ getStatTotal NOTIFY statTotalChanged)
 
     //TODO: gameplay: make it a signal/slot
     Q_PROPERTY(QString addMsg WRITE addMessage);
@@ -78,6 +81,8 @@ class GamePlay : public QObject
 signals:
     void boardSizeChanged();
     void isRunningChanged();
+    void isComputingChanged();
+    void isHistoryChanged();
     void isChallengeChanged();
     void isInitializedChanged();
     void is3DChanged();
@@ -85,6 +90,7 @@ signals:
     void activeDimensionChanged();
     void activePositionChanged();
     void lastErrorChanged();
+    void currentMoveChanged();
     void currentPlayerChanged();
     void numberOfPlayersChanged();
     void bestMoveCountChanged();
@@ -92,6 +98,7 @@ signals:
     void placedValueChanged();
     void dicWordCountChanged();
     void statInfoChanged();
+    void statTotalChanged();
     void connectedChanged();
     void showPoll(bool); //true = poll is running, false = no poll/hide the pieseries
     void isLocalPlayerChanged();
@@ -152,6 +159,7 @@ public:
     Q_INVOKABLE QString allStat() { return getAllStat(); }
     Q_INVOKABLE QString version() { return version::current() + " / " + QStringLiteral(__DATE__); }
     Q_INVOKABLE QString config() { return config::ini(); }
+    Q_INVOKABLE QString replaceDigraph(const QString aLetter) { return replaceLetter.value(aLetter, aLetter); }
 
     Q_INVOKABLE QString networkName() { return m_pNetwork->localPlayerName(); }
 //    Q_INVOKABLE QString fromTDateTime(double aValue) { return m_PlayersTreeModel->fromTDateTimeF(aValue); }
@@ -183,8 +191,8 @@ public slots:
 
     void dropLetter(const uint rackIndex, const uint boardIndex);
     void dropLetterRack(const uint fromIndex, const uint toIndex);
-    void removeLetter(const uint boardIndex);
-    void removeLetter(Letter aLetter);
+    int removeLetter(const uint boardIndex);
+    int removeLetter(Letter aLetter);
     void setJokerLetter(const uint boardIndex, const QString aWhat);
     void doDownloadFinished(DlType fileType, QString fileName);
 
@@ -212,6 +220,8 @@ public slots:
     void doNetworkChallengeMove(QString aSender);
     void doNetworkChallengeResult(QVariantMap aMsg);
 
+    void doSelectedMoveChanged(int move);
+
 signals:
     void onSend(const network::MessageType msgType, const QString msgReceiver, QString msgText);
 
@@ -220,12 +230,14 @@ protected:
 
 private:
     bool getIsRunning() { return m_bIsRunning; };
+    bool getIsComputing() { return m_bIsComputing; };
+    bool getIsHistory() { return m_bIsHistory; };
     bool getIsChallenge() { return m_bIsChallenge; };
     bool getIsInitialized() { return m_bIsInitialized; };
     bool getIsAccepted() { return m_bIsAccepted; };
     unsigned int getBoardSize() {return m_pBoard->getBoardSize(); }
     bool getIs3D() {return m_pBoard->is3D(); }
-    unsigned int getCurrentMove() { return m_nCurrentMove; }
+    unsigned int getCurrentMove() { if (m_bIsHistory) return m_nMoveHistory - 1; else return m_nCurrentMove; }
     unsigned int getCurrentPlayer() { return m_nCurrentPlayer; }
     unsigned int getNumberOfPlayers() { return m_lPlayerNames.count(); }
     void setActiveDimension(const unsigned int aDimension);
@@ -250,6 +262,12 @@ private:
 
     int m_nStatInfoType = 0;
     QString getStatInfo() { return getStatInfoType(m_nStatInfoType); }
+    QVariantList getStatTotal() {
+        QVariantList aResult;
+        for (uint i = 0; i < m_nPlayerCount; i++)
+            aResult.append(m_pGameCourseModel->getScore(i));
+        return aResult;
+    }
     QString getStatInfoType(const int aType);
     QString getAllStat();
 
@@ -278,12 +296,15 @@ private:
     bool m_bIsCLABBERS;                       // //TODO: gameplay: whether CLABBER variant is allowed
     QList<sharedMove> m_pMoves;
     int m_nCurrentMove;
+    int m_nMoveHistory;
     int m_nCurrentPlayer;
     uint m_nPasses;
     uint m_nPlayerCount;
 
     bool m_bIsRunning;
+    bool m_bIsComputing;
     bool m_bIsChallenge = false;              // set to true in nextplayer() when in network mode with m_eWordCheckMode = wcChallenge for m_nWordCheckPeriod seconds
+    bool m_bIsHistory;
 
     PollType m_ePoll = ptNone;
     QString m_sChallengePlayer;               // stores the name of the player who send a challenge to the group
@@ -299,7 +320,7 @@ private:
     bool m_bIsConnected; //whether in network mode or not
     QVariantMap m_lGameConfig; //stores configuration for startNewGame()
     QVariantMap m_lAnswer; //true or false, or not yet answered, ie. < count()
-    board *m_pBoard;
+    board *m_pBoard, *m_pTempBoard; //store the board while browsing the history
     rackmodel *m_pRackModel;
     boardmodel *m_pBoardModel;
     cubemodel *m_pCubeModel;

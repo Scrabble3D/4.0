@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QAbstractTableModel>
+#include "letter.h"
 
 class gamecoursemodel : public QAbstractTableModel
 {
@@ -13,7 +14,8 @@ public:
         ConnectedWords,
         BestValueRole,
         IsScrabbleRole,
-        TimeRole
+        TimeRole,
+        SelectedRole
     };
 
     explicit gamecoursemodel(QObject *parent = nullptr);
@@ -21,21 +23,27 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     int rowCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
     int columnCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
+    Q_PROPERTY(int selectedMove READ getSelected WRITE setSelected NOTIFY onSelectedMoveChanged)
     void addMove(QString PlacedWord,
                  QString ConnectedWords,
                  uint Who,
                  int value,
                  int bestValue,
                  bool IsScrabble,
-                 int moveTime);
+                 int moveTime,
+                 QList<Letter> rack);
     void clearLastMove(); //legimately challenged
     void addBonus(int player, int value);
     int getScore(const int nPlayer);
     int timeTotalPerPlayer(const uint nPlayer);
-    int timePerMove(const int nMove) { if (nMove < m_lData.count()) return m_lData[nMove].time; else return 0; }
+    int timePerMove(const int nMove) { if (nMove < m_pData.count()) return m_pData[nMove].time; else return 0; }
     void getWinner(QList<int> &result);
     void clear();
     void zerototal(const uint nPlayer) { m_Total[nPlayer] = 0; }
+    QList<Letter> getRack(const int nMove) { return m_pData[nMove].rack; }
+
+signals:
+    void onSelectedMoveChanged(int nMove);
 
 protected:
     QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
@@ -51,8 +59,13 @@ private:
       int bestValue;
       bool isScrabble;
       int time;
+      QList<Letter> rack;
     };
 
-    QList<ModelData> m_lData;
+    int getSelected() { return m_nSelected; };
+    void setSelected(const int nSelected);
+
+    QList<ModelData> m_pData;
     int m_Total[MaxPlayers];
+    int m_nSelected = -1;
 };

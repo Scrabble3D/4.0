@@ -19,6 +19,8 @@ public:
     QVariant data(const QModelIndex &index, int role) const Q_DECL_OVERRIDE;
     int rowCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
     void updateSquare(Point3D aPos);
+    void updateAllSquares();
+
     void reset();
 
 protected:

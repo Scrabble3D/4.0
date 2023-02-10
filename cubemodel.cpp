@@ -19,6 +19,18 @@ void cubemodel::updateSquare(Point3D aPos)
     emit dataChanged(aIndex, aIndex, { WhatRole, ValueRole, WhoRole, WhenRole, IsPlacedRole } );
 }
 
+void cubemodel::updateAllSquares()
+{
+    QModelIndex aIndex;
+    int z = m_pBoard->getBoardSize();
+    for (int i=0; i<z*z*z; i++) {
+//        if (!m_pBoard->getLetter(i).IsEmpty()) {
+            aIndex = this->index(i);
+            emit dataChanged(aIndex, aIndex, { WhatRole } );//, ValueRole, WhoRole, WhenRole, IsPlacedRole } );
+        }
+//    }
+}
+
 void cubemodel::reset()
 {
     beginResetModel();

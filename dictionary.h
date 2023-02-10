@@ -2,6 +2,13 @@
 
 #include <QAbstractTableModel>
 
+// required for sorting
+struct dicEntry {
+    QString word;
+    QString meaning;
+    int category;
+};
+
 class dicFile : QObject
 {
 Q_OBJECT
@@ -32,8 +39,6 @@ public:
     // set at newgame() based on letter distribution incl. ? for blank tiles
     void setLetterSet(QString aChars) { m_sChars = aChars; }
     QString getLetterSet() { return m_sChars; }
-    //returns whether word is contained and category is enabled
-    bool containsWord(QString word);
 
     QString categoryNames();
     void setCategoryChecked(const QString catName, const bool isChecked);
@@ -43,15 +48,14 @@ public:
     void clear();
 
 private:
-    struct CatInfo {
+    struct catInfo {
         QString name;
         int value;
         bool enabled;
     };
-    QStringList m_Words;
-    QStringList m_Meanings;
-    QList<int> m_Categories;
-    QList<CatInfo> m_CategoryNames;
+    QList<dicEntry> m_Words;
+
+    QList<catInfo> m_CategoryNames;
     QVariantMap m_LetterDistribution;
     //emit progress
     QObject* m_pParent;

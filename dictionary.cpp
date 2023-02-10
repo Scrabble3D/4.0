@@ -13,10 +13,7 @@
 #endif
 
 dicFile::dicFile(QObject* parent)
-    : m_Words(0),
-      m_Meanings(0),
-      m_Categories(0),
-      m_pParent(parent)
+    : m_pParent(parent)
 {
 //    QObject::connect(this, SIGNAL(onDownload(QString)),
 //                     parent, SLOT(doDownloadDictionary(QString)));
@@ -41,12 +38,14 @@ void dicFile::clear()
 {
     m_CategoryNames.clear();
     m_Words.clear();
-    m_Meanings.clear();
-    m_Categories.clear();
     m_LetterDistribution.clear();
     m_sChars.clear();
     replaceLetter.clear(); //letter.h
     m_sFileName.clear();
+}
+
+bool sortByWords(dicEntry aItem, dicEntry bItem) {
+    return aItem.word < bItem.word;
 }
 
 bool dicFile::loadDictionary(const QString fileName)
@@ -89,7 +88,7 @@ bool dicFile::loadDictionary(const QString fileName)
                     //name of the (pseudo) standard category;
                     // will be disabled and always enabled
                     if (sLine.startsWith("StandardCategory")) {
-                        CatInfo aCatInfo;
+                        catInfo aCatInfo;
                         nEqual = sLine.indexOf("=");
                         aCatInfo.value = -1;
                         aCatInfo.name = sLine.last(sLine.length()-nEqual-1);
@@ -121,7 +120,7 @@ bool dicFile::loadDictionary(const QString fileName)
                     }
                     break;
                 case scCategory: {
-                    CatInfo aCatInfo;
+                    catInfo aCatInfo;
                     nEqual = sLine.indexOf("=");
                     aCatInfo.value = sLine.first(nEqual).toInt();
                     aCatInfo.name = sLine.last(sLine.length()-nEqual-1);
@@ -140,18 +139,40 @@ bool dicFile::loadDictionary(const QString fileName)
                     sLine = decrypt(sLine, sKey);
                     nEqual = sLine.indexOf("=");
                     nSemicolon=sLine.indexOf(";");
-                    m_Words.append(sLine.first(nEqual>-1 ? nEqual : sLine.length()));
-                    m_Meanings.append(sLine.mid(nEqual+1,nSemicolon-nEqual-1));
-                    m_Categories.append(nSemicolon>-1 ? sLine.last(sLine.length()-nSemicolon-1).toInt() : 0);
+                    dicEntry aItem;
+                    aItem.word = sLine.first(nEqual>-1 ? nEqual : sLine.length());
+                    aItem.meaning = sLine.mid(nEqual+1,nSemicolon-nEqual-1);
+                    aItem.category = nSemicolon>-1 ? sLine.last(sLine.length()-nSemicolon-1).toInt() : 0;
+                    m_Words.append(aItem);
                 }; //scWords
                 break;
                 }; //aSection
         };//while infile
         inputFile.close();
-        m_pParent->setProperty("computeProgress",0);
+        // the dictionary should be properly sorted in first place; takes a couple of seconds here
+/*      std::sort(m_Words.begin(), m_Words.end(), sortByWords);
+        QFile aFile("test.txt");
+        if (aFile.open(QIODevice::WriteOnly)) {
+            QTextStream aOut(&aFile);
+            for (int i=0; i<m_Words.count(); i++) {
+                dicEntry aEntry = m_Words[i];
+                aOut << aEntry.word;
+                if (aEntry.word != aEntry.meaning)
+                    aOut << "=" << aEntry.meaning;
+                else
+                    if (aEntry.category > 0)
+                    aOut << "=";
+                if (aEntry.category > 0)
+                    aOut << ";" << m_Words[i].category;
+                aOut << "\n";
+            }
+        }
+        aFile.close(); */
+
+        m_pParent->setProperty("computeProgress", 0);
 
         if (!bHasStandardCategory) {
-            CatInfo aCatInfo;
+            catInfo aCatInfo;
             aCatInfo.value = -1;
             //: default category name if not defined in the dictionary
             aCatInfo.name = QObject::tr("Standard");
@@ -187,13 +208,13 @@ bool dicFile::isWordInDictionary(QString word, int *index)
     while (lo<=hi)
     {
         z = (lo+hi) >> 1; //shr
-        i = QString::compare(m_Words[z],word);
+        i = QString::compare(m_Words[z].word, word);
         if (i < 0)
             lo = z+1;
         else if (i == 0)
         {
             *index = z;
-            return m_CategoryNames[m_Categories.at(*index)].enabled;
+            return m_CategoryNames[m_Words[z].category].enabled;
         }
         else if (i > 0)
             hi = z-1;
@@ -208,9 +229,9 @@ void dicFile::charsFromWords()
     {
         QStringList chars;
         for (uint i=0; i<m_Words.count(); i++)
-            for (uint j=0; j<m_Words[i].length(); j++)
-                if (chars.indexOf(m_Words[i][j])==-1)
-                    chars += m_Words[i][j];
+            for (uint j=0; j<m_Words[i].word.length(); j++)
+                if (chars.indexOf(m_Words[i].word[j]) == -1)
+                    chars += m_Words[i].word[j];
         chars.sort();
         m_sChars = chars.join("");
     }
@@ -258,7 +279,7 @@ QString dicFile::variation(const QString aChars)
                     sResults.append(us);
                 //TODO: dictionary: can index be larger than count?
                 if ( (index < m_Words.count()) &&
-                     m_Words[index].startsWith(us) )          //incomplete or complete word
+                     m_Words[index].word.startsWith(us) )          //incomplete or complete word
                 {
                     chars.remove(z-1,1);
                     i = 0;
@@ -306,7 +327,7 @@ QString dicFile::variation(const QString aChars)
 QString dicFile::getWord(const uint index)
 {
     if (qsizetype(index) < m_Words.count())
-        return m_Words[index];
+        return m_Words[index].word;
     else
     {
         qWarning() << "Word index" << index << "out of bounds" << "(" << m_Words.count() << ")";
@@ -324,19 +345,11 @@ QString dicFile::getMeanings(const QString aWords)
         aIndex = indexByWord(sWords[i]);
         if (i > 0) sResult += "</p>";
         sResult += sWords[i];
-        if ((aIndex > -1) && !m_Meanings[aIndex].isEmpty())
-            sResult += ": <i>" + m_Meanings[aIndex] + "</i>";
+        if ((aIndex > -1) && !m_Words[aIndex].meaning.isEmpty())
+            sResult += ": <i>" + m_Words[aIndex].meaning + "</i>";
     }
     sResult += "</html>";
     return sResult;
-}
-
-bool dicFile::containsWord(QString word)
-{
-    int index = m_Words.indexOf(word);
-    if ( (index > -1) && ( !m_CategoryNames[m_Categories.at(index)].enabled) )
-        index = -1;
-    return index > -1;
 }
 
 QStringList dicFile::checkWords(const QString sPlacedWord, QString sConnectedWords)
@@ -361,17 +374,21 @@ QVariantMap dicFile::wordByIndex(const uint index)
 {
     QVariantMap dicEntry;
     if (qsizetype(index) < m_Words.count()) {
-        dicEntry["word"] = m_Words[index];
-        dicEntry["category"] = m_CategoryNames[m_Categories.at(index)].name;
-        dicEntry["meaning"] = m_Meanings[index];
-        dicEntry["included"] = m_CategoryNames[m_Categories.at(index)].enabled;
+        dicEntry["word"] = m_Words[index].word;
+        dicEntry["category"] = m_CategoryNames[m_Words[index].category].name;
+        dicEntry["meaning"] = m_Words[index].meaning;
+        dicEntry["included"] = m_CategoryNames[m_Words[index].category].enabled;
     }
     return dicEntry;
 }
 
 int dicFile::indexByWord(const QString word)
 {
-    return m_Words.indexOf(word.toUpper());
+    int index;
+    if (!isWordInDictionary(word, &index))
+        index = -1; //function returns >-1 for variation()
+
+    return index;
 }
 
 QString dicFile::categoryNames()

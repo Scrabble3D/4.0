@@ -15,7 +15,7 @@ Dialog {
         ScrPiece {
             implicitWidth: 48
             implicitHeight: 48
-            pieceLabel: what
+            pieceLabel: GamePlay.replaceDigraph(what)
             pieceColor: config.colors.get(8).itemColor //yellow
             pieceValue: value
             border.width: 1

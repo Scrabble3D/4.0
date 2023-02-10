@@ -714,20 +714,18 @@ Item {
         7,1,1,1,1,1,1,2,1,1,7,1,1,2,1,1,1,1,1,1,7]
 
     property var languages: [langAmericanEnglish,langBritishEnglish,langFrench,langGerman,langItalian,langSpanish,
-        langBrazilian,langCatalan,langDutch,langFinnish,langGreek,langHebrew,langIrish,langLatin,langPersian,
-        langPortuguese,langRomanian,langRussian,langScottish,langSlovak,langSwedish,langTurkish]
+        langBrazilian,langCatalan,langDutch,langFinnish,langGreek,langHebrew,langHungarian,langIrish,langLatin,
+        langPersian,langPortuguese,langRomanian,langRussian,langScottish,langSlovak,langSwedish,langTurkish]
 
     QtObject {
         id: langAmericanEnglish
         property string englishName: "English"
         property string nativeName: "English (American English)"
-        property string langFile: "english.lang"
         property string dicFile: "english.dic"
         property string flagID: "us"
         property int numberOfJokers: 2
         property int readingDirection: Qt.LeftToRight
         property string excludedCat: "1"        //page 29, VI.A.
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -787,13 +785,11 @@ Item {
         id: langBritishEnglish
         property string englishName: "English"
         property string nativeName: "English (British English)"
-        property string langFile: "english.lang"
         property string dicFile: "english.dic"
         property string flagID: "gb"
         property int numberOfJokers: 2
         property int readingDirection: Qt.LeftToRight
         property string excludedCat: ""
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -855,13 +851,11 @@ Item {
         id: langBrazilian
         property string englishName: "Brazilian"
         property string nativeName: "Brazilian (Português brasileiro)"
-        property string langFile: "portuguese.lang"
         property string dicFile: "brazilian.dic"
         property string flagID: "br"
         property int numberOfJokers: 3                 //3 jokers
         property int readingDirection: Qt.LeftToRight  //western reading direction
         property string excludedCat: ""                //there are no categories in dic
-        property bool rulesValid: true                 //internal flag
         property int numberOfLetters: 7                //number of tiles on rack
         property int numberOfRandoms: 0                //number of random letters, added to the distribution
         property int timeControl: 2                    //time limit; 0=no limit, 1=per move, 2=per game
@@ -914,13 +908,11 @@ Item {
         id: langCatalan
         property string englishName: "Catalan"
         property string nativeName: "Catalan (Català)"
-        property string langFile: "catalan.lang"
         property string dicFile: "catalan.dic"
         property string flagID: "Catalonia"
         property int numberOfJokers: 2
         property int readingDirection: Qt.LeftToRight
         property string excludedCat: ""
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -982,13 +974,11 @@ Item {
         id: langDutch
         property string englishName: "Dutch"
         property string nativeName: "Dutch (Nederlands)"
-        property string langFile: ""
         property string dicFile: "hollands.dic"
         property string flagID: "nl"
         property int numberOfJokers: 2
         property int readingDirection: Qt.LeftToRight
         property string excludedCat: ""
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -1056,13 +1046,11 @@ Item {
         id: langFinnish
         property string englishName: "Finnish"
         property string nativeName: "Finnish (Suomi)"
-        property string langFile: "finnish.lang"
         property string dicFile: "suomi.dic"
         property string flagID: "fi"
         property int numberOfJokers: 2
         property int readingDirection: Qt.LeftToRight
         property string excludedCat: ""
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -1133,13 +1121,11 @@ Item {
         id: langFrench
         property string englishName: "French"
         property string nativeName: "French (Français)"
-        property string langFile: "french.lang"
         property string dicFile: "francais.dic"
         property string flagID: "fr"
         property int numberOfJokers: 2
         property int readingDirection: Qt.LeftToRight
         property string excludedCat: ""
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -1204,13 +1190,11 @@ Item {
         id: langGerman
         property string englishName: "German"
         property string nativeName: "German (Deutsch)"
-        property string langFile: "german.lang"
         property string dicFile: "deutsch.dic"
         property string flagID: "de"
         property int numberOfJokers: 2
         property int readingDirection: Qt.LeftToRight
         property string excludedCat: "1,2"
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -1272,13 +1256,11 @@ Item {
         id: langGreek
         property string englishName: "Greek"
         property string nativeName: "Greek (Ελληνικά)"
-        property string langFile: "greek.lang"
         property string dicFile: "greek.dic"
         property string flagID: "gr"
         property int numberOfJokers: 2
         property int readingDirection: Qt.LeftToRight
         property string excludedCat: ""
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -1342,13 +1324,11 @@ Item {
         id: langHebrew
         property string englishName: "Hebrew"
         property string nativeName: "Hebrew (עברית)"
-        property string langFile: ""
         property string dicFile: "hebrew.dic"
         property string flagID: "il"
         property int numberOfJokers: 2
         property int readingDirection: Qt.RightToLeft
         property string excludedCat: ""
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -1407,16 +1387,92 @@ Item {
       */
     }
     QtObject {
+        id: langHungarian
+        property string englishName: "Hungarian"
+        property string nativeName: "Hungarian (Magyar)"
+        property string dicFile: "hungarian.dic"
+        property string flagID: "hu"
+        property int numberOfJokers: 2
+        property int readingDirection: Qt.LeftToRight
+        property string excludedCat: ""
+        property int numberOfLetters: 7
+        property int numberOfRandoms: 0
+        property int timeControl: 2
+        property bool timeControlEnd: false
+        property bool timeControlBuy: true
+        property string timePerGame: "0:50:00"
+        property int penaltyValue: 10
+        property int penaltyCount: 10
+        property bool gameLostByTime: true
+        property int wordCheckMode:2;
+        property int challengePenalty: 10
+        property int challengeTime: 20
+        property bool jokerExchange: false
+        property bool changeIsPass: true
+        property bool cambioSecco: false
+        property bool substractLetters: true
+        property bool addLetters: true
+        property int jokerPenalty: 0
+        property int numberOfPasses: 3
+        property int limitExchange: 7
+        property int endBonus: 0
+        property int scrabbleBonus: 50
+        property var letters: [
+            "A",1,6,
+            "Á",1,4,
+            "B",2,3,
+            "C",5,1,
+            "1",7,1,
+            "D",2,3,
+            "E",1,6,
+            "É",3,3,
+            "F",4,2,
+            "G",2,3,
+            "2",4,2,
+            "H",3,2,
+            "I",1,3,
+            "Í",5,1,
+            "J",4,2,
+            "K",1,6,
+            "L",1,4,
+            "3",8,1,
+            "M",1,3,
+            "N",1,4,
+            "4",5,1,
+            "O",1,3,
+            "Ó",2,3,
+            "Ö",4,2,
+            "Ő",7,1,
+            "P",4,2,
+            "Q",0,0,
+            "R",1,4,
+            "S",1,3,
+            "5",3,2,
+            "T",1,5,
+            "6",10,1,
+            "U",4,2,
+            "Ú",7,1,
+            "Ü",4,2,
+            "Ű",7,1,
+            "V",3,2,
+            "W",0,0,
+            "X",0,0,
+            "Y",0,0,
+            "Z",4,2,
+            "7",8,1]
+      /*
+        based on rules for British English
+      */
+    }
+    QtObject {
         id: langIrish
         property string englishName: "Irish"
         property string nativeName: "Irish (Gaeilge)"
-        property string langFile: "irish.lang"
         property string dicFile: "irish.dic"
         property string flagID: "ie"
         property int numberOfJokers: 2
         property int readingDirection: Qt.LeftToRight
         property string excludedCat: ""
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -1481,13 +1537,11 @@ Item {
         id: langItalian
         property string englishName: "Italian"
         property string nativeName: "Italian (Italiano)"
-        property string langFile: "italian.lang"
         property string dicFile: "italian.dic"
         property string flagID: "it"
         property int numberOfJokers: 2
         property int readingDirection: Qt.LeftToRight
         property string excludedCat: "1"
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -1546,13 +1600,11 @@ Item {
         id: langLatin
         property string englishName: "Latin"
         property string nativeName: "Latin (Lingua Latina)"
-        property string langFile: ""
         property string dicFile: ""
         property string flagID: "latin"
         property int numberOfJokers: 2
         property int readingDirection: Qt.LeftToRight
         property string excludedCat: ""
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -1615,13 +1667,11 @@ Item {
         id: langPersian
         property string englishName: "Persian"
         property string nativeName: "Persian (فارسی)"
-        property string langFile: ""
         property string dicFile: "persian.dic"
         property string flagID: "ir"
         property int numberOfJokers: 2
         property int readingDirection: Qt.RightToLeft
         property string excludedCat: "1"        //page 29, VI.A.
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -1697,13 +1747,11 @@ Item {
         id: langPortuguese
         property string englishName: "Portuguese"
         property string nativeName: "Portuguese (Português europeu)"
-        property string langFile: "portuguese.lang"
         property string dicFile: "portuguese.dic"
         property string flagID: "pt"
         property int numberOfJokers: 3          //3 jokers
         property int readingDirection: Qt.LeftToRight
         property string excludedCat: ""         //there are no categories in dic
-        property bool rulesValid: true          //internal flag
         property int numberOfLetters: 7         //number of tiles on rack
         property int numberOfRandoms: 0         //number of random letters, added to the distribution
         property int timeControl: 2             //time limit; 0=no limit, 1=per move, 2=per game
@@ -1758,13 +1806,11 @@ Item {
         id: langRomanian
         property string englishName: "Romanian"
         property string nativeName: "Romanian (Română)"
-        property string langFile: ""
         property string dicFile: "romana.dic"
         property string flagID: "ro"
         property int numberOfJokers: 2
         property int readingDirection: Qt.LeftToRight
         property string excludedCat: ""
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -1825,13 +1871,11 @@ Item {
         id: langRussian
         property string englishName: "Russian"
         property string nativeName: "Russian (Русский)"
-        property string langFile: ""
         property string dicFile: "russian.dic"
         property string flagID: "ru"
         property int numberOfJokers: 2
         property int readingDirection: Qt.LeftToRight
         property string excludedCat: ""
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -1901,13 +1945,11 @@ Item {
         id: langScottish
         property string englishName: "Scottish Gaelic"
         property string nativeName: "Scottish Gaelic (Gàidhlig)"
-        property string langFile: "scottishgaelic.lang"
         property string dicFile: "scottishgaelic.dic"
         property string flagID: "scotland"
         property int numberOfJokers: 2
         property int readingDirection: Qt.LeftToRight
         property string excludedCat: ""
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -1975,13 +2017,11 @@ Item {
         id: langSlovak
         property string englishName: "Slovak"
         property string nativeName: "Slovak (Slovenčina)"
-        property string langFile: "slovak.lang"
         property string dicFile: "slovak.dic"
         property string flagID: "sk"
         property int numberOfJokers: 2
         property int eeadingDirection: Qt.LeftToRight
         property string excludedCat: ""
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -2059,13 +2099,11 @@ Item {
         id: langSpanish
         property string englishName: "Spanish"
         property string nativeName: "Spanish (Español)"
-        property string langFile: "spanish.lang"
         property string dicFile: "espanol.dic"
         property string flagID: "es"
         property int numberOfJokers: 2
         property int readingDirection: Qt.LeftToRight
         property string excludedCat: ""
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -2127,13 +2165,11 @@ Item {
         id: langSwedish
         property string englishName: "Swedish"
         property string nativeName: "Swedish (Svenska)"
-        property string langFile: "swedish.lang"
         property string dicFile: "svenska.dic"
         property string flagID: "se"
         property int numberOfJokers: 2
         property int readingDirection: Qt.LeftToRight
         property string excludedCat: "1"
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -2201,13 +2237,11 @@ Item {
         id: langTurkish
         property string englishName: "Turkish"
         property string nativeName: "Turkish (Türkçe)"
-        property string langFile: ""
         property string dicFile: "turkish.dic"
         property string flagID: "tr"
         property int numberOfJokers: 2
         property int readingDirection: Qt.LeftToRight
         property string excludedCat: ""
-        property bool rulesValid: true
         property int numberOfLetters: 7
         property int numberOfRandoms: 0
         property int timeControl: 2
@@ -2264,7 +2298,7 @@ Item {
         based on rules for British English
       */
     }
-/*  https://bugreports.qt.io/browse/QTBUG-16289
+    /*  https://bugreports.qt.io/browse/QTBUG-16289
 
     property var boardColors: ListModel {
         id: boardColors

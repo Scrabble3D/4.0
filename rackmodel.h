@@ -22,12 +22,16 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     int rowCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
 
+    QList<Letter> getRack() { return m_pInitialRack; }
+    //when loading a game the rack needs to be set temporaray for the game history
+    void setInitialRack(QList<Letter> aLetters);
+    void setRack(QList<Letter> aLetters);
     void setLetter(const Letter aLetter, const bool bSilent = false, int nPlayer = -1); //make rack item a Letter
     void placeLetter(const int index, const bool bVisible = true); //make rack item an EmptyLetter; visible to show in UI
     void toggleExchangeFlag(const int index);
     void move(const uint fromIndex, const uint toIndex);
     Letter getLetter(const int nRackIndex, int nPlayer = -1) const;
-    int rackSize() {return m_nRackSize; }
+    int rackSize() { return m_nRackSize; }
     void setActivePlayer(const int nPlayer); // set via gameplay.nextPlayer()
     void setLocalPlayer(const int nPlayer);
     bool isLocalIsActive() {return m_nActivePlayer == m_nLocalPlayer; }
@@ -38,6 +42,7 @@ protected:
     QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
 
     QVector<QVector<Letter>> m_lPieces; //[nPlayer][nRackPos]
+    QList<Letter> m_pInitialRack;
     int m_nRackSize;
     int m_nPlayerCount;
     int m_nActivePlayer;

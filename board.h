@@ -26,7 +26,7 @@ public:
     board();
 
     void initialize(const QVariantList fieldTypeArray, const bool Is3D);
-    void initialize(const board* aParentBoard);
+    void initialize(const board* aParentBoard, const int nMove = -1);
     FieldType getFieldtype(const int index);
 
     void setLetter(Letter &aLetter);
@@ -48,7 +48,6 @@ public:
     void setActiveDimension(Dimension aDimension) { m_eActiveDimension = aDimension; }
     int getActivePosition() { return m_nActivePosition; } //2D plane in 3D; always zero in 2D games
     void setActivePosition(int aPosition) { m_nActivePosition = aPosition; }
-
     QString getWordsAt(const int index); //comma delimited list of words (abscissa, ordinate, applicate) at this position
 
 private:

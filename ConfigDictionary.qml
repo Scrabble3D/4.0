@@ -62,7 +62,7 @@ GridLayout {
         var letterlist = [];
         letterlist = GamePlay.getLetterDistribution( config.getLetterSet(-1) )
         if (letterlist.length > 0)
-            config.setLetterSet(letterlist)
+            configLetter.setLetterSet(letterlist)
     }
 
     Action {
@@ -256,7 +256,7 @@ GridLayout {
         text: qsTr("Categories:")
     }
     ColumnLayout {
-        spacing: 0
+        spacing: 1
         Repeater {
             id: categoriesRepeater
             model: categoriesModel
