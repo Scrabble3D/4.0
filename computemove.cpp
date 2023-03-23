@@ -2,10 +2,18 @@
 
 #include "computemove.h"
 
+#ifdef QT_DEBUG
+#include <QElapsedTimer>
+#endif
+
+#ifdef threaded
 computemove::computemove(QObject* parent)
-    : m_pParent(parent),
-      m_pMutex()
+    : m_pMutex()
+#else
+computemove::computemove(QObject* parent)
+#endif
 {
+    Q_UNUSED(parent);
 }
 
 //sort possible moves by their value
@@ -17,19 +25,19 @@ bool sortByValue(sharedMove aMove, sharedMove bMove) {
 void computemove::run(const bool isFirstMove,
                       board* aBoard,
                       rackmodel* aRack,
-                      dicFile* aDictionary)
+                      dictionary* aDictionary)
 {
     //clear previously calculated moves and disable spin edit in UI via emit=0
     clear();
-    //reset progressbar
-    m_pParent->setProperty("placedValue", 0);
-
     //progress
     m_nDone = 0;
     m_nTotal = 2 * aBoard->getBoardSize();
     if (aBoard->is3D())
         m_nTotal *= 3 * aBoard->getBoardSize();
-
+#ifdef QT_DEBUG
+    QElapsedTimer timer;
+    timer.start();
+#endif
     for (int nDimension = 0; nDimension < 3; nDimension++) { //dx, dy, dz
         for (int nPlane = 0; nPlane < aBoard->getBoardSize(); nPlane++) { //plane per dimension
 
@@ -45,9 +53,6 @@ void computemove::run(const bool isFirstMove,
             for (int nOrientation = 0; nOrientation <= 1; nOrientation++) { //horizontal/vertical
                 for (int nColRow = 0; nColRow<aBoard->getBoardSize(); nColRow++) { //column/row
 
-                    m_pParent->setProperty("computeProgress", m_nProgress);
-
-                    //run
                     computeWord *compute = new computeWord(isFirstMove,
                                                            nColRow,
                                                            nOrientation,
@@ -60,19 +65,32 @@ void computemove::run(const bool isFirstMove,
                     QObject::connect(compute, SIGNAL(threadFinished()),
                                      this, SLOT(threadFinished()),
                                      Qt::DirectConnection);
+#ifdef threaded
                     compute->setAutoDelete(true);
                     QThreadPool::globalInstance()->start(compute);
+#else
+                    compute->run();
+                    delete compute;
+#endif
                 }
             }
         }
     }
+#ifdef threaded
     // wait for the (potentially large) threads poll to be processed
-    while (!QThreadPool::globalInstance()->waitForDone(500)) {
-        m_pParent->setProperty("computeProgress", m_nProgress);
+    //TODO: computemove: processEvents discouraged
+    while (!QThreadPool::globalInstance()->waitForDone(100)) {
         QCoreApplication::processEvents();
     }
     QThreadPool::globalInstance()->waitForDone();
+#endif
     std::sort(m_pMoves.begin(), m_pMoves.end(), sortByValue);
+#ifdef QT_DEBUG
+    qDebug() << "Computemove finished in" << timer.elapsed() << "ms";
+#endif
+    qApp->processEvents(); // ensure 100% is send before resetting via 0
+    emit onComputeResults( m_pMoves.count() );
+    emit onComputeProgress(0);
 }
 
 void computemove::markLettersForExchange(rackmodel* aRack)
@@ -100,20 +118,30 @@ void computemove::markLettersForExchange(rackmodel* aRack)
 void computemove::clear()
 {
     m_pMoves.clear();
-    m_pParent->setProperty("bestMoveCount", 0);
+    emit onComputeResults(0);
 }
 
 void computemove::doAddWord(sharedMove aMove)
 {
+#ifdef threaded
     m_pMutex.lock();
+#endif
     m_pMoves.append(aMove);
+#ifdef threaded
     m_pMutex.unlock();
+#endif
 }
 
 void computemove::threadFinished()
 {
     m_nDone++;
+    const int nProgress = m_nProgress;
     m_nProgress = round((double(m_nDone)/double(m_nTotal))*100);
+    if (nProgress != m_nProgress) {
+        emit onComputeProgress(m_nProgress);
+        //TODO: computemove: processEvents discouraged
+        qApp->processEvents();
+    };
 }
 
 computeWord::computeWord(const bool isFirstMove,
@@ -121,12 +149,12 @@ computeWord::computeWord(const bool isFirstMove,
                          const int nOrientation,
                          board *aBoard,
                          rackmodel *aRack,
-                         dicFile *aDictionary)
+                         dictionary *aDictionary)
 {
     m_bIsFirstMove = isFirstMove;
+
     m_pBoard = new board();
     m_pBoard->initialize( aBoard );
-    currentBoard = aBoard;
 
     m_pRack = aRack;
 
@@ -163,46 +191,56 @@ void computeWord::run()
     QString sRack;
     for (int i=0; i<m_pRack->rackSize(); i++)
         sRack += m_pRack->getLetter(i).What;
-    QStringList sWords = m_pDictionary->variation(sRack+sBoard).split(",");
-
+    QStringList sWordList = m_pDictionary->variation(sRack + sBoard).split(",");
+    QString sWord;
     //try to place words
-    for (int nWordPos = 0; nWordPos<sWords.count(); nWordPos++) {
-        //don't try to place words that cannot be placed
-        if (sWords[nWordPos].isEmpty() || (sWords[nWordPos] == sBoard))
+    for (int nWordPos = 0; nWordPos < sWordList.count(); nWordPos++) {
+
+        sWord = sWordList[nWordPos];
+
+        //don't try to place empty words or only board letters
+        if ((sWord == "") && (sWord == sBoard))
             continue;
-        else
-            //iterate over the board
-            for (int nBoardPos=0; nBoardPos<=m_pBoard->getBoardSize()-sWords[nWordPos].length(); nBoardPos++)
-            {
-                //do not try if there is nothing placed next
-                if (!m_bIsFirstMove && !hasNeighbors(sWords[nWordPos], nBoardPos,m_nColRow, m_nOrientation) )
-                    continue;
-                //reset temporary board
-                m_pBoard->initialize( currentBoard );
-                //create new move with reference to the temporary board
-                QSharedPointer<move> aMove = QSharedPointer<move>(new move(m_bIsFirstMove, m_pBoard));
 
-                //reset rack temporary letters
-                for (int nRackPos=0; nRackPos<m_pRack->rackSize(); nRackPos++)
-                    aRackLetter.append(m_pRack->getLetter(nRackPos));
-                //check whether placing the word is possible
-                canPlace = canPlaceWord(sWords[nWordPos], nBoardPos, m_nColRow, m_nOrientation, aMove, m_pBoard, aRackLetter);
-                //no letters placed meaning word consists only of previously placed letters
-                canPlace = canPlace ? (aMove->letterCount() > 0) : false;
-                //check whether placed letters comply with all rules
-                canPlace = canPlace ? aMove->checkMove() : false;
-                //check whether placed and connected words are known
-                canPlace = canPlace ? (m_pDictionary->checkWords(
-                                                        aMove->PlacedWord,
-                                                        aMove->ConnectedWords).isEmpty()) : false;
-                //store the move or drop it
-                if (canPlace)
-                    emit onValidWord(aMove);
+        //iterate over the board
+        for (int nBoardPos=0; nBoardPos<=m_pBoard->getBoardSize() - sWord.length(); nBoardPos++)
+        {
+            //do not try if there is nothing placed next
+            if (!m_bIsFirstMove && !hasNeighbors(sWord, nBoardPos, m_nColRow, m_nOrientation) )
+                continue;
 
-                aRackLetter.clear();
-            } //nBoardPos
+            //reset temporary board
+            for (int i=0; i<m_pBoard->getFieldSize(); i++) {
+                aLetter = m_pBoard->getLetter(i);
+                if (aLetter.State == LetterState::lsBoard)
+                    m_pBoard->removeLetter( aLetter.Where );
+            }
+            //reset rack temporary letters
+            for (int nRackPos=0; nRackPos<m_pRack->rackSize(); nRackPos++)
+                aRackLetter.append(m_pRack->getLetter(nRackPos));
+
+            //create new move with reference to the temporary board
+            QSharedPointer<move> aMove = QSharedPointer<move>(new move(m_bIsFirstMove, m_pBoard));
+
+            //check whether placing the word is possible
+            canPlace = canPlaceWord(sWord, nBoardPos, m_nColRow, m_nOrientation, aMove, m_pBoard, aRackLetter);
+            //no letters placed meaning word consists only of previously placed letters
+            canPlace = canPlace ? (aMove->letterCount() > 0) : false;
+            //check whether placed letters comply with all rules
+            canPlace = canPlace ? aMove->checkMove() : false;
+            //check whether placed and connected words are known
+            canPlace = canPlace ? (m_pDictionary->checkWords(
+                                                    aMove->PlacedWord,
+                                                    aMove->ConnectedWords).isEmpty()) : false;
+
+            //store the move or drop it
+            if (canPlace)
+                emit onValidWord(aMove);
+
+            aRackLetter.clear();
+        } //nBoardPos
     } //sWord.count()
-    sWords.clear();
+    sWordList.clear();
 }
 
 int computeWord::getRackLetter(QVector<Letter> aRackLetter, const QString aChar)
@@ -213,7 +251,7 @@ int computeWord::getRackLetter(QVector<Letter> aRackLetter, const QString aChar)
     return -1;
 }
 
-bool computeWord::isAtStart(const uint pos, const uint colrow)
+bool computeWord::isAtStart(const int pos, const int colrow)
 {
     int nIndex = 0;
     const int aBoardSize(m_pBoard->getBoardSize());
@@ -228,18 +266,20 @@ bool computeWord::isAtStart(const uint pos, const uint colrow)
     return false;
 }
 
-bool computeWord::hasNeighbors(const QString sWord, const uint nBoardPos, const uint nColRow, const uint dim)
+bool computeWord::hasNeighbors(const QString sWord, const int nBoardPos, const int nColRow, const int dim)
 {
     Point3D aPoint;
-    const int aBoardSize(m_pBoard->getBoardSize());
+    const int aBoardSize( m_pBoard->getBoardSize() );
+    const int aWordLength( sWord.length() );
+
     switch (dim) {
     case 0: if (nBoardPos > 0) {
                 aPoint = m_pBoard->pos3D((nBoardPos - 1) * aBoardSize + nColRow); //left of word
                 if (m_pBoard->getLetter(aPoint).State != LetterState::lsEmpty)
                     return true;
             }
-            if (nBoardPos + sWord.length() < m_pBoard->getBoardSize() - 1) {
-                aPoint = m_pBoard->pos3D((nBoardPos + sWord.length() + 1) * aBoardSize + nColRow); //right of the word
+            if (nBoardPos + aWordLength < m_pBoard->getBoardSize() - 1) {
+                aPoint = m_pBoard->pos3D((nBoardPos + aWordLength + 1) * aBoardSize + nColRow); //right of the word
                 if (m_pBoard->getLetter(aPoint).State != LetterState::lsEmpty)
                     return true;
             }
@@ -249,14 +289,15 @@ bool computeWord::hasNeighbors(const QString sWord, const uint nBoardPos, const 
                 if (m_pBoard->getLetter(aPoint).State != LetterState::lsEmpty)
                 return true;
             }
-            if (nBoardPos + sWord.length() < m_pBoard->getBoardSize() - 1) {
-                aPoint = m_pBoard->pos3D(nColRow * aBoardSize + (nBoardPos + sWord.length() + 1)); //below of the word
+            if (nBoardPos + aWordLength < m_pBoard->getBoardSize() - 1) {
+                aPoint = m_pBoard->pos3D(nColRow * aBoardSize + (nBoardPos + aWordLength + 1)); //below of the word
                 if (m_pBoard->getLetter(aPoint).State != LetterState::lsEmpty)
                     return true;
             }
             break;
     } //switch
-    for (uint nWordPos=0; nWordPos<sWord.length(); nWordPos++)
+
+    for (int nWordPos=0; nWordPos < aWordLength; nWordPos++)
     {
         switch (dim) {
         case 0: if (nColRow > 0) {
@@ -283,16 +324,17 @@ bool computeWord::hasNeighbors(const QString sWord, const uint nBoardPos, const 
                 break;
         } //switch
     } // for to
+
     return false;
 }
 
-bool computeWord::canPlaceWord(const QString sWord, const uint nBoardPos,
-                               const uint nColRow, const uint dim,
+bool computeWord::canPlaceWord(const QString sWord, const int nBoardPos,
+                               const int nColRow, const int dim,
                                QSharedPointer<move> aMove, board* aBoard, QVector<Letter> aRackLetter)
 {
 
     Letter aLetter;
-    for (uint nWordPos = 0; nWordPos < sWord.length(); nWordPos++) {
+    for (int nWordPos = 0; nWordPos < sWord.length(); nWordPos++) {
         if (dim==0)
             aLetter = aBoard->getLetter(nBoardPos+nWordPos, nColRow);
         else

@@ -23,6 +23,8 @@ public:
 
 signals:
     void onFinished(DlType fileType, QString fileName);
+    void onMessage(const QString aMessage, const QString aWho = "");
+    void onProgress(int nProgress);
 
 public slots:
     void downloadFinished(QNetworkReply *reply);
@@ -32,5 +34,4 @@ public slots:
 private:
     bool saveToDisk(const QString &filename, QIODevice *data);
     static int onExtractZip(const char *filename, void *arg);
-    QObject *m_pParent;
 };

@@ -11,7 +11,7 @@
 
 DownloadManager::DownloadManager(QObject* parent)
 {
-    m_pParent = parent;
+    Q_UNUSED(parent);
     connect(&manager, &QNetworkAccessManager::finished,
             this, &DownloadManager::downloadFinished);
 }
@@ -69,7 +69,7 @@ void DownloadManager::checkUpdates(QStringList canUpdate) {
 
 void DownloadManager::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
-    m_pParent->setProperty("computeProgress",(double(bytesReceived)/double(bytesTotal))*100);
+    emit onProgress( double(bytesReceived)/double(bytesTotal)*100 );
 }
 
 bool DownloadManager::saveToDisk(const QString &filename, QIODevice *data)
@@ -77,9 +77,9 @@ bool DownloadManager::saveToDisk(const QString &filename, QIODevice *data)
     QFile file(filename);
     if (!file.open(QIODevice::WriteOnly)) {
         //: Could not open english.dic for writing: disc full.
-        m_pParent->setProperty("addMsg", tr("Could not open %1 for writing: %2").arg(
-                                   qPrintable(filename),
-                                   qPrintable(file.errorString())));
+        emit onMessage(tr("Could not open %1 for writing: %2").arg(
+                          qPrintable(filename),
+                          qPrintable(file.errorString())));
         return false;
     }
 
@@ -93,8 +93,8 @@ void DownloadManager::sslErrors(const QList<QSslError> &sslErrors)
 {
 #if QT_CONFIG(ssl)
     for (const QSslError &error : sslErrors)
-        m_pParent->setProperty("addMsg", tr("SSL error: %1").arg(
-                                   qPrintable(error.errorString())));
+        emit onMessage(tr("SSL error: %1").arg(
+                          qPrintable(error.errorString())));
 #else
     Q_UNUSED(sslErrors);
 #endif
@@ -102,7 +102,7 @@ void DownloadManager::sslErrors(const QList<QSslError> &sslErrors)
 
 void DownloadManager::downloadFinished(QNetworkReply *reply)
 {
-    m_pParent->setProperty("computeProgress", 0); //zero progress bar
+    emit onProgress( 0 ); //zero progress bar
 
     QUrl url = reply->url();
     //special handling for Scrabble3D.conf, the only uncompressed file
@@ -111,12 +111,12 @@ void DownloadManager::downloadFinished(QNetworkReply *reply)
     const QString tmpFile = isCompressed ? config::temp(url.fileName())
                                          : config::file(url.fileName());
     if (reply->error()) {
-        m_pParent->setProperty("addMsg",reply->errorString() );
+        emit onMessage( reply->errorString() );
     } else
     if (saveToDisk(tmpFile, reply)) {
         if (!url.fileName().endsWith("conf"))
-            m_pParent->setProperty("addMsg", tr("%1 successfully downloaded.").arg(
-                                                 qPrintable(url.fileName())));
+            emit onMessage( tr("%1 successfully downloaded.").arg(
+                               qPrintable(url.fileName())) );
 
         QString aFileName;
         //extract

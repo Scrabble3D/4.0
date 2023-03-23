@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Qt.labs.platform //native dialog, instead of import QtQuick.Dialogs
-import Qt.labs.settings
+import Qt.labs.settings //TODO: main: replace settings
 
 ApplicationWindow {
     id: scrabble3D
@@ -10,7 +10,6 @@ ApplicationWindow {
     height: 800
     visible: true
     title: "Scrabble3D"
-    //TODO: main: dark mode
 
     background: Rectangle {
         anchors.fill: parent
@@ -65,6 +64,7 @@ ApplicationWindow {
         shortcut: StandardKey.New
         icon.source: "qrc:///resources/newgame.png"
         icon.color: iconColor
+        enabled: !GamePlay.isComputing
         onTriggered: GamePlay.isConnected
                      ? GamePlay.syncNewGame(config.getConfigData(false))
                      : newgame.open()
@@ -132,7 +132,7 @@ ApplicationWindow {
         shortcut: StandardKey.Find
         property string tip: text
         enabled: !GamePlay.isConnected && !GamePlay.isComputing &&
-                 ((GamePlay.isRunning && GamePlay.bestMoveCount === 0) ||
+                 ((GamePlay.isRunning && GamePlay.computeResults === 0) ||
                   (GamePlay.isHistory))
 
         icon.source: "qrc:///resources/wheelchair.png"
@@ -199,7 +199,6 @@ ApplicationWindow {
         main.board.updateLabelsModel()
         main.board.updateFieldSize() //changing the number of fields should result in resizing
         main.board.jokerPicker.updatePickerModel(); //setup letterlist
-        if (GamePlay.is3D) main.cube.updateCubeModel()
     }
 
     FileDialog {

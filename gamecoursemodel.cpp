@@ -95,6 +95,7 @@ QHash<int, QByteArray> gamecoursemodel::roleNames() const
     roles[IsScrabbleRole] = "isScrabble";
     roles[BestValueRole] = "bonus";
     roles[TimeRole] = "time";
+    //TODO: gamecourse: selected not used/needed
     roles[SelectedRole] = "selected";
     return roles;
 }

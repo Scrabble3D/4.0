@@ -13,28 +13,22 @@ int cubemodel::rowCount(const QModelIndex &parent) const
     return m_pBoard->getBoardSize() * m_pBoard->getBoardSize() * m_pBoard->getBoardSize();
 }
 
-void cubemodel::updateSquare(Point3D aPos)
+void cubemodel::updateSquare(const Point3D aPos)
 {
     QModelIndex aIndex = this->index( m_pBoard->pointToWhere(aPos) );
     emit dataChanged(aIndex, aIndex, { WhatRole, ValueRole, WhoRole, WhenRole, IsPlacedRole } );
 }
 
-void cubemodel::updateAllSquares()
+// called from GamePlay::doSelectedMoveChanged() and loadGame()
+void cubemodel::updateSquare(const int aRole)
 {
-    QModelIndex aIndex;
-    int z = m_pBoard->getBoardSize();
-    for (int i=0; i<z*z*z; i++) {
-//        if (!m_pBoard->getLetter(i).IsEmpty()) {
-            aIndex = this->index(i);
-            emit dataChanged(aIndex, aIndex, { WhatRole } );//, ValueRole, WhoRole, WhenRole, IsPlacedRole } );
-        }
-//    }
-}
-
-void cubemodel::reset()
-{
-    beginResetModel();
-    endResetModel();
+    const int z = m_pBoard->getBoardSize();
+    const QModelIndex aIndex = this->index(0);
+    const QModelIndex bIndex = this->index(z*z*z-1);
+    if (aRole > -1)
+        emit dataChanged(aIndex, bIndex, { aRole } );
+    else
+        emit dataChanged(aIndex, bIndex );
 }
 
 QHash<int, QByteArray> cubemodel::roleNames() const

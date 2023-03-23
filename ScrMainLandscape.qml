@@ -100,7 +100,7 @@ ColumnLayout {
             }
             SpinBox {
                 id: sbBestMoveSpinner
-                to: GamePlay.bestMoveCount
+                to: GamePlay.computeResults
                 enabled: to > 0
                 editable: true
                 onValueChanged: GamePlay.placeBestMove(value)

@@ -86,7 +86,6 @@ void network::doReadyRead()
         return;
 
     QVariantMap aLastMessage;
-    //NOTE: network: double check https://stackoverflow.com/questions/16023533/how-to-make-sure-that-readyread-signals-from-qtcpsocket-cant-be-missed
     m_aData += this->readAll();
 
     if (!m_aData.endsWith("\n"))

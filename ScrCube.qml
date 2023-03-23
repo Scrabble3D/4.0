@@ -5,10 +5,6 @@ import QtQuick3D
 
 Item {
 
-    function updateCubeModel() {
-        //TODO: cube: feeback on init
-        cube.model = GamePlay.cubeModel //assign model not until it is used to avoid delay on app start
-    }
     TextMetrics {
         id: textMetrics
         text: "10" //avoid jumping UI when label goes from one to two digits
@@ -34,13 +30,72 @@ Item {
         DirectionalLight {
         }
 
+        Component {
+            id: noContent
+            Model {
+                property int x: parent.x
+                property int y: parent.y
+                property int z: parent.z
+
+                source: "#Cube"
+                position: Qt.vector3d(bs2-x, bs2-y,  bs2-z)
+                scale: Qt.vector3d(0.01, 0.01, 0.01)
+
+                materials: DefaultMaterial {
+                    diffuseColor: config.colors.get(aFieldType).itemColor //use field color when empty
+                    lighting: DefaultMaterial.NoLighting
+                    opacity: (aFieldType === 1) ? 0.025 : 0.25 //normal fields are almost fully transparent, bonus fields largely
+                }
+            }
+        }
+        Component {
+            id: hasContent
+            Model {
+                property int x: parent.x
+                property int y: parent.y
+                property int z: parent.z
+
+                source: "#Cube"
+                position: Qt.vector3d(bs2-x, bs2-y,  bs2-z)
+                scale: Qt.vector3d(0.01, 0.01, 0.01)
+
+                materials: DefaultMaterial {
+                    id: placedField
+                    diffuseMap: Texture {
+                        sourceItem: ScrPiece {
+                            implicitWidth: 128
+                            implicitHeight: 128
+                            pieceColor: aWhat === String.fromCharCode(0) //empty?
+                                        ? config.colors.get(fieldtype).itemColor //use field color when empty
+                                        : isPlaced && config.bColoredPlayers && (aCurrentMove - when) <= GamePlay.numberOfPlayers
+                                          ? Qt.lighter(config.playercolors.get(who).itemColor, 1.75) //use (lighter) player color for the last move, if set in config
+                                          : aWhen === aCurrentMove
+                                            ? config.colors.get(8).itemColor //use (yellow) field color for non-empty squares
+                                            : Qt.lighter(config.colors.get(8).itemColor) // ... but a bit lighter when removing is not possible
+                            pieceShadow: (isPlaced && config.bColoredPlayers)
+                                         ? config.playercolors.get(aWho).itemColor //colored shadow to show who placed a piece
+                                         : "transparent"
+                            pieceLabel: aWhat
+                            pieceValue: aValue
+                        }
+                    }
+                    lighting: DefaultMaterial.NoLighting
+                    opacity: 1.0
+                }
+            }
+        }
+
         Skeleton {
             id: sceneRoot
             eulerRotation.y: -180
             Repeater3D {
                 id: cube
-                model: {} //empty to quickly start; will be initialized at first usage
-                Model {
+                model: GamePlay.is3D ? GamePlay.cubeModel : {} //field index out of bound if 2D
+                Loader3D {
+                    sourceComponent: aWhat === String.fromCharCode(0)
+                                     ? noContent : hasContent
+
+                    property int aCurrentMove: GamePlay.currentMove
                     property int bs: GamePlay.boardSize
                     property real bs2: bs/2
                     property int x: (index % bs)
@@ -52,35 +107,7 @@ Item {
                     property int aValue: value
                     property int aWhen: when
                     property int aWho: who
-                    source: "#Cube"
-                    position: Qt.vector3d(bs2-x, bs2-y,  bs2-z)
-                    scale: Qt.vector3d(0.01, 0.01, 0.01)
-
-                    materials: [
-                        DefaultMaterial {
-                            diffuseMap: Texture {
-                                sourceItem:
-                                    ScrPiece {
-                                        implicitWidth: 128
-                                        implicitHeight: 128
-                                        pieceColor: aWhat == String.fromCharCode(0) //empty?
-                                                    ? config.colors.get(aFieldType).itemColor //use field color when empty
-                                                    : aWhen === GamePlay.currentMove
-                                                      ? config.colors.get(8).itemColor //use (yellow) field color for non-empty squares
-                                                      : Qt.lighter(config.colors.get(8).itemColor) // ... but a bit lighter when removing is not possible
-                                        pieceShadow: (isPlaced && config.bColoredPlayers)
-                                                     ? config.playercolors.get(aWho).itemColor //colored shadow to show who placed a piece
-                                                     : "transparent"
-                                        pieceLabel: aWhat
-                                        pieceValue: aValue
-                                    }
-                                }
-                            lighting: DefaultMaterial.NoLighting
-                            opacity: (aWhat == String.fromCharCode(0))
-                                     ? (aFieldType == 1) ? 0.025 : 0.25 //normal fields are almost fully transparent, bonus fields largely
-                                     : 1.0
-                         }
-                     ]
+                    property bool isPlaced: isPlaced
                 }
             }
             Model {
@@ -117,13 +144,13 @@ Item {
              property point lastPos
              property real wheelpos
              onPressed: (mouse)=> {
-                 if (mouse.buttons == Qt.LeftButton) //rotate with left mouse button pressed
+                 if (mouse.buttons === Qt.LeftButton) //rotate with left mouse button pressed
                     lastPos = Qt.point(mouse.x, mouse.y);
                  else if (mouse.modifiers & Qt.ControlModifier) //toggle dimension with right mb and control pressed
                     GamePlay.activeDimension += 1
              }
              onPositionChanged: (mouse)=> {
-                 if (mouse.buttons == Qt.LeftButton) {
+                 if (mouse.buttons === Qt.LeftButton) {
                      sceneRoot.eulerRotation.x -= mouse.y - lastPos.y
                      sceneRoot.eulerRotation.y += mouse.x - lastPos.x
                      lastPos = Qt.point(mouse.x, mouse.y);

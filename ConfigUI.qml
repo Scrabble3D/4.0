@@ -2,100 +2,20 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-GridLayout {
+ListView {
+    id: locView
+
+    property int pad: 12
+    width: rightPane.width - 2*pad
+    height: rightPane.height - 2*pad
+    leftMargin: pad
+    topMargin: pad
+
+    model: GamePlay.locListModel
+    delegate: locViewItem
+    boundsMovement: Flickable.StopAtBounds
+    currentIndex: -1
     palette: config.myPalette
-    columns: 2
-
-    width: scrollView.width
-    height: scrollView.height
-    onWidthChanged: locTable.forceLayout()
-
-    property int selectedLoc: -1 // -1 = nothing selected
-    property int loadedLoc: -1
-
-    HorizontalHeaderView {
-        id: locHeader
-        syncView: locTable
-        model: GamePlay.locListModel
-        Layout.leftMargin: 8
-        Layout.columnSpan: 2
-        boundsBehavior: Flickable.StopAtBounds
-
-        delegate: Rectangle {
-            implicitWidth: text.implicitWidth + 4
-            implicitHeight: Math.max(locHeader.height,
-                                     text.implicitHeight + 4)
-            color: palette.mid
-            border.color: palette.midlight
-            Text {
-                id: text
-                text: model[locHeader.textRole]
-                width: parent.width
-                height: parent.height
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
-        }
-    }
-
-    TableView {
-        id: locTable
-        boundsBehavior: Flickable.StopAtBounds
-        Layout.fillHeight: true
-        Layout.fillWidth: true
-        Layout.minimumHeight: 200
-        Layout.leftMargin: 8
-        Layout.columnSpan: 2
-        ScrollBar.vertical: ScrollBar { id: sbLocTable}
-        clip: true;
-        columnWidthProvider: function(column) {
-            return column < 2
-                ? Math.floor((configUI.width - 12) * 1/3) //names
-                : column < 4 //hide column with filename
-                    ? Math.floor((configUI.width - 12) * 1/6) //versions
-                    : 0
-        }
-        model: GamePlay.locListModel
-        selectionModel: ItemSelectionModel {
-            id: locSelect
-            model: locTable.model
-        }
-        delegate: Rectangle {
-            id: locDelegate
-            required property bool selected
-            implicitWidth: parent.width
-            implicitHeight: delText.height + 2
-            color: isLoaded ? palette.highlight
-                            : selected ? Qt.lighter(palette.highlight)
-                                       : palette.window
-            border.color: palette.midlight
-
-            Text {
-                id: delText
-                width: parent.width
-                padding: 2
-                color: isDark(parent.color) ? "white" : "black"
-                horizontalAlignment: Text.AlignHCenter
-                elide: Text.ElideRight
-                text: display
-            }
-            MouseArea {
-                anchors.fill: parent
-                acceptedButtons: Qt.LeftButton | Qt.RightButton
-                onDoubleClicked: acLoadLocalization.trigger()
-                onPressed: {
-                    configUI.selectedLoc = model.row
-                    locSelect.select(GamePlay.locListModel.index(model.row,0),
-                                      ItemSelectionModel.ClearAndSelect | ItemSelectionModel.Rows)
-                }
-                onClicked: (mouse)=> {
-                    if (mouse.button === Qt.RightButton)
-                        locContextMenu.popup()
-                }
-                onPressAndHold: locContextMenu.popup()
-            }
-        }
-    }
 
     Menu {
         id: locContextMenu
@@ -105,27 +25,137 @@ GridLayout {
 
     Action {
         id: acLoadLocalization
-        enabled: loadedLoc != selectedLoc
-        text: GamePlay.locListModel.data(GamePlay.locListModel.index(selectedLoc, 3)) === ""
+        enabled: !model.isLoaded
+        text: model.get(currentIndex).installedversion !== ""
                   ? qsTr("Download localization")
                   : qsTr("Load localization")
-        onTriggered: {
-            var fileName = GamePlay.locListModel.data(GamePlay.locListModel.index(selectedLoc, 4))
-            GamePlay.localize(fileName)
-//                loadedLoc = selectedLoc
-//                loadedFileName = fileName
-        }
+        onTriggered: GamePlay.localize(model.get(currentIndex).filename)
     }
     Action {
         id: acDeleteLocalization
         text: qsTr("Delete local translation")
-        enabled: GamePlay.locListModel.data(GamePlay.locListModel.index(selectedLoc,3)) !== ""
+        enabled: model.get(currentIndex).installedVersion !== ""
         onTriggered: {
-            var fileName = GamePlay.locListModel.data(GamePlay.locListModel.index(selectedLoc, 4))
-            if ( GamePlay.deleteLocFile(fileName) )
+            var fileName = model.get(currentIndex).filename
+            if ( GamePlay.deleteLocFile( fileName ) )
                 GamePlay.addMessage(qsTr("Localization \"%1\" successfully deleted.").arg(fileName))
             else
                 GamePlay.addMessage(qsTr("Localization \"%1\" failed to delete.").arg(fileName))
+        }
+    }
+
+    TextMetrics {
+        id: tm
+        text: "ABC"
+    }
+
+    property var colWidth: [100,100,20,20];
+    onWidthChanged: colWidth = [locView.width * 1/3,
+                                locView.width * 1/3,
+                                locView.width * 1/6,
+                                locView.width * 1/6];
+    header: Rectangle {
+        id: listHeader
+        width: locView.width
+        height: tm.height + 8
+        color: palette.mid
+        Rectangle {
+            id: entry1
+            width: colWidth[0]; height: listHeader.height; color: "transparent"; border.color: palette.midlight
+            Label { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("Native") }
+        }
+        Rectangle {
+            id: entry2
+            anchors.left: entry1.right
+            width: colWidth[1]; height: listHeader.height; color: "transparent"; border.color: palette.midlight
+            Label { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("English") }
+        }
+        Rectangle {
+            id: entry3
+            anchors.left: entry2.right
+            width: colWidth[2]; height: listHeader.height; color: "transparent"; border.color: palette.midlight
+            Label { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("Installed") }
+        }
+        Rectangle {
+            id: entry4
+            anchors.left: entry3.right
+            width: colWidth[3]; height: listHeader.height; color: "transparent"; border.color: palette.midlight
+            Label { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("Available") }
+        }
+    }
+
+    Component {
+        id: locViewItem
+        Column {
+            height: locViewDetails.visible
+                    ? locViewEntry.height + locViewDetails.height
+                    : locViewEntry.height
+
+            Rectangle {
+                id: locViewEntry
+                width: locView.width
+                height: tm.height + 4
+                color: model.isLoaded
+                       ? palette.highlight
+                       : currentIndex == index
+                         ? Qt.lighter(palette.highlight)
+                         : palette.window
+                Rectangle {
+                    id: entry1
+                    width: colWidth[0]; height: locViewEntry.height; color: "transparent"
+                    ColorLabel { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter; bgcolor: locViewEntry.color;
+                        text: model.native }
+                }
+                Rectangle {
+                    id: entry2
+                    anchors.left: entry1.right
+                    width: colWidth[1]; height: locViewEntry.height; color: "transparent"
+                    ColorLabel { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter; bgcolor: locViewEntry.color;
+                        text: model.english }
+                }
+                Rectangle {
+                    id: entry3
+                    anchors.left: entry2.right
+                    width: colWidth[2]; height: locViewEntry.height; color: "transparent"
+                    ColorLabel { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter; bgcolor: locViewEntry.color;
+                        text: model.installedversion }
+                }
+                Rectangle {
+                    id: entry4
+                    anchors.left: entry3.right
+                    width: colWidth[3]; height: locViewEntry.height; color: "transparent"
+                    ColorLabel { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter; bgcolor: locViewEntry.color;
+                        text: model.availableversion }
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    onDoubleClicked: if (!isLoaded)
+                                        acLoadLocalization.trigger()
+                    onPressed: locView.currentIndex = index
+                    onClicked: (mouse)=> {
+                                   if (mouse.button === Qt.RightButton)
+                                   locContextMenu.popup()
+                               }
+                    onPressAndHold: locContextMenu.popup()
+                } // MouseArea
+
+            }
+            GridLayout {
+                id: locViewDetails
+                visible: (locView.currentIndex === index) && (model.installedversion !== "")
+                columns: 2
+                rowSpacing: 1
+                x: 16
+
+                ColorLabel { Layout.topMargin: 12; Layout.bottomMargin: 12; text: qsTr("Author:") }
+                ColorLabel { Layout.topMargin: 12; Layout.bottomMargin: 12; text: model.author }
+
+            }
         }
     }
 }

@@ -15,34 +15,53 @@ RowLayout {
         Layout.fillWidth: mainLoader.state === "portrait" //messages are hidden in portrait mode
         border.color: config.myPalette.mid
         color: config.myPalette.window
-        ProgressBar {
-            // show a native progress bar while computing
-            // and make it indeterminate at 100% (threads are still working)
-            id: progress
-            anchors.fill: parent
-            property int computeProgress: GamePlay.computeProgress
-            onComputeProgressChanged: progress.value = computeProgress
-            from: 0
-            to: 100
-            background: Rectangle {
-                anchors.fill: progress
-                color: "transparent"
-                border.color: config.myPalette.mid
-                border.width: 1
-            }
-            visible: value > 0
-            indeterminate: value > 99
-        }
         Rectangle {
-            // show a flat rectangle if letters are placed up to 50 points
+            // using a real progressbar fails because background color does not
+            // fit and applying a special background does not work on windows and macOS
+            // without the item
+            id: progressBar
+
             property int placedValue: GamePlay.placedValue
+            property int computeProgress: GamePlay.computeProgress
+
             height: parent.height - 2
             y: 1
-            color: "lightgreen"
-            visible: !progress.visible
+            color: computeProgress > 0 ? "lightblue" : "lightgreen"
             onPlacedValueChanged: {
                 width = placedValue > 50 ? parent.width : Math.round(parent.width * placedValue/50)
                 tip = qsTr("Score: %1 points").arg(placedValue)
+            }
+            onComputeProgressChanged: {
+                width = Math.round(parent.width * computeProgress/100)
+                tip = ""
+                marquee.running = (computeProgress > 99)
+            }
+            gradient: Gradient {
+                id: gradient
+                property real pos: 0
+                orientation: Gradient.Horizontal
+                GradientStop { position: 0;            color: progressBar.color }
+                GradientStop { position: gradient.pos; color: Qt.darker(progressBar.color) }
+                GradientStop { position: 1;            color: progressBar.color }
+            }
+            SequentialAnimation {
+                id: marquee
+                loops: Animation.Infinite
+                PropertyAnimation {
+                    target: gradient
+                    properties: "pos"
+                    from: 0
+                    to: 1
+                    duration: 500
+                }
+                PropertyAnimation {
+                    target: gradient
+                    properties: "pos"
+                    from: 1
+                    to: 0
+                    duration: 500
+                }
+                onRunningChanged: gradient.pos = 0
             }
         }
         MouseArea {

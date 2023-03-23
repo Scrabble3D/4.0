@@ -35,10 +35,10 @@ void rackmodel::setLetter(const Letter aLetter, const bool bSilent, int nPlayer)
     if (nPlayer == -1)
         nPlayer = m_nActivePlayer;
     if (nPlayer > m_nPlayerCount-1) {
-        qFatal("Setting letter failed"); //WARNING: rackmodel: make fatal just a warning
+        qWarning("Setting letter failed");
         return;
     }
-    if ((nIndex >= 0) && (nIndex < m_nRackSize)) //&& (m_lPieces[nPlayer][nIndex].IsEmpty() -> fails for rollback
+    if ((nIndex >= 0) && (nIndex < m_nRackSize))
     {
         if (!bSilent) beginResetModel();
         m_lPieces[nPlayer][nIndex] = aLetter;
@@ -87,11 +87,12 @@ Letter rackmodel::getLetter(const int nRackIndex, int nPlayer) const
 
 void rackmodel::setActivePlayer(const int nPlayer)
 {
-    if (nPlayer<m_nPlayerCount) {
+    if (nPlayer < m_nPlayerCount) {
         beginResetModel();
         //update current player
         m_nActivePlayer = nPlayer;
         endResetModel();
+        setInitialRack();
     }
     else
         qWarning() << "Active player cannot be set" << nPlayer << m_nPlayerCount;
@@ -99,14 +100,10 @@ void rackmodel::setActivePlayer(const int nPlayer)
 
 void rackmodel::setLocalPlayer(const int nPlayer)
 {
-    if (nPlayer<m_nPlayerCount) {
+    if (nPlayer < m_nPlayerCount) {
         if (nPlayer != m_nLocalPlayer) {
             beginResetModel();
             m_nLocalPlayer = nPlayer;
-            //store the initial rack
-            m_pInitialRack.clear();
-            for (int i = 0; i < m_nRackSize; i++)
-                m_pInitialRack.append(m_lPieces[m_nLocalPlayer][i]);
             endResetModel();
         }
     }
@@ -174,17 +171,16 @@ int rackmodel::rowCount(const QModelIndex &parent) const
     return m_nRackSize;
 }
 
+void rackmodel::setInitialRack()
+{
+    m_pInitialRack.clear();
+    for (int i = 0; i < m_nRackSize; i++)
+        m_pInitialRack.append(m_lPieces[m_nLocalPlayer][i]);
+}
+
 void rackmodel::setInitialRack(QList<Letter> aLetters)
 {
     m_pInitialRack.clear();
     for (int i = 0; i < aLetters.count(); i++)
         m_pInitialRack.append(aLetters[i]);
-}
-
-void rackmodel::setRack(QList<Letter> aLetters)
-{
-    beginResetModel();
-    for (int i = 0; i < m_nRackSize; i++)
-        m_lPieces[m_nActivePlayer][i] = aLetters[i];
-    endResetModel();
 }

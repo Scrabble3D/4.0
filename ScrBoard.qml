@@ -130,7 +130,7 @@ Item {
                 anchors.fill: parent
                 hoverEnabled: true
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
-                onEntered: tipMeaning.text = GamePlay.meaningAt(index)
+                onEntered: tipMeaning.text = GamePlay.getMeaningAt(index)
                 onPressed: (mouse)=> {
                     if (!isPlaced && (aWhat !== String.fromCharCode(0))) {
                         if (mouse.button === Qt.RightButton)

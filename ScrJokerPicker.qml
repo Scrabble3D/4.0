@@ -23,7 +23,7 @@ Dialog {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    GamePlay.setJokerLetter(boardIndex, pickerModel.get(index).what)
+                    GamePlay.jokerLetter(boardIndex, pickerModel.get(index).what)
                     close()
                 }
             }

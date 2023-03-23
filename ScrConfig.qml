@@ -45,7 +45,7 @@ Window {
 
     property string boardName: configBoard.boardName
     property string lettersetName: configLetter.getLetterSetName()
-    property string dictionaryName: configDictionary.getDictionaryName()
+    property string dictionaryName: configDictionary.dictionaryName
     Component.onCompleted: {
         //fill color names with random color values and reset later to the default
         var cNames = [qsTr("Start"), qsTr("Default"),qsTr("2x letter"),qsTr("3x letter"),
@@ -118,11 +118,13 @@ Window {
         configData["cbSubstractLetters"] = configRules.cbSubstractLetters.checked
         configData["cbChangeIsPass"] = configRules.cbChangeIsPass.checked
         //dictionary
-        configData["dictionary"] = GamePlay.currentDicName()
-        var aCat = []
-        for (i = 1; i < configDictionary.categoriesRepeater.count; ++i)
-            aCat.push(configDictionary.categoriesRepeater.itemAt(i).checked)
-        configData["categories"] = aCat.toString()
+        configData["dictionary"] = configDictionary.dictionaryFile
+        const dictionaryCategories = configDictionary.dictionaryCategories
+        var selectedCategories = []
+        for (i = 0; i< dictionaryCategories.length; i++)
+            if (GamePlay.getCategoryChecked(dictionaryCategories[i]))
+                selectedCategories.push(dictionaryCategories[i])
+        configData["categories"] = selectedCategories.toString()
         return configData;
     }
     function saveConfig(fileName) {
@@ -216,14 +218,11 @@ Window {
         configRules.cbChangeIsPass.checked = getConfigValue("cbChangeIsPass", "false") === "true"
         // dictionary
         var aFileName = getConfigValue("dictionary","")
-        if (configDictionary.loadFromName(aFileName)) {
-            var aCat = getConfigValue("categories","").split(",")
-            if (configDictionary.categoriesRepeater.count === aCat.length+1) {
-                for (i = 0; i < aCat.length; ++i)
-                    configDictionary.categoriesRepeater.itemAt(i+1).checked = (aCat[i] === "true")
-            } else
-                console.warn("Unexpected number of category items in configuration")
-        }
+        var aCategories = getConfigValue("categories","")
+        if (aFileName !== configDictionary.dictionaryFile)
+            GamePlay.loadDictionary(aFileName, aCategories)
+        else
+            configDictionary.setCategories( aCategories ) // same dictionary name but different categories in network mode
     }
 
     ListModel {
@@ -360,7 +359,24 @@ Window {
 
         SplitView {
             id: splitView
-//TODO: config: hide splitview handle in portrait mode
+            palette: config.myPalette
+            //TODO: config: loader for splitview depending on portrait/landscape
+            handle: Rectangle {
+                visible: mainLoader.state === "landscape" && x > 10 //hide the handle left-hand of the splitview
+                implicitWidth: 2
+                implicitHeight: 2
+                color: SplitHandle.pressed ? Qt.lighter(palette.dark, 1.5)
+                                           : (SplitHandle.hovered
+                                              ? Qt.lighter(palette.dark, 1.1)
+                                              : palette.dark)
+
+                containmentMask: Item {
+                    x: -width / 2
+                    width: 48
+                    height: splitView.height
+                }
+            }
+
             orientation: mainLoader.state === "landscape"
                          ? Qt.Horizontal
                          : Qt.Vertical
@@ -374,7 +390,7 @@ Window {
             Rectangle {
                 id: leftPane
                 visible: mainLoader.state === "landscape"
-                SplitView.preferredWidth: parent.width * 28/100 //TODO: config: fit left pane to content width
+                SplitView.preferredWidth: parent.width * 28/100
                 SplitView.minimumWidth: 50
                 color: myPalette.window
                 ListView {

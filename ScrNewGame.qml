@@ -115,7 +115,7 @@ Dialog {
                     spacing: 1
                     TextField   {
                         id: tiName
-                        implicitWidth: 90
+                        width: 90
                         bottomPadding: topPadding
                         text: playerName
                         enabled: (rbIndex > index) && (!cbComputer.checked)
@@ -227,16 +227,16 @@ Dialog {
             gameConfig["LetterList"] = config.getLetterSet(-1) //Letters[letter,value,count]
             gameConfig["NumberOfRandoms"] = config.numberOfRandomLetters
             gameConfig["NumberOfJokers"] = config.numberOfJokers
-            gameConfig["CanJokerExchange"] = true //TODO: newgame CanJokerExchange
+            gameConfig["CanJokerExchange"] = true //NOTE: newgame CanJokerExchange
             gameConfig["GameEndBonus"] = config.gameEndBonus
             gameConfig["NumberOfPasses"] = config.numberOfPasses
             gameConfig["JokerPenalty"] = config.jokerPenalty
             gameConfig["ChangeIsPass"] = config.changeIsPass
             gameConfig["TimeControlType"] = config.timeControl // tcNoLimit=0, tcPerMove=1, tcPerGame=2
             gameConfig["TimeControlValue"] = config.timeControlValue
-            gameConfig["LimitedExchange"] = 3 //TODO: newgame LimitedExchange
-            gameConfig["CambioSecco"] = false //TODO: newgame CambioSecco
-            gameConfig["Whatif"] = false //TODO: newgame Whatif
+            gameConfig["LimitedExchange"] = 3 //NOTE: newgame LimitedExchange
+            gameConfig["CambioSecco"] = false //NOTE: newgame CambioSecco
+            gameConfig["Whatif"] = false //NOTE: newgame Whatif
             gameConfig["Add"] = config.addLetters
             gameConfig["Substract"] = config.substractLetters
             gameConfig["TimePenaltyValue"] = config.buytimepenalty
@@ -259,7 +259,6 @@ Dialog {
             main.board.jokerPicker.updatePickerModel() //use current letterlist for joker picker
             main.board.updateLabelsModel() //redraw labels on x/y axis
             main.board.updateFieldSize() //changing the number of fields should result in resizing
-            if (config.bIs3D) main.cube.updateCubeModel()
 
             //save last game settings except when in network mode
             if (!GamePlay.isConnected) {

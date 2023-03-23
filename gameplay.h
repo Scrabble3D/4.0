@@ -21,6 +21,7 @@
 #include "remotegamesmodel.h"
 #include "configpath.h"
 #include "locmodel.h"
+#include "dictionarymodel.h"
 #include "downloadmanager.h"
 
 enum WordCheckMode {wcAsk=0,
@@ -40,11 +41,11 @@ class GamePlay : public QObject
     Q_PROPERTY(rackmodel* rackModel READ rackModel CONSTANT)
     Q_PROPERTY(msgmodel* msgModel READ msgModel CONSTANT)
     Q_PROPERTY(gamecoursemodel* gamecourseModel READ gamecourseModel CONSTANT)
-    Q_PROPERTY(dicList* dicListModel READ dicListModel CONSTANT)
+    Q_PROPERTY(dictionarymodel* dicListModel READ dicListModel CONSTANT)
     Q_PROPERTY(locList* locListModel READ locListModel CONSTANT)
     Q_PROPERTY(playersTree* playersTreeModel READ playersTreeModel CONSTANT)
-//    Q_PROPERTY(remoteGamesProxy* remoteGames READ remoteGames CONSTANT)
     Q_PROPERTY(remoteGamesModel* remoteGames READ remoteGames CONSTANT)
+    //    Q_PROPERTY(remoteGamesProxy* remoteGames READ remoteGames CONSTANT)
 
     Q_PROPERTY(bool isChallenge READ getIsChallenge NOTIFY isChallengeChanged)
     Q_PROPERTY(bool isRunning READ getIsRunning NOTIFY isRunningChanged)
@@ -62,18 +63,13 @@ class GamePlay : public QObject
     Q_PROPERTY(QString lastError READ getLastError NOTIFY lastErrorChanged)
     Q_PROPERTY(QString statInfo READ getStatInfo NOTIFY statInfoChanged)
     Q_PROPERTY(QVariantList statTotal READ getStatTotal NOTIFY statTotalChanged)
-
-    //TODO: gameplay: make it a signal/slot
-    Q_PROPERTY(QString addMsg WRITE addMessage);
-//    Q_PROPERTY(QString dicDownloadFinished WRITE dicDownloadFinished);
-//    Q_PROPERTY(QString confDownloadFinished WRITE confDownloadFinished);
-    Q_PROPERTY(QString downloadFile WRITE download);
     //compute move
     Q_PROPERTY(int computeProgress READ getComputeProgress WRITE setComputeProgress NOTIFY computeProgressChanged)
     Q_PROPERTY(int placedValue READ getPlacedValue NOTIFY placedValueChanged)
-    Q_PROPERTY(int bestMoveCount READ getBestMoveCount NOTIFY bestMoveCountChanged)
+    Q_PROPERTY(int computeResults READ getcomputeResults WRITE setComputeResults NOTIFY computeResultsChanged)
     //dictionary
-    Q_PROPERTY(int dicWordCount READ getDicWordCount NOTIFY dicWordCountChanged)
+    Q_PROPERTY(int wordCount READ getWordCount NOTIFY wordCountChanged)
+
     //network
     Q_PROPERTY(bool isConnected READ getIsConnected NOTIFY connectedChanged)
     Q_PROPERTY(bool isLocalPlayer READ getIsLocalPlayer NOTIFY isLocalPlayerChanged)
@@ -93,19 +89,21 @@ signals:
     void currentMoveChanged();
     void currentPlayerChanged();
     void numberOfPlayersChanged();
-    void bestMoveCountChanged();
+    void computeResultsChanged();
     void computeProgressChanged();
     void placedValueChanged();
-    void dicWordCountChanged();
+    void wordCountChanged();
     void statInfoChanged();
     void statTotalChanged();
     void connectedChanged();
+
     void showPoll(bool); //true = poll is running, false = no poll/hide the pieseries
     void isLocalPlayerChanged();
     void answerChanged(QVariantList); // 0 = no answer, 1 = yes/green, -1 = no/red
     void newGame(bool); // triggers acNewGame in mainwindow
     void applyConfig(QVariantMap); // triggers scrconfig::applyconfig()
     void showRemoteGames(); // shows ScrRemoteGames()
+    void loadingFinished(int);
 
 public:
     explicit GamePlay(QQmlEngine *engine);
@@ -113,7 +111,7 @@ public:
     Q_INVOKABLE void checkForUpdates();
 
     Q_INVOKABLE void localize(const QString fileName);
-    Q_INVOKABLE bool deleteLocFile(const QString fileName) { return m_pLocListModel->removeLocFile(fileName); };
+    Q_INVOKABLE bool deleteLocFile(const QString fileName) { return m_pLocListModel->deleteLocFile(fileName); };
     Q_INVOKABLE void connect(QString name, QString password, QString email, QString country, QString city);
     Q_INVOKABLE void disconnect();
     Q_INVOKABLE void chat(QString aMessage);
@@ -127,8 +125,8 @@ public:
 
     Q_INVOKABLE void saveConfig(QString fileName, QVariantMap configData);
     Q_INVOKABLE QVariantMap loadConfig(QString fileName);
-    Q_INVOKABLE void saveGame(QString fileName);
-    Q_INVOKABLE void loadGame(QString fileName);
+    Q_INVOKABLE void saveGame(QString fileName, const bool bSilent = false);
+    Q_INVOKABLE void loadGame(QString fileName, const bool bSilent = false);
     Q_INVOKABLE void getRemoteGames() {
         addMessage( tr("Requesting saved games from server...") );
         emit onSend(network::nwRemoteGames, m_pNetwork->localPlayerName(), "");
@@ -138,23 +136,21 @@ public:
         const QString fileName = m_RemoteGamesModel->data(idx, m_RemoteGamesModel->NameRole).toString();
         emit onSend(network::nwLoadGame, m_pNetwork->localPlayerName(), "Name="+fileName);
     }
-    Q_INVOKABLE bool loadDictionary(const QString fileName) { const bool result = m_pDicListModel->loadFrom(fileName); emit dicWordCountChanged(); return result; }
-    Q_INVOKABLE bool deleteDictionary(const QString fileName) { return m_pDicListModel->deleteDic(fileName); }
-    Q_INVOKABLE QString currentDicName() const { return m_pDicListModel->currentDicName(); }
-    Q_INVOKABLE QVariantMap selectedDicInfo(const int index) const { return m_pDicListModel->selectedDicInfo(index); }
-    Q_INVOKABLE void setCategory(const QString catName, const bool isChecked) { m_pDicListModel->setCategory(catName,isChecked); }
-    Q_INVOKABLE bool getCategory(const QString catName) const { return m_pDicListModel->getCategory(catName); }
-    Q_INVOKABLE QVariantList getLetterDistribution(QVariantList currentDistribution) const { return m_pDicListModel->dictionary->getLetterDistribution(currentDistribution); }
+    Q_INVOKABLE void loadDictionary(const QString fileName, const QString categories) { m_pDictionary->loadDictionary(fileName, categories); }
+    Q_INVOKABLE void deleteDictionary(const QString fileName) { m_pDicListModel->deleteDic(fileName); }
+    Q_INVOKABLE void setCategoryChecked(const QString catName, const bool isChecked, const bool doReset = false)
+        { m_pDictionary->setCategoryChecked(catName,isChecked);
+          if (doReset) m_pDicListModel->doReset(); }
+    Q_INVOKABLE bool getCategoryChecked(const QString catName) const { return m_pDictionary->getCategoryChecked(catName); }
 
     Q_INVOKABLE void computeMove();
     Q_INVOKABLE void placeBestMove(const int index);
-    Q_INVOKABLE QString getVariation(const QString sPattern) { return m_pDicListModel->dictionary->variation(sPattern.toUpper()); };
-    Q_INVOKABLE QVariantMap wordByIndex(const int nIndex) { return  m_pDicListModel->dictionary->wordByIndex(nIndex); };
-    Q_INVOKABLE int indexByWord(const QString sWord) { return m_pDicListModel->dictionary->indexByWord(sWord); };
-    //TODO: gameplay: block meaning if currentplayer = currentmove
-    Q_INVOKABLE QString meaningAt(const int index) { return replaceAllLetters(m_pDicListModel->dictionary->getMeanings( m_pBoard->getWordsAt(index)) ); }
 
-    Q_INVOKABLE void download(QString fileName) { m_pDownloadManager->download(fileName); }
+    Q_INVOKABLE QString getVariation(const QString sPattern) { return m_pDictionary->variation(sPattern.toUpper()); };
+    Q_INVOKABLE QVariantMap wordByIndex(const int nIndex) { return  m_pDictionary->wordByIndex(nIndex); };
+    Q_INVOKABLE int indexByWord(const QString sWord) { return m_pDictionary->indexByWord(sWord); };
+    Q_INVOKABLE QString getMeaningAt(const int index);
+
     Q_INVOKABLE void statInfoType(const int aType) { m_nStatInfoType = aType; emit statInfoChanged(); }
     Q_INVOKABLE QString allStat() { return getAllStat(); }
     Q_INVOKABLE QString version() { return version::current() + " / " + QStringLiteral(__DATE__); }
@@ -162,7 +158,6 @@ public:
     Q_INVOKABLE QString replaceDigraph(const QString aLetter) { return replaceLetter.value(aLetter, aLetter); }
 
     Q_INVOKABLE QString networkName() { return m_pNetwork->localPlayerName(); }
-//    Q_INVOKABLE QString fromTDateTime(double aValue) { return m_PlayersTreeModel->fromTDateTimeF(aValue); }
     Q_INVOKABLE void doInvite(QString sName);
     Q_INVOKABLE void doLeave();
     Q_INVOKABLE void syncNewGame(QVariantMap aConfig);
@@ -170,16 +165,16 @@ public:
     Q_INVOKABLE void syncNextPlayer();
     Q_INVOKABLE void syncChallengeWord();
 
-    rackmodel *rackModel();
-    boardmodel *boardModel();
-    cubemodel *cubeModel();
-    msgmodel *msgModel();
-    gamecoursemodel *gamecourseModel();
-    dicList *dicListModel();
-    locList *locListModel();
-    playersTree *playersTreeModel();
-//    remoteGamesProxy *remoteGames();
-    remoteGamesModel *remoteGames();
+    rackmodel *rackModel() { return m_pRackModel; }
+    boardmodel *boardModel() { return m_pBoardModel; }
+    cubemodel *cubeModel() { return m_pCubeModel; }
+    msgmodel *msgModel() { return m_pMsgModel; }
+    gamecoursemodel *gamecourseModel() { return m_pGameCourseModel; }
+    dictionarymodel *dicListModel() { return m_pDicListModel; }
+    locList *locListModel() { return m_pLocListModel; }
+    playersTree *playersTreeModel() { return m_PlayersTreeModel; }
+    remoteGamesModel *remoteGames() { return m_RemoteGamesModel; }
+    //NOTE: gameplay: remoteGamesProxy <-> remoteGames();
 
 public slots:
     void startNewGame(QVariantMap gameConfig);
@@ -193,7 +188,8 @@ public slots:
     void dropLetterRack(const uint fromIndex, const uint toIndex);
     int removeLetter(const uint boardIndex);
     int removeLetter(Letter aLetter);
-    void setJokerLetter(const uint boardIndex, const QString aWhat);
+    void jokerLetter(const uint boardIndex, const QString aWhat);
+
     void doDownloadFinished(DlType fileType, QString fileName);
 
 private:
@@ -220,7 +216,12 @@ public slots:
     void doNetworkChallengeMove(QString aSender);
     void doNetworkChallengeResult(QVariantMap aMsg);
 
+    void doDictionaryLoadingFinished(QString aFileName);
+
     void doSelectedMoveChanged(int move);
+    void setComputeProgress(const int aProgress);
+    void setComputeResults(const int nResults) { m_nComputeResults = nResults; emit computeResultsChanged(); }
+    void download(QString fileName) { m_pDownloadManager->download(fileName); }
 
 signals:
     void onSend(const network::MessageType msgType, const QString msgReceiver, QString msgText);
@@ -237,7 +238,7 @@ private:
     bool getIsAccepted() { return m_bIsAccepted; };
     unsigned int getBoardSize() {return m_pBoard->getBoardSize(); }
     bool getIs3D() {return m_pBoard->is3D(); }
-    unsigned int getCurrentMove() { if (m_bIsHistory) return m_nMoveHistory - 1; else return m_nCurrentMove; }
+    unsigned int getCurrentMove() { if (m_bIsHistory) return m_nMoveHistory; else return m_nCurrentMove; }
     unsigned int getCurrentPlayer() { return m_nCurrentPlayer; }
     unsigned int getNumberOfPlayers() { return m_lPlayerNames.count(); }
     void setActiveDimension(const unsigned int aDimension);
@@ -245,7 +246,6 @@ private:
     void setActivePosition(const int aPosition, const bool bSilent=false);
     int getActivePosition();
     int getComputeProgress() { return m_nProgress; }
-    void setComputeProgress(const int aProgress);
     void doComputeMove();
     int getPlacedValue() { return m_pMoves.count()>0 ? m_pMoves.last()->Value() : 0; }
     void resetPieces(); //removeLetter(*)
@@ -254,9 +254,10 @@ private:
     void doUpdateRack();
     bool doCheckWords(const bool bPrevious = false); //returns true if all words are found in dictionary; use nMove to check the previous
     void doStartTimer(const bool doRun = true);
+    int getcomputeResults() {return m_nComputeResults; }
 
-    int getBestMoveCount() {return m_pComputeMove->numberOfResults(); }
-    int getDicWordCount() { return m_pDicListModel->dictionary->count(); }
+    int getWordCount() { return m_pDictionary->count(); }
+
     bool getIsConnected() { return m_bIsConnected; }
     bool getIsLocalPlayer() { return (!m_bIsConnected) || (m_pNetwork->localPlayerName() == m_lPlayerNames[m_nCurrentPlayer]); }
 
@@ -279,9 +280,9 @@ private:
     bool m_bChangeIsPass;                     // whether changing letters is treated as pass and counted for game end
     TimeControlType m_eTimeControlType;       // type of time control (no, per game, per moves)
     uint m_nTimeControlValue;                 // actual time limit
-    uint m_nLimitedExchange;                  // //TODO: gameplay: limited exchange to n letters, eg. Italian rules
-    bool m_bCambioSecco;                      // //TODO: gameplay: whether cabio secco is allowed
-    bool m_bWhatif;                           // //TODO: gameplay: whether whatif is allowed
+    uint m_nLimitedExchange;                  // //NOTE: gameplay: limited exchange to n letters, eg. Italian rules
+    bool m_bCambioSecco;                      // //NOTE: gameplay: whether cabio secco is allowed
+    bool m_bWhatif;                           // //NOTE: gameplay: whether whatif is allowed
     bool m_bAdd;                              // whether to add values of remaining tiles from other players to the winner's result
     bool m_bSubstract;                        // whether to deduct the remaining pieces' values from the individual result
     uint m_nJokerPenalty;                     // penalty for joker left on game end
@@ -293,7 +294,7 @@ private:
     uint m_nWordCheckPenalty;                 // penalty when challenge was wrong
     int m_nWordCheckBonus;                    // bonus for correct objection
     int m_nScrabbleBonus;                     // bonus when all pieces are placed, usually 50
-    bool m_bIsCLABBERS;                       // //TODO: gameplay: whether CLABBER variant is allowed
+    bool m_bIsCLABBERS;                       // //NOTE: gameplay: whether CLABBER variant is allowed
     QList<sharedMove> m_pMoves;
     int m_nCurrentMove;
     int m_nMoveHistory;
@@ -304,7 +305,7 @@ private:
     bool m_bIsRunning;
     bool m_bIsComputing;
     bool m_bIsChallenge = false;              // set to true in nextplayer() when in network mode with m_eWordCheckMode = wcChallenge for m_nWordCheckPeriod seconds
-    bool m_bIsHistory;
+    bool m_bIsHistory = false;
 
     PollType m_ePoll = ptNone;
     QString m_sChallengePlayer;               // stores the name of the player who send a challenge to the group
@@ -320,19 +321,22 @@ private:
     bool m_bIsConnected; //whether in network mode or not
     QVariantMap m_lGameConfig; //stores configuration for startNewGame()
     QVariantMap m_lAnswer; //true or false, or not yet answered, ie. < count()
-    board *m_pBoard, *m_pTempBoard; //store the board while browsing the history
+    board *m_pBoard, *m_pTempBoard = nullptr; //store the board while browsing the history
+    QList<Letter> m_pTempLetters;
     rackmodel *m_pRackModel;
     boardmodel *m_pBoardModel;
     cubemodel *m_pCubeModel;
     msgmodel *m_pMsgModel;
     gamecoursemodel *m_pGameCourseModel;
-    dicList *m_pDicListModel;
+    dictionarymodel *m_pDicListModel;
+    dictionary *m_pDictionary;
     locList *m_pLocListModel;
     playersTree *m_PlayersTreeModel;
     remoteGamesModel *m_RemoteGamesModel;
 //    remoteGamesProxy *m_RemoteGamesProxy;
 
     computemove *m_pComputeMove;
+    int m_nComputeResults;
     DownloadManager *m_pDownloadManager;
 
     QTranslator *m_pTranslator;

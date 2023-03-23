@@ -7,7 +7,7 @@ class cubemodel : public QAbstractListModel
 {
 public:
     enum ModelRoles {
-        FieldTypeRole = Qt::UserRole + 10,
+        FieldTypeRole = Qt::UserRole + 1,
         WhatRole,
         WhoRole,
         WhenRole,
@@ -18,10 +18,8 @@ public:
 
     QVariant data(const QModelIndex &index, int role) const Q_DECL_OVERRIDE;
     int rowCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
-    void updateSquare(Point3D aPos);
-    void updateAllSquares();
-
-    void reset();
+    void updateSquare(const Point3D aPos);
+    void updateSquare(const int aRole = -1); //all fields; all roles by default
 
 protected:
     QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;

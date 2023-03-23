@@ -22,6 +22,7 @@ public:
     void setFirstMove(bool isFirstMove) { m_IsFirstMove = isFirstMove; } // needed for rollbackLastMove
     bool isScrabble() { return m_IsScrabble; }
     int activePosition() { return getPosition(); }
+    void setLastError(QString sError) { m_LastError = sError; }
     Dimension activeDimension() { return m_Dimension; }
     void setJokerLetter(const QString aWhat);//set Letter.What for Letter.IsJoker of m_PlacedLetters.last()
     void clear();

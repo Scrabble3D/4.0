@@ -64,8 +64,8 @@ Dialog {
         TableView {
             id: tableView
             ScrollBar.vertical: ScrollBar {}
-            implicitHeight: 300
-            implicitWidth: colWidths[0] + colWidths[1] + colWidths[2]
+            height: 300
+            width: colWidths[0] + colWidths[1] + colWidths[2]
             model: GamePlay.remoteGames
 
             columnWidthProvider: function(column) {

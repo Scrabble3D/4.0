@@ -1,4 +1,4 @@
-QT += quick widgets
+QT += quick widgets concurrent
 
 CONFIG += c++17
 CONFIG += qmltypes
@@ -13,8 +13,10 @@ SOURCES += \
         computemove.cpp \
         cubemodel.cpp \
         dictionary.cpp \
+        dictionarymodel.cpp \
         downloadmanager.cpp \
         gamecoursemodel.cpp \
+        gameplay_network.cpp \
         locmodel.cpp \
         move.cpp \
         main.cpp \
@@ -33,6 +35,7 @@ HEADERS += \
         configpath.h \
         cubemodel.h \
         dictionary.h \
+        dictionarymodel.h \
         downloadmanager.h \
         gamecoursemodel.h \
         locmodel.h \

@@ -1,7 +1,8 @@
 #include "move.h"
 
 move::move(bool IsFirstMove, board* aBoard)
-    : m_PlacedLetters(0),
+    : m_Dimension(dmAbscissa),
+      m_PlacedLetters(0),
       m_Value(0),
       m_nBonusValue(0),
       m_IsFirstMove(IsFirstMove),
@@ -32,6 +33,8 @@ bool move::deleteLetter(const unsigned int x)
     for (unsigned int i=0; i<m_PlacedLetters.count(); i++)
         if (x == m_PlacedLetters.at(i).Where) {
             m_PlacedLetters.remove(i);
+            m_IsScrabble = false;
+            m_nBonusValue = 0;
             return checkMove();
         }
     return true;
@@ -108,11 +111,12 @@ bool move::checkMove()
 
 void move::setJokerLetter(const QString aWhat)
 {
-    if ((m_PlacedLetters.count()>0) &&
-        (m_PlacedLetters.last().IsJoker))
+    if ( (m_PlacedLetters.count()>0) && (m_PlacedLetters.last().IsJoker) )
         m_PlacedLetters.last().What = aWhat;
+#ifdef QT_DEBUG
     else
         qWarning() << "No joker in move";
+#endif
 }
 
 void move::clear()
@@ -414,7 +418,7 @@ QString move::getResults(const Dimension eDimension, const Point3D nStart)
 
 int move::getPosition()
 {
-    int aResult = 0;
+    int aResult;
 
     if (m_PlacedLetters.length() > 0) {
         switch (m_Dimension) {
@@ -431,8 +435,8 @@ int move::getPosition()
             qWarning() << "Unexpected dimension in getPosition()";
             break;
         }
-     } else
-        qWarning() << "No position for empty moves";
+    } else
+        aResult = m_pBoard->getBoardSize() / 2; //some default for moves w/o placed letters
 
     return aResult;
 }

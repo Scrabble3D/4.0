@@ -1,126 +1,68 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
-//TODO: dictionary rework from ground; QTreeView or QConcatenateTablesProxyModel
-GridLayout {
+ListView {
+    id: dictView
+
+    property int pad: 12
+    width: rightPane.width - 2*pad
+    height: rightPane.height - 2*pad
+    leftMargin: pad
+    topMargin: pad
+
+    model: GamePlay.dicListModel
+    delegate: dictViewItem
+    boundsMovement: Flickable.StopAtBounds
+    currentIndex: -1
     palette: config.myPalette
-    columns: 2
-    //TODO: config: responsive width
-    // Layout.fillWidth: true
-    // Layout.fillHeight: true
-    width: scrollView.width
-    height: scrollView.height
-    onWidthChanged: dictTable.forceLayout()
 
-    property alias categoriesRepeater: categoriesRepeater
+    property string dictionaryName: "" //used via ScrConfig in ScrNewGame
+    property string dictionaryFile: "" //used in ScrConfig to load/save config
+    property var dictionaryCategories: "" //used in ScrConfig to load/save config; must not be a string!
+    property string letterDistribution: "" //submitted to configLetter setLetterSet() in msgDlg()
 
-    function getDictionaryName() {
-        var sResult = ""
-        if (configDictionary.loadedDic > -1) {
-            sResult = GamePlay.dicListModel.data(GamePlay.dicListModel.index(configDictionary.loadedDic,0))
-            if (sResult === "") //local dictionary have no "NativeName" role and take the file name
-                sResult = GamePlay.dicListModel.data(GamePlay.dicListModel.index(configDictionary.loadedDic,2))
-        }
-        return sResult
-    }
-
-    property int selectedDic: -1 // -1 = nothing selected
-    property int loadedDic: -1
-
-    //called from ScrConfig when loading a configuration
-    function loadFromName(fileName) {
-        var m = GamePlay.dicListModel
-        for (var i=0; i<m.rowCount(); i++)
-            if (m.data(m.index(i,2)) === fileName) {
-                configDictionary.selectedDic = i
-                dictSelect.select(m.index(i,0), ItemSelectionModel.ClearAndSelect | ItemSelectionModel.Rows)
-                acLoadDictionary.trigger()
-                return true;
-        }
-        return false;
-    }
-
-    function updateInfo() {
-        var aData = GamePlay.selectedDicInfo(selectedDic)
-        lbAuthor.text = aData["author"]
-        lbLicense.text = aData["license"]
-        lbComment.text = aData["comment"]
-        lbRelease.text = aData["release"]
-        //categories
-        var cList = aData["categories"].split(",")
-        var obj = {}
-        categoriesModel.clear()
-        for (var i=0; i<cList.length; i++)
-            if (cList[i] !== "") {
-                obj["name"] =cList[i]
-                categoriesModel.append(obj)
-            }
-    }
-
-    function updateLetterDistribution() {
-        var letterlist = [];
-        letterlist = GamePlay.getLetterDistribution( config.getLetterSet(-1) )
-        if (letterlist.length > 0)
-            configLetter.setLetterSet(letterlist)
-    }
-
-    Action {
-        id: acLoadDictionary
-        enabled: loadedDic != selectedDic
-        text: GamePlay.dicListModel.data(GamePlay.dicListModel.index(selectedDic,4)) === ""
-                  ? qsTr("Download dictionary")
-                  : qsTr("Load dictionary")
-        onTriggered: {
-            var fileName = GamePlay.dicListModel.data(GamePlay.dicListModel.index(selectedDic,2))
-            if (GamePlay.loadDictionary(fileName)) {
-                GamePlay.addMessage(qsTr("Dictionary \"%1\" successfully loaded.").arg(fileName))
-                //FIXME: configdic/dictionary: downloading dic is finsihed, leading to update before subsequent loading -> distribution not applied
-                updateInfo() //categries
-                updateLetterDistribution();
-                loadedDic = selectedDic
-            }
-        }
-    }
-    Action {
-        id: acDeleteDictionary
-        text: qsTr("Delete local dictionary")
-        enabled: GamePlay.dicListModel.data(GamePlay.dicListModel.index(selectedDic,4)) !== ""
-        onTriggered: {
-            var fileName = GamePlay.dicListModel.data(GamePlay.dicListModel.index(selectedDic,2))
-            if (GamePlay.deleteDictionary(fileName)) {
-                GamePlay.addMessage(qsTr("Dictionary \"%1\" successfully deleted.").arg(fileName))
-                if (loadedDic == selectedDic) loadedDic = -1;
-                updateInfo() //categries
-            } else
-                GamePlay.addMessage(qsTr("Deletion of \"%1\" failed.").arg(fileName))
+    function setCategories(aCategories) {
+        /**
+          + in network mode the dictionary could be the same
+             but categories selected differently; this function just sets the
+             categories and resets the model per setCategoryChecked(*,*,true)
+             to update on the receiver
+          + called from ScrConfig > applyConfig
+          + not necessary in local mode since loading the dictionary also applies
+            the categories
+        **/
+        for (var i = 0; i < dictionaryCategories.length; i++) {
+            var isChecked = aCategories.indexOf(dictionaryCategories[i]) > -1
+            GamePlay.setCategoryChecked(dictionaryCategories[i], isChecked, true)
         }
     }
 
-    HorizontalHeaderView {
-        id: dictHeader
-        syncView: dictTable
-        model: GamePlay.dicListModel
-        Layout.leftMargin: 8
-        Layout.columnSpan: 2
-        boundsBehavior: Flickable.StopAtBounds
+    Connections {
+        target: GamePlay
+        function onLoadingFinished(aId) {
+            var dicInfo = model.get(aId)
+            dictionaryFile = dicInfo.filename
+            dictionaryName = dicInfo.english +
+                             " (" + dicInfo.native  + ")"
+            dictionaryCategories = dicInfo.categories
+            letterDistribution = dicInfo.distribution
+            const isEqual = (letterDistribution.localeCompare(config.getLetterSet(-1)) === 0)
 
-        delegate: Rectangle {
-            implicitWidth: text.implicitWidth + 4
-            implicitHeight: Math.max(dictHeader.height,
-                                     text.implicitHeight + 4)
-            color: palette.mid
-            border.color: palette.midlight
-            Text {
-                id: text
-                text: model[dictHeader.textRole]
-                width: parent.width
-                height: parent.height
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
+            if ( (!isEqual) &&  // do not ask when equal
+                 (config.visible === true) && // do not ask on initial loading
+                 (letterDistribution !== "") )  // do not ask if nothing is stored
+                messageDialog.open()
         }
-
+    }
+    MessageDialog {
+        id: messageDialog
+        title: qsTr("Letter Distribution")
+        text: qsTr("Letter distribution in dictionary does not match the current configuration.");
+        informativeText: qsTr("Do you want to update the letter set?");
+        buttons: MessageDialog.Yes | MessageDialog.No
+        onAccepted: configLetter.setLetterSet( letterDistribution.split(",") )
     }
 
     Menu {
@@ -129,62 +71,187 @@ GridLayout {
         MenuItem { action: acDeleteDictionary }
     }
 
-    TableView {
-        id: dictTable
-        boundsBehavior: Flickable.StopAtBounds
-        Layout.fillHeight: true
-        Layout.fillWidth: true
-        Layout.minimumHeight: 200 //in case of long comments or many categories
-        Layout.leftMargin: 8
-        Layout.columnSpan: 2
-        ScrollBar.vertical: ScrollBar { id: sbDictTable}
-        clip: true;
-        columnWidthProvider: function(column) {
-            return column < 2
-                ? Math.floor((configDictionary.width - 12) * 1/3) //names
-                : column > 2 //hide column with filename
-                    ? Math.floor((configDictionary.width - 12) * 1/6) //versions
-                    : 0
-        }
-        model: GamePlay.dicListModel
-        selectionModel: ItemSelectionModel {
-            id: dictSelect
-            model: dictTable.model
-            onSelectionChanged: updateInfo()
-        }
-        delegate: Rectangle {
-            id: dictDelegate
-            required property bool selected
-            implicitWidth: parent.width
-            implicitHeight: delText.height + 2
-            color: isLoaded ? palette.highlight
-                            : selected ? Qt.lighter(palette.highlight)
-                                       : palette.window
-            border.color: palette.midlight
+    Action {
+        id: acLoadDictionary
+        enabled: !model.isLoaded
+        text: model.get(currentIndex).installedversion !== ""
+              ? qsTr("Load dictionary")
+              : qsTr("Download dictionary")
+        onTriggered: GamePlay.loadDictionary( model.get(currentIndex).filename, "" )
+    }
+    Action {
+        id: acDeleteDictionary
+        text: qsTr("Delete local dictionary")
+        enabled: model.get(currentIndex).installedVersion !== ""
+        onTriggered: GamePlay.deleteDictionary( model.get(currentIndex).filename )
+    }
 
-            Text {
-                id: delText
-                width: parent.width
-                padding: 2
-                color: isDark(parent.color) ? "white" : "black"
-                horizontalAlignment: Text.AlignHCenter
-                elide: Text.ElideRight
-                text: display
+    TextMetrics {
+        id: tm
+        text: "ABC"
+    }
+
+    property var colWidth: [100,100,20,20];
+    onWidthChanged: colWidth = [dictView.width * 1/3,
+                                dictView.width * 1/3,
+                                dictView.width * 1/6,
+                                dictView.width * 1/6];
+    header: Rectangle {
+        id: listHeader
+        width: dictView.width
+        height: tm.height + 8
+        color: palette.mid
+/*        gradient: Gradient {
+            GradientStop {
+                position: 0.0
+                color: !down ? Qt.lighter(palette.button, 1.2) : palette.button
             }
-            MouseArea {
-                anchors.fill: parent
-                acceptedButtons: Qt.LeftButton | Qt.RightButton
-                onDoubleClicked: acLoadDictionary.trigger()
-                onPressed: {
-                    configDictionary.selectedDic = model.row
-                    dictSelect.select(GamePlay.dicListModel.index(model.row,0),
-                                      ItemSelectionModel.ClearAndSelect | ItemSelectionModel.Rows)
+            GradientStop {
+                position: 0.2
+                color: palette.button
+            }
+            GradientStop {
+                position: 0.8
+                color: !down ? Qt.darker(palette.button, 1.2) : palette.button
+            }
+        }
+*/        Rectangle {
+            id: entry1
+            width: colWidth[0]; height: listHeader.height; color: "transparent"; border.color: palette.midlight
+            Label { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("Native") }
+        }
+        Rectangle {
+            id: entry2
+            anchors.left: entry1.right
+            width: colWidth[1]; height: listHeader.height; color: "transparent"; border.color: palette.midlight
+            Label { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("English") }
+        }
+        Rectangle {
+            id: entry3
+            anchors.left: entry2.right
+            width: colWidth[2]; height: listHeader.height; color: "transparent"; border.color: palette.midlight
+            Label { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("Installed") }
+        }
+        Rectangle {
+            id: entry4
+            anchors.left: entry3.right
+            width: colWidth[3]; height: listHeader.height; color: "transparent"; border.color: palette.midlight
+            Label { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("Available") }
+        }
+    }
+
+    Component {
+        id: dictViewItem
+        Column {
+            height: dictViewDetails.visible
+                    ? dictViewEntry.height + dictViewDetails.height
+                    : dictViewEntry.height
+            Rectangle {
+                id: dictViewEntry
+                width: dictView.width
+                height: tm.height + 4
+                color: model.isLoaded
+                       ? palette.highlight
+                       : currentIndex == index
+                         ? Qt.lighter(palette.highlight)
+                         : palette.window
+                property var fgCol: isDark(dictViewEntry.color) ? "white" : "black"
+                Rectangle {
+                    id: entry1
+                    width: colWidth[0]; height: dictViewEntry.height; color: "transparent"
+                    ColorLabel { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter; bgcolor: dictViewEntry.color
+                        text: model.native }
                 }
-                onClicked: (mouse)=> {
-                    if (mouse.button === Qt.RightButton)
-                        dictContextMenu.popup()
+                Rectangle {
+                    id: entry2
+                    anchors.left: entry1.right
+                    width: colWidth[1]; height: dictViewEntry.height; color: "transparent"
+                    ColorLabel { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter; bgcolor: dictViewEntry.color
+                        text: model.english }
                 }
-                onPressAndHold: dictContextMenu.popup()
+                Rectangle {
+                    id: entry3
+                    anchors.left: entry2.right
+                    width: colWidth[2]; height: dictViewEntry.height; color: "transparent"
+                    ColorLabel { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter; bgcolor: dictViewEntry.color
+                        text: model.installedversion }
+                }
+                Rectangle {
+                    id: entry4
+                    anchors.left: entry3.right
+                    width: colWidth[3]; height: dictViewEntry.height; color: "transparent"
+                    ColorLabel { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter; bgcolor: dictViewEntry.color
+                        text: model.availableversion }
+                }
+                MouseArea {
+                    anchors.fill: parent
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    onDoubleClicked: if (!isLoaded)
+                                        acLoadDictionary.trigger()
+                    onPressed: dictView.currentIndex = index
+                    onClicked: (mouse)=> {
+                                   if (mouse.button === Qt.RightButton)
+                                   dictContextMenu.popup()
+                               }
+                    onPressAndHold: dictContextMenu.popup()
+                } // MouseArea
+            }
+            GridLayout {
+                id: dictViewDetails
+                width: dictView.width
+                visible: (dictView.currentIndex === index) && (model.installedversion !== "")
+
+                columns: 2
+                rowSpacing: 1
+                x: 16
+
+                ColorLabel { Layout.topMargin: 12; text: qsTr("Author:") }
+                ColorLabel { Layout.topMargin: 12; text: model.author }
+
+                ColorLabel { text: qsTr("License:"); }
+                ColorLabel { text: model.license }
+
+                ColorLabel { text: qsTr("Release:"); }
+                ColorLabel { text: model.release }
+
+                ColorLabel {
+                    Layout.alignment: Qt.AlignTop
+                    text: qsTr("Comment:")
+                }
+                ColorLabel {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    text: model.comment
+                }
+
+                ColorLabel {
+                    Layout.alignment: Qt.AlignTop
+                    Layout.topMargin: 2 // not aligned with first checkbox from repeater
+                    Layout.minimumHeight: tm.height
+                    text: qsTr("Categories:")
+                }
+                Column {
+                    id: catColumns
+                    Layout.minimumHeight: tm.height
+                    Layout.bottomMargin: 12
+                    property var catModel: model.categories
+                    property bool isLoaded: model.isLoaded
+                    Repeater {
+                        id: catRepeater
+                        model: parent.isLoaded ? parent.catModel : "" // don't show if not loaded (but keep bottom margin)
+                        delegate: ColorCheckBox {
+                            padding: 2
+                            enabled: (index > 0) //first standard category is the default
+                            checked: GamePlay.getCategoryChecked(modelData)
+                            onCheckedChanged: GamePlay.setCategoryChecked(modelData, checked)
+                            text: modelData
+                        }
+                    } //Repeater
+                } //Column
             }
         }
     }
@@ -193,19 +260,15 @@ GridLayout {
         id: actionButton
         implicitWidth: 50
         implicitHeight: 50
-        Layout.column: 1 //below dictTable
-        Layout.row: 2
-        Layout.alignment: Qt.AlignRight
-        Layout.topMargin: -25 //overlapping with dictTable
-        Layout.rightMargin: 50
-        enabled: loadedDic != selectedDic
+        x: rightPane.width - 75
+        y: rightPane.height - 75
+        enabled: !model.get(currentIndex).isLoaded
         display: AbstractButton.IconOnly
         icon.width: 32
         icon.height: 32
-        icon.source: GamePlay.dicListModel.data(
-                         GamePlay.dicListModel.index(configDictionary.selectedDic,4)) !== ""
-                         ? "qrc:///resources/dictionary.png"
-                         : "qrc:///resources/dictionarydown.png"
+        icon.source: model.get(currentIndex).installedversion !== ""
+                        ? "qrc:///resources/dictionary.png"
+                        : "qrc:///resources/dictionarydown.png"
         background: Rectangle {
             anchors.fill: parent
             radius: width / 2
@@ -229,45 +292,5 @@ GridLayout {
         onPressed: acLoadDictionary.trigger()
     }
 
-    ColorLabel { Layout.leftMargin: 16; text: qsTr("Author:") }
-    ColorLabel { id: lbAuthor }
-    ColorLabel { Layout.leftMargin: 16; text: qsTr("License:"); }
-    ColorLabel { id: lbLicense }
-    ColorLabel { Layout.leftMargin: 16; text: qsTr("Release:"); }
-    ColorLabel { id: lbRelease }
-    ColorLabel {
-        Layout.leftMargin: 16
-        Layout.bottomMargin: 32
-        Layout.alignment: Qt.AlignTop
-        text: qsTr("Comment:")
-    }
-    ColorLabel {
-        Layout.bottomMargin: 32
-        Layout.fillWidth: true
-        wrapMode: Text.WordWrap
-        id: lbComment
-    }
-    ListModel {
-        id: categoriesModel
-    }
-    ColorLabel {
-        Layout.alignment: Qt.AlignTop
-        Layout.leftMargin: 16
-        text: qsTr("Categories:")
-    }
-    ColumnLayout {
-        spacing: 1
-        Repeater {
-            id: categoriesRepeater
-            model: categoriesModel
-            delegate: ColorCheckBox {
-                enabled: index>0 //first category is the default
-                checked: GamePlay.getCategory(name)
-                //NOTE: configdictionary: categories should be static during the game but that implies to also keep the dictionary loaded
-                onCheckedChanged: GamePlay.setCategory(name, checked)
-                text: name
-            }
-        }
-    }
 
 }

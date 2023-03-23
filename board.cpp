@@ -58,7 +58,7 @@ void board::initialize(const board *aParentBoard, const int nMove)
     m_nFieldSize = aParentBoard->m_nFieldSize;
     m_Letters.clear();
     for (int i = 0; i < aParentBoard->m_Letters.count(); i++)
-       if ((nMove < 0) || (aParentBoard->m_Letters[i].When < nMove))
+       if ((nMove < 0) || (aParentBoard->m_Letters[i].When < static_cast<uint>(nMove)))
             m_Letters.append(aParentBoard->m_Letters[i]);
         else
             m_Letters.append(EmptyLetter);
@@ -71,10 +71,14 @@ void board::initialize(const board *aParentBoard, const int nMove)
 
 FieldType board::getFieldtype(const int index)
 {
-    if (index<m_Fieldtypes.count())
+    if (index < m_Fieldtypes.count())
         return m_Fieldtypes[index];
-    else
+    else {
+#ifdef QT_DEBUG
+        qWarning() << "Field index out of bounds in getFieldtype()" << index << "/" << m_Fieldtypes.count();
+#endif
         return ftDefault;
+    }
 }
 
 void board::setLetter(Letter &aLetter)
@@ -87,8 +91,12 @@ Letter board::getLetter(const int index)
 {
     if (index < m_Letters.count())
         return m_Letters[index];
-    else
+    else {
+#ifdef QT_DEBUG
+        qWarning() << "Letter index out of bounds in getLetter()" << index << "/" << m_Letters.count();
+#endif
         return EmptyLetter;
+    }
 }
 
 Letter board::getLetter(const Point3D aWhere)
@@ -113,6 +121,10 @@ void board::removeLetter(const int aLetterIndex)
 {
     if ( aLetterIndex < m_Letters.count() )
         m_Letters[aLetterIndex] = EmptyLetter;
+#ifdef QT_DEBUG
+    else
+      qWarning() << "Letter index out of bounds in removeLetter()" << aLetterIndex << "/" << m_Letters.count();
+#endif
 }
 
 int board::pointToWhere(const Point3D nPoint)
@@ -132,6 +144,7 @@ int board::pointToPlane(const Point3D nPoint)
       case dmApplicate:
         return nPoint.x() + nPoint.z() * m_nBoardSize;
     }
+    return 0;
 }
 
 Point3D board::whereToPoint(const int aWhere)
@@ -151,6 +164,7 @@ Point3D board::pos3D(int nIndex2D)
       case dmApplicate:
         return Point3D(nIndex2D % m_nBoardSize, m_nActivePosition, nIndex2D / m_nBoardSize);
     }
+    return Point3D(0,0,0);
 }
 
 int board::index2D(Point3D aPoint3D)
@@ -276,4 +290,8 @@ void board::setJokerLetter(const int aLetterIndex, const QString aWhat)
 {
     if ( aLetterIndex < m_Letters.count() )
         m_Letters[aLetterIndex].What = aWhat;
+#ifdef QT_DEBUG
+    else
+        qWarning() << "Letter index out of bounds in setJokerLetter()" << aLetterIndex << "/" << m_Letters.count();
+#endif
 }

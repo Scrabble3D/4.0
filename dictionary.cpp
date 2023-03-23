@@ -1,23 +1,40 @@
 #include "dictionary.h"
 #include "letter.h" //jokerchar
-#include "version.h" //version to string converter
+
 #include "configpath.h"
 
-#include <QXmlStreamReader>
-#include <QSettings>
-#include <QCoreApplication>
 #include <QMessageBox>
+
+#include <QThread>
+#include <QtConcurrent>
 
 #ifdef QT_DEBUG
 #include <QDebug>
 #endif
 
-dicFile::dicFile(QObject* parent)
-    : m_pParent(parent)
+#undef doSort
+
+//TODO: dicitionary: DAWG / Aho–Corasick algorithm
+
+dictionary::dictionary(QObject* parent)
 {
-//    QObject::connect(this, SIGNAL(onDownload(QString)),
-//                     parent, SLOT(doDownloadDictionary(QString)));
+    Q_UNUSED(parent);
 }
+
+void dictionary::doClear()
+{
+    m_CategoryNames.clear();
+    m_Words.clear();
+    m_sChars.clear();
+    replaceLetter.clear(); //letter.h
+    m_sFileName.clear();
+}
+
+#ifdef doSort
+bool sortByWords(dicEntry aItem, dicEntry bItem) {
+    return aItem.word < bItem.word;
+}
+#endif
 
 QString decrypt(QString aLine, QString aKey)
 {
@@ -34,31 +51,18 @@ QString decrypt(QString aLine, QString aKey)
     return QString::fromStdString(aByteData.toStdString());
 }
 
-void dicFile::clear()
-{
-    m_CategoryNames.clear();
-    m_Words.clear();
-    m_LetterDistribution.clear();
-    m_sChars.clear();
-    replaceLetter.clear(); //letter.h
-    m_sFileName.clear();
-}
-
-bool sortByWords(dicEntry aItem, dicEntry bItem) {
-    return aItem.word < bItem.word;
-}
-
-bool dicFile::loadDictionary(const QString fileName)
+void dictionary::doLoad(QString fileName, QString categories)
 {
     QFile inputFile(config::file(fileName));
 
     bool bHasStandardCategory = false;
     double readSize = 0;
     double totSize = inputFile.size();
+
     if (inputFile.open(QIODevice::ReadOnly))
     {
         //clear previous data
-        clear();
+        doClear();
         m_sFileName = fileName;
         QTextStream in(&inputFile);
         QString sKey="";
@@ -72,7 +76,7 @@ bool dicFile::loadDictionary(const QString fileName)
         {
             sLine = in.readLine();
             readSize += sLine.length();
-            m_pParent->setProperty("computeProgress",round( (readSize/totSize)*100) );
+            emit onProgress( round( (readSize/totSize)*100) );
 
             if (sLine == "[Header]")
                 aSection=scHeader;
@@ -90,7 +94,7 @@ bool dicFile::loadDictionary(const QString fileName)
                     if (sLine.startsWith("StandardCategory")) {
                         catInfo aCatInfo;
                         nEqual = sLine.indexOf("=");
-                        aCatInfo.value = -1;
+                        aCatInfo.value = 0;
                         aCatInfo.name = sLine.last(sLine.length()-nEqual-1);
                         aCatInfo.enabled = true;
                         m_CategoryNames.insert(0, aCatInfo);
@@ -99,24 +103,6 @@ bool dicFile::loadDictionary(const QString fileName)
                     if (sLine.startsWith("Key")) {
                         nEqual = sLine.indexOf("=");
                         sKey = sLine.last(sLine.length()-nEqual-1);
-                    }
-                    if (sLine.startsWith("Letters")) {
-                        nEqual = sLine.indexOf("=");
-                        QString sValue = sLine.last(sLine.length()-nEqual-1);
-                        if (!sValue.isEmpty())
-                            m_LetterDistribution.insert("letters", sValue);
-                    }
-                    if (sLine.startsWith("Values")) {
-                        nEqual = sLine.indexOf("=");
-                        QString sValue = sLine.last(sLine.length()-nEqual-1);
-                        if (!sValue.isEmpty())
-                            m_LetterDistribution.insert( "values", sValue);
-                    }
-                    if (sLine.startsWith("Count")) {
-                        nEqual = sLine.indexOf("=");
-                        QString sValue = sLine.last(sLine.length()-nEqual-1);
-                        if (!sValue.isEmpty())
-                            m_LetterDistribution.insert( "count", sValue);
                     }
                     break;
                 case scCategory: {
@@ -145,12 +131,15 @@ bool dicFile::loadDictionary(const QString fileName)
                     aItem.category = nSemicolon>-1 ? sLine.last(sLine.length()-nSemicolon-1).toInt() : 0;
                     m_Words.append(aItem);
                 }; //scWords
-                break;
+                    break;
                 }; //aSection
-        };//while infile
+        }; //while infile
         inputFile.close();
-        // the dictionary should be properly sorted in first place; takes a couple of seconds here
-/*      std::sort(m_Words.begin(), m_Words.end(), sortByWords);
+
+#ifdef doSort
+        // the dictionary should be properly sorted in first place as it takes a couple of seconds here
+        std::sort(m_Words.begin(), m_Words.end(), sortByWords);
+        //save word list to replace dic content
         QFile aFile("test.txt");
         if (aFile.open(QIODevice::WriteOnly)) {
             QTextStream aOut(&aFile);
@@ -161,46 +150,67 @@ bool dicFile::loadDictionary(const QString fileName)
                     aOut << "=" << aEntry.meaning;
                 else
                     if (aEntry.category > 0)
-                    aOut << "=";
+                        aOut << "=";
                 if (aEntry.category > 0)
                     aOut << ";" << m_Words[i].category;
                 aOut << "\n";
             }
         }
-        aFile.close(); */
-
-        m_pParent->setProperty("computeProgress", 0);
+        aFile.close();
+#endif
+        emit onProgress(0);
 
         if (!bHasStandardCategory) {
             catInfo aCatInfo;
-            aCatInfo.value = -1;
+            aCatInfo.value = 0;
             //: default category name if not defined in the dictionary
             aCatInfo.name = QObject::tr("Standard");
             aCatInfo.enabled = true;
             m_CategoryNames.insert(0, aCatInfo);
         }
-    }  else
-    {
+        QStringList cat = categories.split(",");
+        for (int i = 0; i < cat.count(); i++)
+            setCategoryChecked(cat[i], true);
+
+        emit onLoadingFinished(m_sFileName);
+    }
+
+#ifdef QT_DEBUG
+    qDebug() << "Successfully read" << m_Words.count() << "words from" << fileName;
+#endif
+}
+
+void dictionary::loadDictionary(const QString fileName, const QString categories)
+{
+    doClear();
+    if (!QFileInfo::exists(config::file(fileName))) {
+        // message box
         QMessageBox msgBox;
         msgBox.setWindowTitle("Scrabble3D");
         msgBox.setText( QObject::tr("Dictionary %1 is not locally available.").arg(fileName) );
         msgBox.setInformativeText( QObject::tr("Do you want to download it now?") );
         msgBox.setIcon(QMessageBox::Question);
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        // download dictionary
         if (msgBox.exec() == QMessageBox::Yes)
-//            emit onDownload(fileName + ".zip");
-            m_pParent->setProperty("downloadFile", "Dictionaries/raw/main/" + fileName + ".zip");
-        return false;
+            emit onDownload("Dictionaries/raw/main/" + fileName + ".zip");
+    } else {
+        // load in extra thread
+        QFuture<void> future = QtConcurrent::run([=]() {
+            doLoad(fileName, categories);
+        });
     }
-
-#ifdef QT_DEBUG
-    qDebug() << "Successfully read" << m_Words.count() << "words from" << fileName;
-#endif
-
-    return true;
 }
 
-bool dicFile::isWordInDictionary(QString word, int *index)
+int dictionary::indexByWord(const QString sFind)
+{
+    int index;
+    if (isWordInDictionary(sFind.toUpper(), &index) == srNotFound)
+        index = -1;
+    return index;
+}
+
+dictionary::searchResult dictionary::isWordInDictionary(QString sFind, int *index)
 {
     int i, z;
     int lo = 0;
@@ -208,22 +218,25 @@ bool dicFile::isWordInDictionary(QString word, int *index)
     while (lo<=hi)
     {
         z = (lo+hi) >> 1; //shr
-        i = QString::compare(m_Words[z].word, word);
+        i = QString::compare(m_Words[z].word, sFind);
         if (i < 0)
             lo = z+1;
         else if (i == 0)
         {
             *index = z;
-            return m_CategoryNames[m_Words[z].category].enabled;
+            if (m_CategoryNames[m_Words[z].category].enabled)
+                return srMatch;
+            else
+                return srDisabled;
         }
         else if (i > 0)
             hi = z-1;
     }
     *index = lo;
-    return false;
+    return srNotFound;
 }
 
-void dicFile::charsFromWords()
+void dictionary::charsFromWords()
 {
     if (m_sChars.isEmpty())
     {
@@ -241,7 +254,8 @@ void dicFile::charsFromWords()
 #endif
 }
 
-QString dicFile::variation(const QString aChars)
+//TODO: dictionary: More Efficient String Construction https://doc.qt.io/qt-6/qstring.html
+QString dictionary::variation(const QString aChars)
 /* Scrabble-like variation of letters
    ABC:
    A    B    C
@@ -275,9 +289,8 @@ QString dicFile::variation(const QString aChars)
             {
                 s = s + letterSet[i];
                 us = s;
-                if ( isWordInDictionary(us, &index) )
+                if ( isWordInDictionary(us, &index) == srMatch)
                     sResults.append(us);
-                //TODO: dictionary: can index be larger than count?
                 if ( (index < m_Words.count()) &&
                      m_Words[index].word.startsWith(us) )          //incomplete or complete word
                 {
@@ -324,7 +337,7 @@ QString dicFile::variation(const QString aChars)
     return sResults.join(",");
 }
 
-QString dicFile::getWord(const uint index)
+QString dictionary::getWord(const uint index)
 {
     if (qsizetype(index) < m_Words.count())
         return m_Words[index].word;
@@ -335,7 +348,7 @@ QString dicFile::getWord(const uint index)
     }
 }
 
-QString dicFile::getMeanings(const QString aWords)
+QString dictionary::getMeanings(const QString aWords)
 {
     QStringList sWords = aWords.split(",");
     QString sResult = "<html>\n";
@@ -352,7 +365,7 @@ QString dicFile::getMeanings(const QString aWords)
     return sResult;
 }
 
-QStringList dicFile::checkWords(const QString sPlacedWord, QString sConnectedWords)
+QStringList dictionary::checkWords(const QString sPlacedWord, QString sConnectedWords)
 {
     QStringList unknownWords;
     unknownWords.append(sPlacedWord);
@@ -363,14 +376,14 @@ QStringList dicFile::checkWords(const QString sPlacedWord, QString sConnectedWor
     int tmp;
     while (i >= 0)
     {
-        if (unknownWords[i].isEmpty() || isWordInDictionary(unknownWords[i], &tmp))
+        if (unknownWords[i].isEmpty() || (isWordInDictionary(unknownWords[i], &tmp) == srMatch))
             unknownWords.remove(i);
         i--;
     }
     return unknownWords;
 }
 
-QVariantMap dicFile::wordByIndex(const uint index)
+QVariantMap dictionary::wordByIndex(const uint index)
 {
     QVariantMap dicEntry;
     if (qsizetype(index) < m_Words.count()) {
@@ -382,26 +395,7 @@ QVariantMap dicFile::wordByIndex(const uint index)
     return dicEntry;
 }
 
-int dicFile::indexByWord(const QString word)
-{
-    int index;
-    if (!isWordInDictionary(word, &index))
-        index = -1; //function returns >-1 for variation()
-
-    return index;
-}
-
-QString dicFile::categoryNames()
-{
-    QString sResult;
-    if (m_CategoryNames.count() > 0)
-        sResult = m_CategoryNames[0].name;
-    for (int i=1; i<m_CategoryNames.count(); i++)
-        sResult += ","+m_CategoryNames[i].name;
-    return sResult;
-}
-
-void dicFile::setCategoryChecked(const QString catName, const bool isChecked)
+void dictionary::setCategoryChecked(const QString catName, const bool isChecked)
 {
     for (int i=0; i<m_CategoryNames.count(); i++)
         if (m_CategoryNames[i].name == catName) {
@@ -410,7 +404,7 @@ void dicFile::setCategoryChecked(const QString catName, const bool isChecked)
         }
 }
 
-bool dicFile::getCategoryChecked(const QString catName) const
+bool dictionary::getCategoryChecked(const QString catName) const
 {
     for (int i=0; i<m_CategoryNames.count(); i++)
         if (m_CategoryNames[i].name == catName) {
@@ -419,310 +413,3 @@ bool dicFile::getCategoryChecked(const QString catName) const
 
     return true;
 }
-
-QVariantList dicFile::getLetterDistribution(QVariantList currentDistribution)
-{
-    QVariantList aResult;
-    if (m_LetterDistribution.isEmpty())
-        return aResult;
-
-    QStringList aLetters = m_LetterDistribution["letters"].toString().split(",");
-    QStringList aValues = m_LetterDistribution["values"].toString().split(",");
-    QStringList aCount = m_LetterDistribution["count"].toString().split(",");
-
-    if ((aLetters.count() == aValues.count()) &&
-        (aLetters.count() == aCount.count())) {
-        for (int i=0; i < aLetters.count(); i++) {
-            aResult.append(aLetters[i]);
-            aResult.append(aValues[i].toInt());
-            aResult.append(aCount[i].toInt());
-        }
-        if (aResult != currentDistribution) {
-            QMessageBox msgBox;
-            //: dialog title
-            msgBox.setWindowTitle(QObject::tr("Letter Distribution") );
-            msgBox.setText( QObject::tr("Letter distribution in dictionary does not match the current configuration.") );
-            msgBox.setInformativeText( QObject::tr("Do you want to update the letter set?") );
-            msgBox.setIcon(QMessageBox::Question);
-            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-            if (msgBox.exec() == QMessageBox::No)
-                aResult.clear();
-        } else
-            aResult.clear();
-    }
-
-    return aResult;
-}
-
-//*******************************************************//
-
-
-dicList::dicList(QObject *parent)
-    : QAbstractTableModel(parent),
-      m_pParent(parent),
-      m_nCurrentDictionary(-1),
-      m_Dictionaries(0)
-{
-    dictionary = new dicFile(m_pParent);
-    updateList();
-}
-
-QHash<int, QByteArray> dicList::roleNames() const
-{
-    QHash<int, QByteArray> roles;
-    roles[Qt::DisplayRole] = "display";
-    roles[IsLoadedRole] = "isLoaded";
-    roles[AuthorRole] = "author";
-    roles[LicenseRole] = "license";
-    return roles;
-}
-
-int dicList::rowCount(const QModelIndex &parent) const
-{
-    Q_UNUSED(parent);
-    return m_Dictionaries.count();
-}
-
-int dicList::columnCount(const QModelIndex &parent) const
-{
-    Q_UNUSED(parent);
-    return 5;
-}
-
-QVariant dicList::headerData(int section, Qt::Orientation orientation, int role) const
-{
-    if ((role == Qt::DisplayRole) && (orientation == Qt::Horizontal))
-    {
-        if (section == 0)
-            return tr("Native");
-        else if (section == 1)
-            return tr("English");
-        else if (section == 2)
-            return tr("Filename");
-        else if (section == 3)
-            return tr("Available");
-        else if (section == 4)
-            return tr("Local");
-    }
-    return QVariant();
-}
-
-QVariant dicList::data(const QModelIndex &index, int role) const
-{
-    if (!index.isValid())
-        return QVariant();
-    dicListData aData = m_Dictionaries[index.row()];
-    switch (role)
-    {
-    case Qt::DisplayRole: {
-        if (index.column() == 0)
-            return aData.NativeName;
-        else if (index.column() == 1)
-            return aData.EnglishName;
-        else if (index.column() == 2)
-            return aData.FileName;
-        else if (index.column() == 3)
-            return aData.AvailableVersion;
-        else if (index.column() == 4) //best value
-            return aData.InstalledVersion;
-        break;
-    }
-    case IsLoadedRole: {
-        return (index.row() == m_nCurrentDictionary);
-        break;
-    }
-    //TODO: dictionary dummy for author and license; currently done per selectedDicInfo()
-/*
-    case AuthorRole: if (index.row() == m_nCurrentDictionary) {
-        return "Hello World";
-        break;
-    }
-    case LicenseRole: if (index.row() == m_nCurrentDictionary) {
-        return "GNU Public License v3";
-        break;
-    }
-*/
-    }
-    return QVariant();
-}
-
-void dicList::updateList()
-{
-    QFile file(config::conf());
-
-    m_Dictionaries.clear();
-    m_CanUpdate.clear();
-
-    beginResetModel();
-    if ( file.open(QIODevice::ReadOnly) )
-    {
-        QXmlStreamReader xmlReader;
-        xmlReader.setDevice(&file);
-        while (!xmlReader.atEnd())
-        {
-            xmlReader.readNext();
-
-            if (xmlReader.isStartElement() &&
-               (xmlReader.name().toString() == "dictionary"))
-            {
-                dicListData aData;
-                aData.NativeName=xmlReader.attributes().value("Native").toString();
-                aData.EnglishName=xmlReader.attributes().value("English").toString();
-                aData.AvailableVersion=xmlReader.attributes().value("RemoteVersion").toString();
-                aData.AvailableVersionNumber=version::fromString(aData.AvailableVersion);
-                aData.FileName=xmlReader.attributes().value("FileName").toString();
-                getInfo(&aData);
-                m_Dictionaries.append(aData);
-             }
-        }
-        file.close();
-    }
-
-    //local files
-    QStringList localDics = config::path().entryList(QStringList() << "*.dic", QDir::Files);
-    bool bPublicDic;
-    foreach(QString fileName, localDics)
-    {
-        bPublicDic = false;
-        for (int i=0; i<m_Dictionaries.count(); i++)
-            if (m_Dictionaries[i].FileName == fileName)
-                bPublicDic = true;
-        if (!bPublicDic) {
-            dicListData aData;
-            aData.NativeName = "";
-            aData.EnglishName = "";
-            aData.AvailableVersion = "";
-            aData.InstalledVersion = "";
-            aData.FileName = fileName;
-            getInfo(&aData);
-            m_Dictionaries.append(aData);
-        }
-    }
-    endResetModel();
-}
-
-void dicList::getInfo(dicListData *aData)
-{
-    const QString sFileName = config::file(aData->FileName);
-    QFileInfo fileInfo(sFileName);
-    if (fileInfo.exists())
-    {
-        QSettings settings(sFileName, QSettings::IniFormat);
-        QString aVersion = settings.value("Header/Version").toString();
-        if (aVersion.isEmpty())
-            aData->InstalledVersionNumber = -1;
-        else
-            aData->InstalledVersionNumber = aVersion.toInt();
-        aData->InstalledVersion = version::toString(aData->InstalledVersionNumber);
-        aData->Author = settings.value("Header/Author").toString();
-        aData->License = settings.value("Header/Licence").toString();
-        aData->Release = settings.value("Header/Release").toString();
-        aData->Comment = settings.value("Header/Comment").toString();
-        // update?
-        if ((aData->InstalledVersionNumber > -1) &&
-            (aData->InstalledVersionNumber < aData->AvailableVersionNumber))
-        {
-            m_pParent->setProperty("addMsg", tr("Dictionary %1: %2 < %3").arg(
-                                                 aData->NativeName,
-                                                 aData->InstalledVersion,
-                                                 aData->AvailableVersion));
-            m_CanUpdate.append("Dictionaries/raw/main/" + aData->FileName + ".zip");
-        }
-    }
-    else {
-        aData->InstalledVersion = "";
-        aData->InstalledVersionNumber = -1;
-    }
-    aData->AvailableVersionNumber = version::fromString(aData->AvailableVersion);
-}
-
-int dicList::indexOf(QString fileName)
-{
-    int aIndex = -1;
-    for (int i=0; i<dicList::m_Dictionaries.count(); i++)
-        if (m_Dictionaries[i].FileName == fileName) {
-            aIndex = i;
-            break;
-        }
-    return aIndex;
-}
-
-
-bool dicList::loadFrom(QString fileName)
-{
-    const int aIndex = indexOf(fileName);
-    if ((aIndex > -1) && (m_nCurrentDictionary != aIndex))
-    {
-        //update model and clear
-        QModelIndex indexTL = this->index( m_nCurrentDictionary, 0 );
-        QModelIndex indexBR = this->index( m_nCurrentDictionary, 4 );
-        m_nCurrentDictionary = -1;
-        emit dataChanged(indexTL, indexBR, { IsLoadedRole } );
-
-        if (!dictionary->loadDictionary(fileName))
-            return false;
-
-        m_nCurrentDictionary = aIndex;
-        indexTL = this->index( m_nCurrentDictionary, 0 );
-        indexBR = this->index( m_nCurrentDictionary, 4 );
-        emit dataChanged(indexTL, indexBR, { IsLoadedRole } ); //set
-        return true;
-    } else
-        return false;
-}
-
-bool dicList::deleteDic(QString fileName)
-{
-    const bool bResult = QFile::remove(config::file(fileName));
-    if (bResult) {
-        const int nIndex = indexOf(fileName);
-
-        //clear info
-        dicListData *aData = &m_Dictionaries[nIndex];
-        aData->InstalledVersionNumber = -1;
-        aData->InstalledVersion = "";
-        aData->Author = "";
-        aData->License = "";
-        aData->Release = "";
-        aData->Comment = "";
-
-        //currently loaded
-        if (m_nCurrentDictionary == nIndex) {
-            dictionary->clear();
-            m_nCurrentDictionary = -1;
-        }
-
-        //update qml table
-        QModelIndex indexTL = this->index( nIndex, 0 );
-        QModelIndex indexBR = this->index( nIndex, 4 );
-        emit dataChanged(indexTL, indexBR, { Qt::DisplayRole, IsLoadedRole } );
-    }
-    return bResult;
-}
-
-QString dicList::currentDicName() const
-{
-    if ((m_nCurrentDictionary>-1) &&
-        (m_nCurrentDictionary<m_Dictionaries.count()))
-        return m_Dictionaries[m_nCurrentDictionary].FileName;
-    else
-        return "";
-}
-
-QVariantMap dicList::selectedDicInfo(const int index) const
-{
-    QVariantMap dicInfo;
-    if ((index>-1) && (index<m_Dictionaries.count())) {
-        dicListData aData = m_Dictionaries[index];
-        dicInfo["author"] = aData.Author;
-        dicInfo["license"] = aData.License;
-        dicInfo["release"] = aData.Release;
-        dicInfo["comment"] = aData.Comment;
-        if (index == m_nCurrentDictionary)
-            dicInfo["categories"] = dictionary->categoryNames();
-        else
-            dicInfo["categories"] = "";
-    }
-    return dicInfo;
-}
-

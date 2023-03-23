@@ -22,10 +22,13 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     int rowCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
 
-    QList<Letter> getRack() { return m_pInitialRack; }
-    //when loading a game the rack needs to be set temporaray for the game history
+    // initial/complete rack is saved after the move with the gamehistory
+    // to browse through moves; setInitialRack() is called from setActivePlayer()
+    // and with parameter from loadgame()
+    void setInitialRack();
     void setInitialRack(QList<Letter> aLetters);
-    void setRack(QList<Letter> aLetters);
+    QList<Letter> getInitialRack() { return m_pInitialRack; }
+
     void setLetter(const Letter aLetter, const bool bSilent = false, int nPlayer = -1); //make rack item a Letter
     void placeLetter(const int index, const bool bVisible = true); //make rack item an EmptyLetter; visible to show in UI
     void toggleExchangeFlag(const int index);

@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-//CRASH: word search: searching in empty dictionary
 Dialog {
     palette: config.myPalette
 
@@ -72,9 +71,9 @@ Dialog {
             SpinBox {
                 id: dicIndex
                 Layout.fillWidth: true
-                from: 1
-                to: GamePlay.dicWordCount
-                onValueChanged: dicEntry = GamePlay.wordByIndex(value-1)
+                from: Math.min(to, 1) // 0 if dictionary is empty otherwise 1
+                to: GamePlay.wordCount
+                onValueChanged: if (value > 0) dicEntry = GamePlay.wordByIndex(value-1)
             }
             Label {
                 text: qsTr("Category:")
@@ -114,16 +113,11 @@ Dialog {
                 verticalAlignment: Text.AlignVCenter
                 font.capitalization: Font.AllUppercase
                 leftPadding: 3
-                background: Rectangle {
-                    anchors.fill: parent
-                    border.color: palette.mid
-                    color: "white"
-                }
-                color: palette.windowText
+                enabled: dicIndex.to > 0 // empty dictionary
                 onTextChanged: {
                     var aWords = GamePlay.getVariation(dicPattern.text).split(",")
                     dicSearchModel.clear()
-                    for (var i=0; i<aWords.length; i++)
+                    for (var i = 0; i < aWords.length; i++)
                         dicSearchModel.append({"word":aWords[i]})
                 }
             }

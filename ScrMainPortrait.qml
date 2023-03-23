@@ -45,7 +45,7 @@ ColumnLayout {
             }
             Row {
                 id: spinner
-                property int max: GamePlay.bestMoveCount
+                property int max: GamePlay.computeResults
                 onMaxChanged: value = 0
                 property int value: 0
                 onValueChanged: GamePlay.placeBestMove(spinner.value)
@@ -190,7 +190,6 @@ ColumnLayout {
             width: contentItem.implicitWidth + leftPadding + rightPadding
             visible: GamePlay.isConnected
         }
-        //TODO: main views: add statistics
     }
     ScrStatusbar { id: footerBarPt }
 }
