@@ -138,7 +138,7 @@ RowLayout {
             Action {
                 id: acTime
                 checkable: true
-                text: qsTr("Time left")
+                text: qsTr("Time left") //TODO: statusbar: "timeleft" with no limit
                 onTriggered: GamePlay.statInfoType(2)
             }
         }

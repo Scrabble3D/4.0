@@ -302,8 +302,8 @@ private:
     uint m_nPasses;
     uint m_nPlayerCount;
 
-    bool m_bIsRunning;
-    bool m_bIsComputing;
+    bool m_bIsRunning = false;
+    bool m_bIsComputing = false;
     bool m_bIsChallenge = false;              // set to true in nextplayer() when in network mode with m_eWordCheckMode = wcChallenge for m_nWordCheckPeriod seconds
     bool m_bIsHistory = false;
 

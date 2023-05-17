@@ -67,5 +67,5 @@ private:
 
     void getInfo(dicListData *aData); //used also in downloadmanager::update()
 
-    QStringList m_CanUpdate; //TODO: smarter solution needed
+    QStringList m_CanUpdate; //TODO: dic update: smarter solution needed
 };

@@ -77,8 +77,10 @@ ColumnLayout {
                     GamePlay.gamecourseModel.selectedMove++;
                 else if (event.key === Qt.Key_Up)
                     GamePlay.gamecourseModel.selectedMove--;
+                positionViewAtRow(GamePlay.gamecourseModel.selectedMove, TableView.Contain | TableView.AlignVCenter)
+                if (GamePlay.is3D)
+                    cube.roll()
             }
-
             delegate: Rectangle {
                 implicitWidth: parent.width
                 implicitHeight: (connectedWords !== "")

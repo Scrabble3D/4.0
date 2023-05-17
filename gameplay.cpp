@@ -897,7 +897,7 @@ void GamePlay::setActivePosition(const int aPosition, const bool bSilent)
         m_pBoard->setActivePosition(aPosition);
         if (bSilent) return;
         m_pBoardModel->updateAllFields();
-        emit activePositionChanged();
+        emit activePositionChanged(); //TODO: gameplay: consolidate activePosition & activeDimension
     }
 }
 
@@ -925,7 +925,7 @@ QString GamePlay::getMeaningAt(const int index)
     }
     return sWords;
 }
-
+//FIXME: gameplay: history with joker
 void GamePlay::doSelectedMoveChanged(int move)
 {
     m_nMoveHistory = move;
@@ -943,6 +943,7 @@ void GamePlay::doSelectedMoveChanged(int move)
             aLetters = m_pTempLetters;
             m_pTempLetters.clear();
         }
+        m_nCurrentPlayer = m_nCurrentMove % m_nPlayerCount;
         // reset move flags and 3d position
         if ( m_pMoves.count() > 0 ) {
             m_bIsFirstMove = m_pMoves.last()->isFirstMove();
@@ -968,11 +969,13 @@ void GamePlay::doSelectedMoveChanged(int move)
         m_pBoard->initialize(m_pTempBoard, m_nMoveHistory-1);
         aLetters = m_pGameCourseModel->getRack(m_nMoveHistory-1);
         m_bIsFirstMove = m_pMoves[m_nMoveHistory-1]->isFirstMove();
+        m_nCurrentPlayer = (m_nMoveHistory-1) % m_nPlayerCount;
         if (m_pBoard->is3D()) {
             setActivePosition(m_pMoves[m_nMoveHistory-1]->activePosition());
             setActiveDimension(m_pMoves[m_nMoveHistory-1]->activeDimension()); //move's dimension is also used for position at col/row
         }
     }
+    emit currentPlayerChanged();
     emit currentMoveChanged();
 
     // resets the 2D and 3D board models

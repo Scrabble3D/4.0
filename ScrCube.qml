@@ -10,6 +10,11 @@ Item {
         text: "10" //avoid jumping UI when label goes from one to two digits
     }
 
+    function roll() { //animate on keypress
+        sceneRoot.eulerRotation.x -= 10
+        sceneRoot.eulerRotation.y += 10
+    }
+
     View3D {
         id: view
         anchors.fill: parent
