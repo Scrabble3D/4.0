@@ -22,7 +22,7 @@ class version
 
 #define VERSION_MAJOR 4
 #define VERSION_MINOR 0
-#define VERSION_BUILD 8
+#define VERSION_BUILD 9
 
 public:
     version() {};

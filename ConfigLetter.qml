@@ -4,7 +4,6 @@ import QtQuick.Layouts
 import Qt.labs.qmlmodels
 
 GridLayout {
-    palette: config.myPalette
 
     property alias cbLetterSet: cbLetterSet
     property alias sbJoker: sbJoker
@@ -119,6 +118,8 @@ GridLayout {
         HorizontalHeaderView {
             id: horizontalHeader
             syncView: tvLetterSet
+            // requires 6.5(.1?), is needed because of QTBUG-115001
+            resizableColumns: false
             model: [qsTr("Letter"), qsTr("Points"), qsTr("Count")]
             delegate: Rectangle {
                 implicitWidth: text.implicitWidth
@@ -129,6 +130,7 @@ GridLayout {
                 Text {
                     id: text
                     text: modelData
+                    color: myPalette.windowText
                     width: parent.width
                     height: parent.height
                     horizontalAlignment: Text.AlignHCenter

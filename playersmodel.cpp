@@ -429,6 +429,7 @@ void playersTree::updateTree()
     beginResetModel();
     clear();
 
+    // game started info with locale setting
     QLocale loc;
 
     std::sort(m_lPlayers.begin(), m_lPlayers.end(), sortByGroup);
@@ -436,10 +437,10 @@ void playersTree::updateTree()
     QStandardItem *gameNode = new QStandardItem();
     gameNode->setData("", playerName);
 
-    for (int i=0; i<m_lPlayers.count(); i++)
+    for (int i = 0; i < m_lPlayers.count(); i++)
     {
-        if ((i>0) &&
-            (m_lPlayers.at(i).groupID != m_lPlayers.at(i-1).groupID))
+        if ( (i > 0) &&
+             (m_lPlayers.at(i).groupID != m_lPlayers.at(i-1).groupID))
         {
             gameNode = new QStandardItem();
             gameNode->setData("", playerName);
@@ -450,7 +451,7 @@ void playersTree::updateTree()
                (m_lPlayers.at(i).gameStarted > QDateTime::fromSecsSinceEpoch(0)) //game has started
            )))
         {
-            //TODO: playersmodel: suspect test for game started
+//TODO: playersmodel: suspect test for game started
             if ( QString::number(m_lPlayers[i].moveNumber).toInt() > 0)
                 gameNode->setData(tr("Game started %1, move #%2").arg(
                                       m_lPlayers[i].gameStarted.toString(loc.dateTimeFormat(QLocale::ShortFormat)),
@@ -460,7 +461,7 @@ void playersTree::updateTree()
                 gameNode->setData(tr("joined"), playerName);
             invisibleRootItem()->appendRow(gameNode);
         }
-//FIXME: playersmodel new -> delete
+
         QStandardItem *aNode = new QStandardItem();
         aNode->setData(m_lPlayers[i].playerName, playerName);
         aNode->setData(m_lPlayers[i].menuLang, menuLang);
@@ -484,5 +485,6 @@ void playersTree::updateTree()
         else
             invisibleRootItem()->appendRow(aNode);
     }
+
     endResetModel();
 }

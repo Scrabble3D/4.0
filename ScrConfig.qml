@@ -9,33 +9,39 @@ Window {
     title: qsTr("Configuration")
     width: 680 > screen.width ? screen.width : 680
     height: 540 > screen.height ? screen.height : 540
+
     property alias showTips: cbShowTips.checked
 
-    property bool bMarkers: true //ConfigBoard::cbMarkers.checked
-    property bool bColoredPlayers: true //ConfigBoard::cbPlayerColors.checked
-    property bool bIs3D: false //ConfigBoard::rb3D.checked
+    property bool bMarkers: true          // ConfigBoard::cbMarkers.checked
+    property bool bColoredPlayers: true   // ConfigBoard::cbPlayerColors.checked
+    property bool bIs3D: false            // ConfigBoard::rb3D.checked
 
-    property int numberOfLettersOnRack: 7 //ConfigLetter::sbPieces.value
-    property int numberOfRandomLetters: 0 //ConfigLetter::sbRandoms.value
-    property int numberOfJokers: 2 // set in onValueChange of ConfigLetter::sbJoker.value
-    property int numberOfPasses: 3 // set in onValueChange of ConfigTime::sbPasses
-    property int timeControl: 0 // set in onToggled of ConfigTime::rbNoLimit/rbPerMove/rbPerGame
-    property int timeControlValue: 10 // set in onToggled of ConfigTime::rbNoLimit/rbPerMove/rbPerGame
-    property int bingoBonus: 50 // set in onValueChange of ConfigRules::sbBingo
-    property int gameEndBonus: 0 // set in onValueChange of ConfigRules::sbGameEnd
-    property bool addLetters: true // set in onToggled of ConfigRules::sbGameEnd
-    property bool substractLetters: true // set in onToggled of ConfigRules::sbGameEnd
-    property int jokerPenalty: 0 // set in onValueChange of ConfigRules::sbJokerPanelty
-    property bool changeIsPass: false // set in onToggled of ConfigRules::cbChangeIsPass
-    property int wordCheckMode: 0 //set via rbTakeback = 0, rbPoll = 1, rbChallenge = 2 in ConfigWordCheck
-    property int wordCheckPeriod: 0 //set sbPeriod.value in ConfigWordCheck
-    property int wordCheckPenalty: 0 //set sbPenalty.value in ConfigWordCheck
-    property int wordCheckBonus: 0 //set sbBonus.value in ConfigWordCheck
-    property bool clabbers: false //set cbClabbers.toggle in ConfigWordCheck
-    property bool canbuytime: false //set per rbGameEnd/rbPenalty in ScrTimeControl
-    property int buytimecount: 0 //set per sbPenaltyCount in ScrTimeControl
-    property int buytimepenalty: 0 // sbPenaltyPoints in ScrTimeControl
-    property bool timegamelost: false // sbPenaltyPoints in ScrTimeControl
+    property int numberOfLettersOnRack: 7 // ConfigLetter::sbPieces.value
+    property int numberOfRandomLetters: 0 // ConfigLetter::sbRandoms.value
+    property int numberOfJokers: 2        // ConfigLetter::sbJoker.value
+
+    property int numberOfPasses: 3        // ConfigTime::sbPasses
+    property int timeControl: 0           // ConfigTime::rbNoLimit/rbPerMove/rbPerGame
+    property int timeControlValue: 10     // ConfigTime::rbNoLimit/rbPerMove/rbPerGame
+
+    property int bingoBonus: 50           // ConfigRules::sbBingo
+    property int gameEndBonus: 0          // ConfigRules::sbGameEnd
+    property bool addLetters: true        // ConfigRules::sbGameEnd
+    property bool substractLetters: true  // ConfigRules::sbGameEnd
+    property int jokerPenalty: 0          // ConfigRules::sbJokerPanelty
+    property bool changeIsPass: false     // ConfigRules::cbChangeIsPass
+    property bool cambiosecco: false      // ConfigRules::cbCambioSecco
+
+    property int wordCheckMode: 0         // ConfigWordCheck::rbTakeback = 0, rbPoll = 1, rbChallenge = 2
+    property int wordCheckPeriod: 0       // ConfigWordCheck::sbPeriod.value
+    property int wordCheckPenalty: 0      // ConfigWordCheck::sbPenalty.value
+    property int wordCheckBonus: 0        // ConfigWordCheck::sbBonus.value
+    property bool clabbers: false         // ConfigWordCheck::cbClabbers
+
+    property bool canbuytime: false       // ConfigTimeControl::rbGameEnd/rbPenalty
+    property int buytimecount: 0          // ConfigTimeControl::sbPenaltyCount
+    property int buytimepenalty: 0        // ConfigTimeControl::sbPenaltyPoints
+    property bool timegamelost: false     // ConfigTimeControl::sbPenaltyPoints
 
     property alias colors: scrColors
     property alias playercolors: scrPlayerColors
@@ -117,6 +123,7 @@ Window {
         configData["cbAddLetters"] = configRules.cbAddLetters.checked
         configData["cbSubstractLetters"] = configRules.cbSubstractLetters.checked
         configData["cbChangeIsPass"] = configRules.cbChangeIsPass.checked
+        configData["cbCambioSecco"] = configRules.cbCambioSecco.checked
         //dictionary
         configData["dictionary"] = configDictionary.dictionaryFile
         const dictionaryCategories = configDictionary.dictionaryCategories
@@ -166,7 +173,8 @@ Window {
         if (scrPlayerColors.count === aColors.length) {
             for (i = 0; i < scrPlayerColors.count; ++i)
                 scrPlayerColors.setProperty(i,"itemColor",Qt.color(aColors[i].trim()));
-        } else console.warn("Unexpected number of player colors in configuration")
+        } else
+            console.warn("Unexpected number of player colors in configuration")
 
         configBoard.cbPlayerColors.checked = getConfigValue("cbPlayerColors","true") === "true"
 
@@ -188,9 +196,9 @@ Window {
         configLetter.rbReadingDirectionRTL.checked = getConfigValue("rbReadingDirectionLTR", "true") !== "true"
 
         //configWordCheck
-        configWordCheck.rbTakeback.checked = getConfigValue("rbTakeback", true) === "true"
-        configWordCheck.rbPoll.checked = getConfigValue("rbPoll", false) === "true"
-        configWordCheck.rbChallenge.checked = getConfigValue("rbChallenge", false) === "true"
+        configWordCheck.rbTakeback.checked = getConfigValue("rbTakeback", "true") === "true"
+        configWordCheck.rbPoll.checked = getConfigValue("rbPoll", "false") === "true"
+        configWordCheck.rbChallenge.checked = getConfigValue("rbChallenge", "false") === "true"
         configWordCheck.sbPeriod.value = getConfigValue("sbPeriod", 0)
         configWordCheck.sbPenalty.value = getConfigValue("sbPenalty", 0)
         configWordCheck.sbBonus.value = getConfigValue("sbBonus",0)
@@ -216,6 +224,7 @@ Window {
         configRules.cbAddLetters.checked = getConfigValue("cbAddLetters", "true") === "true"
         configRules.cbSubstractLetters.checked = getConfigValue("cbSubstractLetters", "true") === "true"
         configRules.cbChangeIsPass.checked = getConfigValue("cbChangeIsPass", "false") === "true"
+        configRules.cbCambioSecco.checked = getConfigValue("cbCambioSecco", "false") === "true"
         // dictionary
         var aFileName = getConfigValue("dictionary","")
         var aCategories = getConfigValue("categories","")
@@ -359,10 +368,10 @@ Window {
 
         SplitView {
             id: splitView
-            palette: config.myPalette
-            //TODO: config: loader for splitview depending on portrait/landscape
+
+            //hide the handle left-hand of the splitview
             handle: Rectangle {
-                visible: mainLoader.state === "landscape" && x > 10 //hide the handle left-hand of the splitview
+                visible: mainLoader.state === "landscape" && x > 10
                 implicitWidth: 2
                 implicitHeight: 2
                 color: SplitHandle.pressed ? Qt.lighter(palette.dark, 1.5)
@@ -421,8 +430,7 @@ Window {
                     ConfigBoard {
                         id: configBoard
                         visible: lView.currentIndex === 0
-                        onVisibleChanged: { heightChanged() }
-                        onHeightChanged: if (visible) {
+                        onVisibleChanged: {
                             scrollView.contentHeight = configBoard.height
                             scrollView.contentWidth = configBoard.width
                         }

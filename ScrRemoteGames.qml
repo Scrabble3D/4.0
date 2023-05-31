@@ -8,8 +8,9 @@ Dialog {
     title: qsTr("Start a new game")
     modal: true
     padding: mainLoader.state === "landscape" ? 12 : 0
-    x: (scrabble3D.width - remotegame.width) / 2
-    y: (scrabble3D.height - remotegame.height) / 2
+
+    x: (scrabble3D.width - width) / 2
+    y: (scrabble3D.height - height) / 2
 
     footer: DialogButtonBox {
         id: buttons
@@ -108,7 +109,7 @@ Dialog {
                                 leftPadding: pad
                                 bottomPadding: pad
                                 //TODO: remotegames icon gameend
-                                //FIXME: remotegames icon color own move
+                                //TODO: remotegames icon color own move
                                 IconImage {
                                     id: imgModified
                                     source: "qrc:///resources/change.png"

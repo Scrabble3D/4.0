@@ -2,15 +2,16 @@
 #include "version.h"
 
 network::network(QObject* parent, const QString name, const QString password, const QString email,
-                 const QString country, const QString city)
+                 const QString country, const QString city, const QString lang)
     : m_pParent(parent),
       m_sName(name),
       m_sPassword(password),
       m_sEmail(email),
       m_sCountry(country),
-      m_sCity(city)
+      m_sCity(city),
+      m_sLanguage(lang),
+      m_bIsConnected(false)
 {
-//    this->setSocketOption(QAbstractSocket::LowDelayOption, 1);
     this->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 }
 
@@ -20,10 +21,7 @@ void network::connect(const QString sHostname, const uint iPort)
                      this, SLOT(doConnected()));
     QObject::connect(this, SIGNAL(readyRead()),
                      this, SLOT(doReadyRead()));
-    //disconnect -> gameplay::doNetworkDisconnect
-    //errorOccurred -> gameplay::doNetworkError
     this->connectToHost(sHostname, iPort);
-    //TODO: network: feedback when fail
 }
 
 void network::doSend(const MessageType msgType, QString msgReceiver, QString msgText)
@@ -35,9 +33,8 @@ void network::doSend(const MessageType msgType, QString msgReceiver, QString msg
     msgText += "Receiver=" + msgReceiver + "\a";
     msgText += "\r\n";
     this->write( msgText.toUtf8() );
-//    this->waitForBytesWritten(1000);
     this->flush();
-#ifdef QT_DEBUG
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
     qDebug() << "sent" << QVariant::fromValue(msgType).toString() << "from" << m_sName;
 #endif
 
@@ -66,14 +63,15 @@ void network::doConnected()
 #ifdef Q_OS_IOS
     sOS = "iOS";
 #endif
+    m_bIsConnected = true;
 
     QStringList lData;
     lData.append("Password=" + m_sPassword);
-    lData.append("MenuLang=en");//TODO: network: menu lang
+    lData.append("MenuLang=" + m_sLanguage);
     lData.append("Version=5"); //server version, must not be <4
     lData.append("Country=" + m_sCountry);
     lData.append("City=" + m_sCity);
-    lData.append("UID="); //TODO: network: mac address
+    lData.append("UID="); //NOTE: network: mac address
     lData.append("Email=" + m_sEmail);
     lData.append("Release=" + version::current() + "_" + sOS); //v3.1 uses underscore to separate platform
 
@@ -105,8 +103,10 @@ void network::doReadyRead()
             if (aLine.isEmpty() || aLine[0].isEmpty() || (aLine[0] == "\r\n"))
                 continue;
             if (aLine.count() != 2) {
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
                 qWarning() << "Cannot parse line" << aLine << ": " << lData.at(i) << ": " << m_aData;
-                break; //FIXME: network: remove break?
+#endif
+                break;
             }
             aLastMessage[aLine[0]] = aLine[1];
         }
@@ -156,6 +156,7 @@ void network::doReadyRead()
         case nwJoin: emit onJoin(aLastMessage); break;
         case nwSyncNewGame: emit onSyncNewGame(aLastMessage); break;
         case nwNextPlayer: emit onNextPlayer(aLastMessage); break;
+        case nwCambioSecco: emit onCambioSecco(); break;
         case nwCheckWord: emit onChallengeMove(aLastMessage["Sender"].toString()); break;
         case nwChallenge: emit onChallengeResult(aLastMessage); break;
         case nwRemoteGames: emit onRemoteGames(aLastMessage); break;
@@ -165,12 +166,16 @@ void network::doReadyRead()
                 emit onGameResult(aLastMessage["OldRating"].toInt(), aLastMessage["NewRating"].toInt());
         } break;
             //TODO: network: unknown message should be readable, eg. in case of /tell Foo (instead of whisper)
-        default: qWarning() << "Unknown message: " << aLastMessage["MessageType"].toString();
+        default:
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
+            qWarning() << "Unknown message: " << aLastMessage["MessageType"].toString()
+#endif
+            ;
         }
         z = m_aData.indexOf("\r\n"); //in case of more than one message
     }
     m_aData.clear();
-#ifdef QT_DEBUG
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
     qDebug() << "received" << aLastMessage["MessageType"].toString() << "from" << aLastMessage["Sender"].toString();
 #endif
 }

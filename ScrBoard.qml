@@ -173,7 +173,6 @@ Item {
             pieceColor: (!GamePlay.isLocalPlayer) || isExchange
                             ? config.colors.get(0).itemColor //start
                             : config.colors.get(8).itemColor //piece
-
             visible: isVisible //LetterState::lsRack
             pieceLabel: what
             pieceValue: value
@@ -273,7 +272,8 @@ Item {
         anchors.leftMargin: fieldSize
         anchors.top: gdBoard.bottom
         anchors.topMargin: fieldSize * 0.25
-        width: parent.width
+        width: gdBoard.width
+        height: fieldSize //any height works; none makes pieces invisible
         orientation: Qt.Horizontal
         spacing: 1
         model: GamePlay.rackModel

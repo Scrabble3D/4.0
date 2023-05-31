@@ -5,8 +5,6 @@ import QtQuick.Controls.impl
 T.ToolButton {
     id: control
 
-    palette: config.myPalette
-
     property int size: 28
     implicitWidth: size
     implicitHeight: size

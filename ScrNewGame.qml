@@ -11,14 +11,12 @@ Dialog {
         id: buttons
         standardButtons: Dialog.Ok | Dialog.Cancel
     }
-    palette: config.myPalette
-
     property alias playerNames: playerNames //used at poll
 
     padding: mainLoader.state === "landscape" ? 12 : 0
 
-    x: (scrabble3D.width - newgame.width) / 2
-    y: (scrabble3D.height - newgame.height) / 2
+    x: (scrabble3D.width - width) / 2
+    y: (scrabble3D.height - height) / 2
 
     property int rbIndex: 1
     property int seed: -1
@@ -122,9 +120,11 @@ Dialog {
                         readOnly: GamePlay.isConnected
                         background: Rectangle {
                             color: tiName.enabled
-                                   ? (tiName.text === "Computer")
-                                     ? "red" : config.myPalette.base
-                            : config.myPalette.mid
+                                    ? "transparent"
+                                    : config.myPalette.mid
+                            border.color: tiName.enabled
+                                    ? config.myPalette.mid
+                                    : config.myPalette.midlight
                         }
                         leftPadding: 2
                         verticalAlignment: TextInput.AlignVCenter //Qt.AlignVCenter
@@ -204,6 +204,9 @@ Dialog {
                                       //: unit seconds
                                       config.wordCheckPeriod + qsTr("s") + ")"
                     }
+                    Label { text: qsTr("Cambio Secco:"); visible: config.cambiosecco }
+                    Label { text: qsTr("enabled"); visible: config.cambiosecco
+                    }
                 }
             }
         }
@@ -235,7 +238,7 @@ Dialog {
             gameConfig["TimeControlType"] = config.timeControl // tcNoLimit=0, tcPerMove=1, tcPerGame=2
             gameConfig["TimeControlValue"] = config.timeControlValue
             gameConfig["LimitedExchange"] = 3 //NOTE: newgame LimitedExchange
-            gameConfig["CambioSecco"] = false //NOTE: newgame CambioSecco
+            gameConfig["CambioSecco"] = config.cambiosecco
             gameConfig["Whatif"] = false //NOTE: newgame Whatif
             gameConfig["Add"] = config.addLetters
             gameConfig["Substract"] = config.substractLetters

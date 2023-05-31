@@ -3,12 +3,12 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Dialog {
-    palette: config.myPalette
-
     title: qsTr("Search for words")
     standardButtons: Dialog.Close
     x: (parent.width - width) / 2
     y: (parent.height - height) / 2
+    width: 350
+    height: 400
 
     property int nIndex: -1
 
@@ -17,10 +17,8 @@ Dialog {
         dicWord.text = dicEntry["word"]
         dicCategory.text = dicEntry["category"]
         dicMeaning.text = dicEntry["meaning"]
-        dicWord.bgcolor = dicEntry["included"]
-                ? palette.light : "yellow"
-        dicWord.color = dicEntry["included"]
-                ? palette.text : "black"
+        dicWord.bgcolor = dicEntry["included"] ? palette.window : "yellow"
+        dicWord.color = dicEntry["included"]   ? palette.windowText : "black"
     }
 
     function isWordInDic(sWord) {
@@ -34,126 +32,134 @@ Dialog {
             dicCategory.text = ""
             dicMeaning.text = ""
             dicWord.bgcolor = "red"
-            dicWord.color = "black"
+            dicWord.color = "white"
         }
     }
     onAboutToShow: dicIndex.valueChanged() //update in case the category is not included anymore
 
-    RowLayout {
-        GridLayout {
-            id: glLeft
-            columns: 2
-            rowSpacing: 8
-            Layout.margins: 6
-            Label {
-                text: qsTr("Word:")
-            }
-            //TODO: wordsearch: digraph replacement (Espanol -> 1ACA = LLACA)
-            TextField {
-                id: dicWord
-                property string bgcolor: "white"
-                Layout.preferredWidth: 150
-                Layout.preferredHeight: font.pixelSize + 10
-                verticalAlignment: Text.AlignVCenter
-                font.capitalization: Font.AllUppercase
-                leftPadding: 3
-                placeholderText: qsTr("Enter word")
-                background: Rectangle {
-                    anchors.fill: parent
-                    color: parent.bgcolor
-                    border.color: palette.mid
-                }
-                onTextChanged: isWordInDic(dicWord.text)
-            }
-            Label {
-                text: qsTr("Number:")
-            }
-            SpinBox {
-                id: dicIndex
-                Layout.fillWidth: true
-                from: Math.min(to, 1) // 0 if dictionary is empty otherwise 1
-                to: GamePlay.wordCount
-                onValueChanged: if (value > 0) dicEntry = GamePlay.wordByIndex(value-1)
-            }
-            Label {
-                text: qsTr("Category:")
-                Layout.alignment: Qt.AlignTop
-            }
-            Label {
-                id: dicCategory
-                wrapMode: Text.WordWrap
-                Layout.preferredWidth: 150
-                elide: Text.ElideRight
-            }
-            Label {
-                Layout.alignment: Text.AlignTop
-                text: qsTr("Meaning:")
-            }
-            Label {
-                id: dicMeaning
-                Layout.preferredHeight: 100
-                Layout.preferredWidth: 150
-                wrapMode: Text.Wrap
-                verticalAlignment: Text.AlignTop
-            }
+    ColumnLayout {
+        anchors.fill: parent
+        TabBar {
+            id: tabBar
+            Layout.fillWidth: true
+            TabButton { text: qsTr("Search") }
+            TabButton { text: qsTr("Pattern") }
         }
-        GridLayout {
-            id: glRight
-            columns: 2
-            rowSpacing: 8
-            Layout.margins: 6
-            Layout.alignment: Qt.AlignTop
-            Label { text: qsTr("Pattern:") }
-            TextField {
-                id: dicPattern
-                Layout.preferredWidth: 150
-                Layout.preferredHeight: font.pixelSize + 10
-                text: ""
-                placeholderText: qsTr("Enter letters")
-                verticalAlignment: Text.AlignVCenter
-                font.capitalization: Font.AllUppercase
-                leftPadding: 3
-                enabled: dicIndex.to > 0 // empty dictionary
-                onTextChanged: {
-                    var aWords = GamePlay.getVariation(dicPattern.text).split(",")
-                    dicSearchModel.clear()
-                    for (var i = 0; i < aWords.length; i++)
-                        dicSearchModel.append({"word":aWords[i]})
+        StackLayout {
+            currentIndex: tabBar.currentIndex
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            GridLayout {
+                id: glSearch
+                columns: 2
+                rowSpacing: 8
+                Label { text: qsTr("Word:") }
+                //NOTE: wordsearch: digraph replacement (Espanol -> 1ACA = LLACA)
+                TextField {
+                    id: dicWord
+                    property string bgcolor: palette.light
+                    Layout.preferredWidth: 200
+                    verticalAlignment: Text.AlignVCenter
+                    font.capitalization: Font.AllUppercase
+                    leftPadding: 3
+                    placeholderText: qsTr("Enter word")
+                    background: Rectangle {
+                        implicitHeight: dicIndex.height
+                        color: parent.bgcolor
+                        border.color: palette.mid
+                    }
+                    onTextChanged: isWordInDic(dicWord.text)
+                }
+
+                Label { text: qsTr("Number:") }
+                SpinBox {
+                    id: dicIndex
+                    Layout.minimumWidth: 100
+                    from: Math.min(to, 1) // 0 if dictionary is empty otherwise 1
+                    to: GamePlay.wordCount
+                    onValueChanged: if (value > 0) dicEntry = GamePlay.wordByIndex(value-1)
+                }
+
+                Label {
+                    text: qsTr("Category:")
+                    Layout.alignment: Text.AlignTop
+                }
+                Label {
+                    id: dicCategory
+                    wrapMode: Text.WordWrap
+                    elide: Text.ElideRight
+                }
+
+                Label {
+                    text: qsTr("Meaning:")
+                    Layout.alignment: Text.AlignTop
+                }
+                Label {
+                    id: dicMeaning
+                    Layout.preferredWidth: 200
+                    wrapMode: Text.Wrap
+                    verticalAlignment: Text.AlignTop
                 }
             }
 
-            ListModel { id: dicSearchModel }
-            Label {
-                Layout.alignment: Qt.AlignTop
-                text: qsTr("Result:") }
-            ListView {
-                id: dicSearchResult
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                model: dicSearchModel
-                clip: true
-                delegate: Rectangle {
-                    height: delegateText.font.pixelSize + 8
-                    width: dicPattern.width
-                    //TODO: ScrWordSearch: palette at search not working with dark themes
-                    color: ListView.isCurrentItem ? palette.highlight : palette.window
-                    Text {
-                        id: delegateText
-                        text: word
-                        anchors.fill: parent
-                        leftPadding: 3
-                        verticalAlignment: Text.AlignVCenter
-                        color: dicSearchResult.currentIndex == index ? palette.highlightedText : palette.windowText
-                    }
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            dicWord.text = delegateText.text
-                            dicSearchResult.currentIndex = index
-                        }
+            GridLayout {
+                id: glPattern
+                columns: 2
+                rowSpacing: 8
+
+                Label { text: qsTr("Pattern:") }
+                TextField {
+                    id: dicPattern
+                    Layout.preferredWidth: 200
+                    verticalAlignment: Text.AlignVCenter
+                    font.capitalization: Font.AllUppercase
+                    leftPadding: 3
+                    placeholderText: qsTr("Enter letters")
+                    enabled: dicIndex.to > 0 // empty dictionary
+                    onTextChanged: {
+                        var aWords = GamePlay.getVariation(dicPattern.text).split(",")
+                        dicSearchModel.clear()
+                        for (var i = 0; i < aWords.length; i++)
+                            dicSearchModel.append({"word":aWords[i]})
                     }
                 }
-                ScrollBar.vertical: ScrollBar {}
+
+                ListModel { id: dicSearchModel }
+                Label {
+                    text: qsTr("Result:")
+                    Layout.alignment: Qt.AlignTop
+                }
+                ListView {
+                    id: dicSearchResult
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: 200
+                    model: dicSearchModel
+                    clip: true
+                    delegate: Rectangle {
+                        height: delegateText.font.pixelSize + 8
+                        width: dicPattern.width
+                        // NOTE: ScrWordSearch: palette at search not working with dark themes on Android
+                        color: ListView.isCurrentItem ? palette.highlight : palette.window
+                        Text {
+                            id: delegateText
+                            text: word
+                            anchors.fill: parent
+                            leftPadding: 3
+                            verticalAlignment: Text.AlignVCenter
+                            color: dicSearchResult.currentIndex === index
+                                   ? palette.highlightedText : palette.windowText
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                dicWord.text = delegateText.text
+                                dicSearchResult.currentIndex = index
+                            }
+                        }
+                    }
+                    ScrollBar.vertical: ScrollBar {}
+                }
             }
         }
     }

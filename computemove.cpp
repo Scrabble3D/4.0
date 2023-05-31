@@ -2,7 +2,7 @@
 
 #include "computemove.h"
 
-#ifdef QT_DEBUG
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
 #include <QElapsedTimer>
 #endif
 
@@ -34,7 +34,7 @@ void computemove::run(const bool isFirstMove,
     m_nTotal = 2 * aBoard->getBoardSize();
     if (aBoard->is3D())
         m_nTotal *= 3 * aBoard->getBoardSize();
-#ifdef QT_DEBUG
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
     QElapsedTimer timer;
     timer.start();
 #endif
@@ -78,14 +78,14 @@ void computemove::run(const bool isFirstMove,
     }
 #ifdef threaded
     // wait for the (potentially large) threads poll to be processed
-    //TODO: computemove: processEvents discouraged
+    // NOTE: computemove: processEvents discouraged
     while (!QThreadPool::globalInstance()->waitForDone(100)) {
         QCoreApplication::processEvents();
     }
     QThreadPool::globalInstance()->waitForDone();
 #endif
     std::sort(m_pMoves.begin(), m_pMoves.end(), sortByValue);
-#ifdef QT_DEBUG
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
     qDebug() << "Computemove finished in" << timer.elapsed() << "ms";
 #endif
     qApp->processEvents(); // ensure 100% is send before resetting via 0
@@ -139,7 +139,7 @@ void computemove::threadFinished()
     m_nProgress = round((double(m_nDone)/double(m_nTotal))*100);
     if (nProgress != m_nProgress) {
         emit onComputeProgress(m_nProgress);
-        //TODO: computemove: processEvents discouraged
+        // NOTE: computemove: processEvents discouraged
         qApp->processEvents();
     };
 }

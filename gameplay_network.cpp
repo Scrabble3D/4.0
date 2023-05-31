@@ -7,7 +7,7 @@ void GamePlay::connect(QString name, QString password, QString email, QString co
 {
     addMessage(tr("Connecting to game server..."));
 
-    m_pNetwork = new network(this, name, password, email, country, city);
+    m_pNetwork = new network(this, name, password, email, country, city, m_pLocListModel->currentLang());
 
     QObject::connect(m_pNetwork, SIGNAL(disconnected()),
                      this, SLOT(doDisconnect()));
@@ -50,6 +50,8 @@ void GamePlay::connect(QString name, QString password, QString email, QString co
     // 5. if wcPoll checkMove() and challengeWord() are sent later
     QObject::connect(m_pNetwork, SIGNAL(onNextPlayer(QVariantMap)),
                      this, SLOT(doNetworkNextPlayer(QVariantMap)));
+    QObject::connect(m_pNetwork, SIGNAL(onCambioSecco()),
+                     this, SLOT(doCambioSecco()));
     QObject::connect(m_pNetwork, SIGNAL(onChallengeMove(QString)),
                      this, SLOT(doNetworkChallengeMove(QString)));
     QObject::connect(m_pNetwork, SIGNAL(onChallengeResult(QVariantMap)),
@@ -73,23 +75,26 @@ void GamePlay::connect(QString name, QString password, QString email, QString co
 
 void GamePlay::disconnect()
 {
-    QSettings settings(config::ini(), QSettings::IniFormat);
+    if (m_pNetwork->isConnected()) //do not ask if connection has failed
+    {
+        QSettings settings(config::ini(), QSettings::IniFormat);
 
-    if ( settings.value("program/confirmlogout","true").toBool() ) {
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Scrabble3D");
-        msgBox.setText( QObject::tr("Do you really want to close the network?") );
-        msgBox.setIcon(QMessageBox::Question);
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-        QScopedPointer<QCheckBox> checkBox(new QCheckBox("Confirm before closing the connection"));
-        checkBox->setCheckState(Qt::Checked);
-        msgBox.setCheckBox(checkBox.get());
-        int result = msgBox.exec();
-        settings.setValue("program/confirmlogout", checkBox->checkState() == Qt::Checked);
-        if (result == QMessageBox::No)
-            return;
+        if ( settings.value("program/confirmlogout","true").toBool() )
+        {
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Scrabble3D");
+            msgBox.setText( QObject::tr("Do you really want to close the network?") );
+            msgBox.setIcon(QMessageBox::Question);
+            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+            QScopedPointer<QCheckBox> checkBox(new QCheckBox("Confirm before closing the connection"));
+            checkBox->setCheckState(Qt::Checked);
+            msgBox.setCheckBox(checkBox.get());
+            int result = msgBox.exec();
+            settings.setValue("program/confirmlogout", checkBox->checkState() == Qt::Checked);
+            if (result == QMessageBox::No)
+                return;
+        }
     }
-
     m_bIsConnected = false;
     emit connectedChanged();
 
@@ -323,8 +328,11 @@ void GamePlay::doNetworkNextPlayer(QVariantMap aMsg)
                     if (m_pBoard->is3D()) cubeModel()->updateSquare(aLetter.Point);
                     m_pRackModel->placeLetter(aLetter.RackPos);
                     m_pMoves.last()->addLetter(aLetter);
-                } else
+                }
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
+                else
                     qWarning() << "Incorrent number of data points " << sLetter;
+#endif
             }
         } else //nLetters == 0
             for (int i = 0; i < aMsg["exchangecount"].toInt(); i++)
@@ -454,7 +462,7 @@ void GamePlay::doInvite(QString sName)
 {
     QStringList aData;
     aData.append("GameID=" + QString::number(m_PlayersTreeModel->playerData(m_pNetwork->localPlayerName()).gameID));
-    aData.append("Language=" + m_pTranslator->language());
+    aData.append("Language=" + m_pLocListModel->currentLang() );
     aData.append("Country=" + m_PlayersTreeModel->playerData(m_pNetwork->localPlayerName()).country);
     aData.append("Dictionary=" + m_pDictionary->fileName());
     emit onSend(network::nwInvite, sName, aData.join("\a"));
@@ -497,7 +505,9 @@ void GamePlay::chat(QString aMessage)
         emit onSend(network::nwInformation, "", aMessage);
     }
     else if (aMessage.startsWith("/")) {
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
         qWarning() << "Unknown message type at " << aMessage;
+#endif
     }
     else
         emit onSend(network::nwChat,"group", "Chat="+aMessage);
@@ -610,4 +620,9 @@ void GamePlay::doNetworkLogin(QVariantMap aMsg)
         //which updates the variable attributes like grouping, current move...
         emit onSend(network::nwRefresh, "all", "");
     }
+}
+
+void GamePlay::syncCambioSecco()
+{
+    emit onSend(network::nwCambioSecco, "group", "");
 }

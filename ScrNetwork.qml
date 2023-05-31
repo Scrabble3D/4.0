@@ -12,8 +12,6 @@ Dialog {
     y: (scrabble3D.height - network.height) / 2
     padding: 12
 
-    palette: config.myPalette
-
     ListModel {
         id: countriesModel
         ListElement {country:"Afghanistan";flag:"af.png"}
@@ -295,7 +293,7 @@ Dialog {
                 id: server
                 Layout.fillWidth: true
                 model: ["Free International Scrabble Server"]
-                //TODO low: scrnetwork: make server variable
+                //NOTE network: scrnetwork: make server variable
             }
             Label { text: qsTr("Login name:") }
             TextField {

@@ -74,7 +74,7 @@ FieldType board::getFieldtype(const int index)
     if (index < m_Fieldtypes.count())
         return m_Fieldtypes[index];
     else {
-#ifdef QT_DEBUG
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
         qWarning() << "Field index out of bounds in getFieldtype()" << index << "/" << m_Fieldtypes.count();
 #endif
         return ftDefault;
@@ -92,7 +92,7 @@ Letter board::getLetter(const int index)
     if (index < m_Letters.count())
         return m_Letters[index];
     else {
-#ifdef QT_DEBUG
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
         qWarning() << "Letter index out of bounds in getLetter()" << index << "/" << m_Letters.count();
 #endif
         return EmptyLetter;
@@ -121,7 +121,7 @@ void board::removeLetter(const int aLetterIndex)
 {
     if ( aLetterIndex < m_Letters.count() )
         m_Letters[aLetterIndex] = EmptyLetter;
-#ifdef QT_DEBUG
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
     else
       qWarning() << "Letter index out of bounds in removeLetter()" << aLetterIndex << "/" << m_Letters.count();
 #endif
@@ -290,7 +290,7 @@ void board::setJokerLetter(const int aLetterIndex, const QString aWhat)
 {
     if ( aLetterIndex < m_Letters.count() )
         m_Letters[aLetterIndex].What = aWhat;
-#ifdef QT_DEBUG
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
     else
         qWarning() << "Letter index out of bounds in setJokerLetter()" << aLetterIndex << "/" << m_Letters.count();
 #endif

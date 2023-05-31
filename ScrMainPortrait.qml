@@ -3,8 +3,6 @@ import QtQuick.Layouts
 import QtQuick.Controls
 
 ColumnLayout {
-    palette: config.myPalette
-
     property alias board: board
     property alias messages: messages
     property alias cube: cube
@@ -130,6 +128,7 @@ ColumnLayout {
             id: contextMenu
             MenuItem { action: acNewGame }
             MenuItem { action: acNextPlayer }
+            MenuItem { action: acCambioSecco }
             MenuItem { action: acChallenge }
             MenuItem { action: acComputeMove }
             MenuItem { action: acDictionary }
@@ -142,9 +141,9 @@ ColumnLayout {
             MenuItem { action: acConfiguration }
             Menu {
                 title: qsTr("View Mode")
-                MenuItem { action: acAutomaticView }
-                MenuItem { action: acLandscapeView }
-                MenuItem { action: acPortraitView }
+                RadioButton { action: acAutomaticView }
+                RadioButton { action: acLandscapeView }
+                RadioButton { action: acPortraitView }
             }
             MenuItem { action: acAbout }
             MenuSeparator { }
@@ -155,8 +154,8 @@ ColumnLayout {
         id: footerBar
         Layout.fillWidth: true
         currentIndex: swipeView.currentIndex
-        onCurrentIndexChanged: if (currentIndex < 3) // Board=0/Cube=1/Messages=2
-                                   messages.newMessage = false
+        onCurrentIndexChanged:
+            if (currentIndex === 2) messages.newMessage = false
         TabButton {
             text: qsTr("Board")
             width: contentItem.implicitWidth + leftPadding + rightPadding
@@ -166,6 +165,7 @@ ColumnLayout {
             visible: GamePlay.is3D
             width: visible ? contentItem.implicitWidth + leftPadding + rightPadding
                            : 0 //non-visible keeps empty space
+            onVisibleChanged: visible ? "" : footerBar.setCurrentIndex(0)
         }
         TabButton {
             text: qsTr("Messages")
@@ -178,7 +178,7 @@ ColumnLayout {
                 anchors.rightMargin: 2
                 anchors.topMargin: 2
                 color: "#FF0000"
-                visible: messages.newMessage
+                visible: messages.newMessage && footerBar.currentIndex !== 2
             }
         }
         TabButton {
@@ -189,6 +189,7 @@ ColumnLayout {
             text: qsTr("Players")
             width: contentItem.implicitWidth + leftPadding + rightPadding
             visible: GamePlay.isConnected
+            onVisibleChanged: visible ? footerBar.setCurrentIndex(4) : footerBar.setCurrentIndex(0)
         }
     }
     ScrStatusbar { id: footerBarPt }

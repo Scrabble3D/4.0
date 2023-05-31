@@ -35,7 +35,9 @@ void rackmodel::setLetter(const Letter aLetter, const bool bSilent, int nPlayer)
     if (nPlayer == -1)
         nPlayer = m_nActivePlayer;
     if (nPlayer > m_nPlayerCount-1) {
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
         qWarning("Setting letter failed");
+#endif
         return;
     }
     if ((nIndex >= 0) && (nIndex < m_nRackSize))
@@ -80,7 +82,9 @@ Letter rackmodel::getLetter(const int nRackIndex, int nPlayer) const
     if ((nPlayer < m_nPlayerCount) && (nRackIndex < m_nRackSize))
         return m_lPieces[nPlayer][nRackIndex];
     else {
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
         qWarning("Retrieving rack letter failed");
+#endif
         return EmptyLetter;
     }
 }
@@ -94,8 +98,10 @@ void rackmodel::setActivePlayer(const int nPlayer)
         endResetModel();
         setInitialRack();
     }
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
     else
         qWarning() << "Active player cannot be set" << nPlayer << m_nPlayerCount;
+#endif
 }
 
 void rackmodel::setLocalPlayer(const int nPlayer)
@@ -148,7 +154,7 @@ QHash<int, QByteArray> rackmodel::roleNames() const
 
 QVariant rackmodel::data(const QModelIndex &index, int role) const
 {
-    if (!index.isValid() || (m_nLocalPlayer>m_nPlayerCount)) {
+    if ( !index.isValid() || (m_nLocalPlayer > m_nPlayerCount) ) {
         qFatal("Invalid rackmodel request");
         return QVariant();
     }

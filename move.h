@@ -24,7 +24,7 @@ public:
     int activePosition() { return getPosition(); }
     void setLastError(QString sError) { m_LastError = sError; }
     Dimension activeDimension() { return m_Dimension; }
-    void setJokerLetter(const QString aWhat);//set Letter.What for Letter.IsJoker of m_PlacedLetters.last()
+    void setJokerLetter(const uint aWhere, const QString aWhat);//set Letter.What for Letter.IsJoker of m_PlacedLetters.last()
     void clear();
 
 private:

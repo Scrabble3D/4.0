@@ -321,5 +321,6 @@
         <file>ColorButton.qml</file>
         <file>ColorRadioButton.qml</file>
         <file>ColorTextField.qml</file>
+        <file>resources/cambiosecco.png</file>
     </qresource>
 </RCC>

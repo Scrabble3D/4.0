@@ -22,7 +22,7 @@ bool move::addLetter(Letter aLetter, const bool doCheck)
 
 Letter move::getLetter(unsigned int index) const
 {
-    if (index<m_PlacedLetters.count())
+    if (index < m_PlacedLetters.count())
         return m_PlacedLetters[index];
     else
         return EmptyLetter;
@@ -109,13 +109,18 @@ bool move::checkMove()
     return true;
 }
 
-void move::setJokerLetter(const QString aWhat)
+void move::setJokerLetter(const uint aWhere, const QString aWhat)
 {
-    if ( (m_PlacedLetters.count()>0) && (m_PlacedLetters.last().IsJoker) )
-        m_PlacedLetters.last().What = aWhat;
-#ifdef QT_DEBUG
-    else
-        qWarning() << "No joker in move";
+    for (int i = 0; i < m_PlacedLetters.count(); i++) {
+        if ((m_PlacedLetters[i].Where == aWhere) &&
+             m_PlacedLetters[i].IsJoker )
+        {
+            m_PlacedLetters[i].What = aWhat;
+            return;
+        }
+    }
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
+    qWarning() << "No joker in move";
 #endif
 }
 
@@ -432,7 +437,9 @@ int move::getPosition()
             aResult = m_PlacedLetters[0].Point.y();
             break;
         default:
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
             qWarning() << "Unexpected dimension in getPosition()";
+#endif
             break;
         }
     } else

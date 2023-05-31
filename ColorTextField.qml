@@ -4,7 +4,6 @@ import QtQuick.Controls
 TextField {
     id: control
     implicitWidth: 60 + 28
-//    implicitHeight: 28 //BUG: colortextfield: height on Android
 
     property bool accepted
 

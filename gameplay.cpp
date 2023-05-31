@@ -73,7 +73,6 @@ GamePlay::GamePlay(QQmlEngine *engine)
         if (finfo.exists()) //loading a l10n-file that has been deleted triggers a download confirmation, but shouldn't on startup
             localize(locFile);
     }
-
 /*    m_RemoteGamesProxy = new remoteGamesProxy(this);
     m_RemoteGamesProxy->setSourceModel(m_RemoteGamesModel);
     m_RemoteGamesProxy->setDynamicSortFilter(true);
@@ -259,7 +258,11 @@ void GamePlay::startNewGame(QVariantMap gameConfig)
     m_eTimeControlType = static_cast<TimeControlType>(gameConfig["TimeControlType"].toInt());
     m_nTimeControlValue = gameConfig["TimeControlValue"].toInt();
     m_nLimitedExchange = gameConfig["LimitedExchange"].toInt();
-    m_bCambioSecco = gameConfig["CambioSecco"].toBool();
+    const bool bCambioSecco = gameConfig["CambioSecco"].toBool();
+    m_bCanCambioSecco.clear();
+    for (uint nPlayerIndex = 0; nPlayerIndex < m_nPlayerCount; nPlayerIndex++)
+        m_bCanCambioSecco.append( bCambioSecco );
+    emit cambioSeccoChanged();
     m_bWhatif = gameConfig["Whatif"].toBool();
     m_bAdd = gameConfig["Add"].toBool();
     m_bSubstract = gameConfig["Substract"].toBool();
@@ -347,7 +350,7 @@ void GamePlay::nextPlayer(const bool bIsLoading)
                                     .arg( QString::number(m_pMoves.last()->Value()) ),
                                 m_lPlayerNames.at(m_nCurrentPlayer));
 
-    //increase number of passes
+    // increase number of passes
     const int nExchange = m_pRackModel->exchangeNumber();
     bool isPass = m_pMoves.last()->PlacedWord.isEmpty();
     if ((nExchange > 0) && !m_bChangeIsPass)
@@ -362,6 +365,7 @@ void GamePlay::nextPlayer(const bool bIsLoading)
     else
         m_nPasses = 0;
 
+    // exchange message
     const QString numerals[] = { tr("one"), tr("two"), tr("three"), tr("four"),
                                  tr("five"), tr("six"), tr("seven")};
     if (nExchange > 0)
@@ -374,7 +378,6 @@ void GamePlay::nextPlayer(const bool bIsLoading)
     if (m_pMoves.last()->Value() > 0)
         m_bIsFirstMove = false;
 
-    //FIXME: addMove() done after gameend when loading game that has ended
     //update game course
     m_pGameCourseModel->addMove(replaceAllLetters(m_pMoves.last()->PlacedWord),
                                 replaceAllLetters(m_pMoves.last()->ConnectedWords),
@@ -420,6 +423,10 @@ void GamePlay::nextPlayer(const bool bIsLoading)
         emit isLocalPlayerChanged();
     }
     emit currentMoveChanged();
+
+    if (m_lBag.count() < m_pRackModel->rackSize())
+        for (int i : m_bCanCambioSecco) m_bCanCambioSecco[i] = false;
+    emit cambioSeccoChanged();
 
     //start the timer
     doStartTimer(!bIsLoading);
@@ -552,7 +559,7 @@ void GamePlay::doGameEnd()
     emit isRunningChanged();
 }
 
-// called from nextPlayer()
+// called from nextPlayer() and cambioSecco()
 void GamePlay::doUpdateRack()
 {
     for (int i=0; i<m_pRackModel->rackSize(); i++) {
@@ -570,7 +577,7 @@ void GamePlay::doUpdateRack()
             rackLetter.State = LetterState::lsBag;
             rackLetter.RackPos = 0;
             rackLetter.IsExchange = false;
-            //NOTE: gameplay: do not append exchanged letters but randomly insert
+            //FIXME: gameplay: do not append exchanged letters but randomly insert
             m_lBag.append(rackLetter);
             m_pRackModel->placeLetter(i, false); //set empty
             Letter aLetter = m_lBag[0];
@@ -749,6 +756,24 @@ void GamePlay::timerEvent(QTimerEvent *event)
     Q_UNUSED(event);
 }
 
+//called directly or via syncCambioSecco() => onCambioSecco() in network mode
+void GamePlay::doCambioSecco()
+{
+    m_pMsgModel->addMessage(tr("%1 uses the Cambio Secco to exchange all letters.").arg(
+                                m_lPlayerNames[m_nCurrentPlayer]),
+                            m_lPlayerNames[m_nCurrentPlayer]);
+
+    resetPieces(); //remove if pieces are on the board
+    m_pComputeMove->clear(); //reset computed moves
+    for (int i = 0; i < m_pRackModel->rackSize(); i++)
+        m_pRackModel->toggleExchangeFlag(i);
+    doUpdateRack();
+    m_pRackModel->setInitialRack(); //update rack for game history; done in first place with setActivePlayer()
+
+    m_bCanCambioSecco[m_nCurrentPlayer] = false;
+    emit cambioSeccoChanged();
+}
+
 QString GamePlay::getStatInfoType(const int aType)
 {
     switch (aType) {
@@ -783,9 +808,15 @@ QString GamePlay::getStatInfoType(const int aType)
 
 QString GamePlay::getAllStat()
 {
-    return tr("Letter:") + " " + getStatInfoType(0) + "\n" +
-           tr("Game score:") + " " + getStatInfoType(1) + "\n" +
-           tr("Time left:" ) + " " + getStatInfoType(2);
+    QString sResult = tr("Letter:") + " " + getStatInfoType(0) + "\n";
+    sResult += tr("Game score:") + " " + getStatInfoType(1) + "\n";
+    if (m_eTimeControlType == tcNoLimit)
+        sResult += tr("Time spend:" );
+    else
+        sResult += tr("Time left:" );
+    sResult += " " + getStatInfoType(2);
+
+    return sResult;
 }
 
 void GamePlay::dropLetter(const uint rackIndex, const uint boardIndex)
@@ -825,7 +856,8 @@ void GamePlay::jokerLetter(const uint boardIndex, const QString aWhat)
 {
     int z = m_pBoard->pointToWhere( m_pBoard->pos3D(boardIndex) );
     m_pBoard->setJokerLetter(z, aWhat);
-    m_pMoves.last()->setJokerLetter(aWhat); //last placed letter
+    if (!m_bIsHistory)
+        m_pMoves.last()->setJokerLetter(z, aWhat);
     m_pMoves.last()->checkMove(); //re-check to update placeword
     Letter aLetter = m_pBoard->getLetter(z);
     m_pBoardModel->updateSquare(aLetter.Point);
@@ -925,7 +957,7 @@ QString GamePlay::getMeaningAt(const int index)
     }
     return sWords;
 }
-//FIXME: gameplay: history with joker
+
 void GamePlay::doSelectedMoveChanged(int move)
 {
     m_nMoveHistory = move;
@@ -993,6 +1025,10 @@ void GamePlay::doSelectedMoveChanged(int move)
         for (int i = 0; i < m_pMoves[m_nMoveHistory-1]->letterCount(); i++) {
             aLetter = m_pMoves[m_nMoveHistory-1]->getLetter(i);
             dropLetter(aLetter.RackPos, m_pBoard->pointToPlane(aLetter.Point));
+            if (aLetter.IsJoker) {
+                m_pBoard->setJokerLetter(aLetter.Where, aLetter.What);
+                m_pBoardModel->updateSquare(aLetter.Point);
+            }
         }
     }
     m_pComputeMove->clear(); // clear computed moves; allow to recalculate
@@ -1123,12 +1159,15 @@ void GamePlay::saveGame(QString fileName, const bool bSilent)
         settings.setValue("TimeControlType", m_eTimeControlType);
         settings.setValue("TimeControlValue", m_nTimeControlValue);
         settings.setValue("LimitedExchange", m_nLimitedExchange);
-        settings.setValue("CambioSecco", m_bCambioSecco);
+        QStringList aList;
+        for (uint i = 0; i < m_bCanCambioSecco.count(); i++)
+            aList.append(QString::number(m_bCanCambioSecco[i]));
+        settings.setValue("CambioSecco", aList.join(","));
         settings.setValue("Whatif", m_bWhatif);
         settings.setValue("Add", m_bAdd);
         settings.setValue("Substract", m_bSubstract);
         settings.setValue("TimePenaltyValue", m_nTimePenaltyValue);
-        QStringList aList;
+        aList.clear();
         for (uint i = 0; i < m_nPlayerCount; i++)
             aList.append(QString::number(m_nTimePenaltyCount[i]));
         settings.setValue("TimePenaltyCount", aList.join(","));
@@ -1248,14 +1287,24 @@ void GamePlay::loadGame(QString fileName, const bool bSilent)
         m_eTimeControlType = static_cast<TimeControlType>(settings.value("TimeControlType").toInt());
         m_nTimeControlValue = settings.value("TimeControlValue").toUInt();
         m_nLimitedExchange = settings.value("LimitedExchange").toUInt();
-        m_bCambioSecco = settings.value("CambioSecco").toBool();
+        QStringList aList = settings.value("TimePenaltyCount").toString().split(",");
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
+        if (aList.count() != m_nPlayerCount)
+            qWarning() << "Cambio Secco count doesn't match player count!";
+#endif
+        m_bCanCambioSecco.clear();
+        for (int i = 0; i < aList.count(); i++)
+            m_bCanCambioSecco.append(aList[i].toInt());
         m_bWhatif = settings.value("/Whatif").toBool();
         m_bAdd = settings.value("Add").toBool();
         m_bSubstract = settings.value("Substract").toBool();
         m_nTimePenaltyValue = settings.value("TimePenaltyValue").toUInt();
-        QStringList aList = settings.value("TimePenaltyCount").toString().split(",");
+        aList.clear();
+        aList = settings.value("TimePenaltyCount").toString().split(",");
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
         if (aList.count() != m_nPlayerCount)
             qWarning() << "Penalty count doesn't match player count!";
+#endif
         m_nTimePenaltyCount.clear();
         for (int i = 0; i < aList.count(); i++)
             m_nTimePenaltyCount.append(aList[i].toUInt());

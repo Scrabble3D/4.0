@@ -8,13 +8,13 @@
 #include <QThread>
 #include <QtConcurrent>
 
-#ifdef QT_DEBUG
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
 #include <QDebug>
 #endif
 
 #undef doSort
 
-//TODO: dicitionary: DAWG / Aho–Corasick algorithm
+//NOTE: dicitionary: DAWG / Aho–Corasick algorithm
 
 dictionary::dictionary(QObject* parent)
 {
@@ -175,14 +175,20 @@ void dictionary::doLoad(QString fileName, QString categories)
         emit onLoadingFinished(m_sFileName);
     }
 
-#ifdef QT_DEBUG
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
     qDebug() << "Successfully read" << m_Words.count() << "words from" << fileName;
 #endif
 }
 
 void dictionary::loadDictionary(const QString fileName, const QString categories)
 {
+    // config::reset() applies an empty filename
+    // but configuration of dictionary should be kept
+    if (fileName.isEmpty())
+        return;
+
     doClear();
+
     if (!QFileInfo::exists(config::file(fileName))) {
         // message box
         QMessageBox msgBox;
@@ -249,12 +255,12 @@ void dictionary::charsFromWords()
         m_sChars = chars.join("");
     }
 
-#ifdef QT_DEBUG
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
     qDebug() << "contains" << m_sChars;
 #endif
 }
 
-//TODO: dictionary: More Efficient String Construction https://doc.qt.io/qt-6/qstring.html
+//NOTE: dictionary: More Efficient String Construction https://doc.qt.io/qt-6/qstring.html
 QString dictionary::variation(const QString aChars)
 /* Scrabble-like variation of letters
    ABC:
@@ -343,7 +349,9 @@ QString dictionary::getWord(const uint index)
         return m_Words[index].word;
     else
     {
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
         qWarning() << "Word index" << index << "out of bounds" << "(" << m_Words.count() << ")";
+#endif
         return "";
     }
 }

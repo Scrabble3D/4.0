@@ -53,6 +53,7 @@ class GamePlay : public QObject
     Q_PROPERTY(bool isHistory READ getIsHistory NOTIFY isHistoryChanged)
     Q_PROPERTY(bool isInitialized READ getIsInitialized NOTIFY isInitializedChanged)
     Q_PROPERTY(bool is3D READ getIs3D NOTIFY is3DChanged)
+    Q_PROPERTY(bool cambioSecco READ getCambioSecco NOTIFY cambioSeccoChanged)
     Q_PROPERTY(int boardSize READ getBoardSize NOTIFY boardSizeChanged)
     Q_PROPERTY(bool isAccepted READ getIsAccepted NOTIFY isAcceptedChanged)
     Q_PROPERTY(int currentMove READ getCurrentMove NOTIFY currentMoveChanged)
@@ -82,6 +83,7 @@ signals:
     void isChallengeChanged();
     void isInitializedChanged();
     void is3DChanged();
+    void cambioSeccoChanged();
     void isAcceptedChanged();
     void activeDimensionChanged();
     void activePositionChanged();
@@ -164,6 +166,7 @@ public:
     Q_INVOKABLE void rejectNewGame() { if (m_bIsConnected) emit onSend(network::nwAnswer, "group", "Answer=false"); }
     Q_INVOKABLE void syncNextPlayer();
     Q_INVOKABLE void syncChallengeWord();
+    Q_INVOKABLE void syncCambioSecco();
 
     rackmodel *rackModel() { return m_pRackModel; }
     boardmodel *boardModel() { return m_pBoardModel; }
@@ -189,7 +192,7 @@ public slots:
     int removeLetter(const uint boardIndex);
     int removeLetter(Letter aLetter);
     void jokerLetter(const uint boardIndex, const QString aWhat);
-
+    void doCambioSecco();
     void doDownloadFinished(DlType fileType, QString fileName);
 
 private:
@@ -237,7 +240,8 @@ private:
     bool getIsInitialized() { return m_bIsInitialized; };
     bool getIsAccepted() { return m_bIsAccepted; };
     unsigned int getBoardSize() {return m_pBoard->getBoardSize(); }
-    bool getIs3D() {return m_pBoard->is3D(); }
+    bool getIs3D() { return m_pBoard->is3D(); }
+    bool getCambioSecco() { if (m_nCurrentPlayer < m_bCanCambioSecco.count()) return m_bCanCambioSecco[m_nCurrentPlayer]; else return false; }
     unsigned int getCurrentMove() { if (m_bIsHistory) return m_nMoveHistory; else return m_nCurrentMove; }
     unsigned int getCurrentPlayer() { return m_nCurrentPlayer; }
     unsigned int getNumberOfPlayers() { return m_lPlayerNames.count(); }
@@ -281,7 +285,6 @@ private:
     TimeControlType m_eTimeControlType;       // type of time control (no, per game, per moves)
     uint m_nTimeControlValue;                 // actual time limit
     uint m_nLimitedExchange;                  // //NOTE: gameplay: limited exchange to n letters, eg. Italian rules
-    bool m_bCambioSecco;                      // //NOTE: gameplay: whether cabio secco is allowed
     bool m_bWhatif;                           // //NOTE: gameplay: whether whatif is allowed
     bool m_bAdd;                              // whether to add values of remaining tiles from other players to the winner's result
     bool m_bSubstract;                        // whether to deduct the remaining pieces' values from the individual result
@@ -300,12 +303,13 @@ private:
     int m_nMoveHistory;
     int m_nCurrentPlayer;
     uint m_nPasses;
-    uint m_nPlayerCount;
+    uint m_nPlayerCount = 1; // movecount % playercount=0 crashes
 
     bool m_bIsRunning = false;
     bool m_bIsComputing = false;
     bool m_bIsChallenge = false;              // set to true in nextplayer() when in network mode with m_eWordCheckMode = wcChallenge for m_nWordCheckPeriod seconds
     bool m_bIsHistory = false;
+    QList<bool> m_bCanCambioSecco;
 
     PollType m_ePoll = ptNone;
     QString m_sChallengePlayer;               // stores the name of the player who send a challenge to the group

@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 GridLayout {
-    palette: config.myPalette
     columns: 2
     columnSpacing: 8
     rowSpacing: 8
@@ -17,6 +16,7 @@ GridLayout {
         cbSubstractLetters.checked = defaults.languages[defaultLetterSet].substractLetters
         sbJokerPenalty.value = defaults.languages[defaultLetterSet].jokerPenalty
         cbChangeIsPass.checked = defaults.languages[defaultLetterSet].changeIsPass
+        cbCambioSecco.checked = defaults.languages[defaultLetterSet].cambioSecco
     }
 
     property alias sbPasses: sbPasses
@@ -26,6 +26,7 @@ GridLayout {
     property alias cbSubstractLetters: cbSubstractLetters
     property alias sbJokerPenalty: sbJokerPenalty
     property alias cbChangeIsPass: cbChangeIsPass
+    property alias cbCambioSecco: cbCambioSecco
 
     ColorLabel {
         id: lbPasses
@@ -93,7 +94,7 @@ GridLayout {
         ColorCheckBox {
             id: cbAddLetters
             text: qsTr("Add the value of other players letters")
-            onToggled: config.addLetters = checked
+            onCheckStateChanged: config.addLetters = checked
         }
         InfoTip { tiptext: qsTr("The sum of remaining tiles from the opponents is added to the result of the player who ended the game") }
     }
@@ -103,7 +104,7 @@ GridLayout {
         ColorCheckBox {
             id: cbSubstractLetters
             text: qsTr("Substract the value of left letters")
-            onToggled: config.substractLetters = checked
+            onCheckStateChanged: config.substractLetters = checked
         }
         InfoTip { tiptext: qsTr("The value of the remaining tiles is deducted from each player's result") }
     }
@@ -113,8 +114,18 @@ GridLayout {
         ColorCheckBox {
             id: cbChangeIsPass
             text: qsTr("Treat exchange as pass")
-            onToggled: config.changeIsPass = checked
+            onCheckStateChanged: config.changeIsPass = checked
         }
-        InfoTip { tiptext: qsTr("You can decide whether an exchange of letters is counted as pass") }
+        InfoTip { tiptext: qsTr("Check this option to count an exchange of letters as a pass") }
+    }
+    RowLayout {
+        Layout.columnSpan: 2
+        Layout.leftMargin: 8
+        ColorCheckBox {
+            id: cbCambioSecco
+            text: qsTr("Cambio Secco")
+            onCheckStateChanged: config.cambiosecco = checked
+        }
+        InfoTip { tiptext: qsTr("Once per game you can exchange all pieces on the rack without losing the right to place") }
     }
 }

@@ -52,7 +52,6 @@ HEADERS += \
 
 RESOURCES += \
         qml.qrc \
-#        qss_icons/dark/darkstyle.qrc
 
 TARGET = Scrabble3D
 
@@ -70,16 +69,16 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 android: include(/opt/Android/android_openssl/openssl.pri)
 
-contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
+contains(ANDROID_TARGET_ARCH,arm64-v8a) {
     ANDROID_EXTRA_LIBS = \
-        /opt/Android/android_openssl/latest/arm/libcrypto_1_1.so \
-        /opt/Android/android_openssl/latest/arm/libssl_1_1.so \
-        /opt/Android/android_openssl/latest/arm64/libcrypto_1_1.so \
-        /opt/Android/android_openssl/latest/arm64/libssl_1_1.so \
-        /opt/Android/android_openssl/latest/x86/libcrypto_1_1.so \
-        /opt/Android/android_openssl/latest/x86/libssl_1_1.so \
-        /opt/Android/android_openssl/latest/x86_64/libcrypto_1_1.so \
-        /opt/Android/android_openssl/latest/x86_64/libssl_1_1.so
+        /opt/Android/android_openssl/ssl_3/arm64-v8a/libcrypto_3.so \
+        /opt/Android/android_openssl/ssl_3/arm64-v8a/libssl_3.so
+#        /opt/Android/android_openssl/latest/arm64/libcrypto_1_1.so \
+#        /opt/Android/android_openssl/latest/arm64/libssl_1_1.so \
+#        /opt/Android/android_openssl/latest/x86/libcrypto_1_1.so \
+#        /opt/Android/android_openssl/latest/x86/libssl_1_1.so \
+#        /opt/Android/android_openssl/latest/x86_64/libcrypto_1_1.so \
+#        /opt/Android/android_openssl/latest/x86_64/libssl_1_1.so
 
     ANDROID_PACKAGE_SOURCE_DIR = \
         $$PWD/android
@@ -95,7 +94,13 @@ DISTFILES += \
     android/gradlew.bat \
     android/res/values/libs.xml
 
-contains(ANDROID_TARGET_ARCH,arm64-v8a) {
+contains(ANDROID_TARGET_ARCH,arm64-v7a) {
     ANDROID_PACKAGE_SOURCE_DIR = \
         $$PWD/android
+}
+
+contains(ANDROID_TARGET_ARCH,arm64-v8a) {
+    ANDROID_EXTRA_LIBS = \
+    $$PWD/../../../../opt/Android/android_openssl/ssl_3/arm64-v8a/libcrypto_3.so \
+    $$PWD/../../../../opt/Android/android_openssl/ssl_3/arm64-v8a/libssl_3.so
 }

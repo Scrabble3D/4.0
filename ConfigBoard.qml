@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 GridLayout {
-    palette: config.myPalette
     //aliases required for save/loadConfig in ScrConfig
     property alias cbMarkers: cbMarkers;
     property alias rb2D: rb2D;
@@ -30,6 +29,7 @@ GridLayout {
             cbDefaultBoard.currentIndex = 4;
     }
 
+    //needed on Android with dark mode
     ColorLabel {
         id: lbPreset
         leftPadding: 8

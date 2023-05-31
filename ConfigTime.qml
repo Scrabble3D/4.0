@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 GridLayout {
-    palette: config.myPalette
     columns: 2
     columnSpacing: 8
     rowSpacing: 8

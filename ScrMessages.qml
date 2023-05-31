@@ -31,6 +31,8 @@ TableView {
                : config.myPalette.window
         Text {
             id: msgText
+            leftPadding: 4
+            rightPadding: 4
             text: display //TODO: messages: emoticons :-) = U+1F600
             onLinkActivated: (link)=> Qt.openUrlExternally(link)
             width: delegateRect.width
@@ -50,12 +52,5 @@ TableView {
             }
         }
     }
-    //FIXME: messages: contentheight signal not emitted in portrait mode
-    onContentHeightChanged: {
-        newMessage = !visible
-     }
-    //FIXME: messages: forecLayout() works but throws warnings while loading
-    onWidthChanged: {
-        forceLayout() //needed to ensure wordwrap on app resizing
-    }
+    onContentHeightChanged: newMessage = true //show indicator on new messages
 }

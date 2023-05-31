@@ -14,9 +14,17 @@ Rectangle {
         linkColor: isDark(config.myPalette.window) ? Qt.lighter("#0000FF") : "#0000FF"
         onLinkActivated: Qt.openUrlExternally(link)
         MouseArea {
+            id: maLink
             anchors.fill: parent
+            hoverEnabled: true
             acceptedButtons: Qt.NoButton
             cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+        }
+        ToolTip {
+            text: theText.hoveredLink
+            visible: maLink.containsMouse
+            delay: 1000
+            timeout: 5000
         }
     }
 }

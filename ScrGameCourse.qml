@@ -11,7 +11,6 @@ ColumnLayout {
         id: fontMetrics
     }
 
-    //FIXME: gamecourse: resizing the application window messes up the stored column widths
     //use 20px for first column and calculate 0 in respect to parent
     property var colwidths: [20,0,0,0,0]
 
@@ -39,7 +38,6 @@ ColumnLayout {
                         width: parent.width
                         onWidthChanged: {
                             colwidths[index] = width
-                            //FIXME: statistics: forecLayout() is needed to ensure wordwrap on app resizing; works but throws warnings
                             statTable.forceLayout()
                         }
                         height: parent.height

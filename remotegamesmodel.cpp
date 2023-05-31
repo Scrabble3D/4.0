@@ -87,7 +87,7 @@ void remoteGamesModel::setRemoteGames(const QVariantMap games, const QString sOw
         aGame.fileName = games[sPrefix + ".Name"].toString();
         QStringList aSequence = aGame.players.split(",");
         /*
-#ifdef QT_DEBUG
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
         qDebug() << aSequence;
         qDebug() << aGame.moves % aSequence.count();
         qDebug() << aSequence[aGame.moves % aSequence.count()];
@@ -97,7 +97,7 @@ void remoteGamesModel::setRemoteGames(const QVariantMap games, const QString sOw
         aGame.isOwnMove = aSequence[aGame.moves % aSequence.count()] == sOwnName;
         aGame.hasEnded = games[sPrefix + ".GameEnd"].toBool();
         /*
-#ifdef QT_DEBUG
+#if defined(Q_OS_LINUX) && defined(QT_DEBUG)
         qDebug() << games;
         qDebug() << aGame.fileName << aGame.isOwnMove << aGame.hasEnded;
 #endif

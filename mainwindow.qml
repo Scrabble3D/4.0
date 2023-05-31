@@ -192,6 +192,15 @@ ApplicationWindow {
         text: qsTr("About Scrabble3D")
         onTriggered: about.open()
     }
+    Action {
+        id: acCambioSecco
+        text: qsTr("Cambio Secco")
+        icon.source: "qrc:///resources/cambiosecco.png"
+        enabled: GamePlay.cambioSecco
+        onTriggered: GamePlay.isConnected
+                     ? GamePlay.syncCambioSecco()
+                     : GamePlay.doCambioSecco()
+    }
 
     function doLoad(aFileName)
     {
@@ -229,9 +238,7 @@ ApplicationWindow {
         anchors.fill: parent
         asynchronous: true
         state: "landscape"//"portrait"//
-        onLoaded: {
-            main.board.updateFieldSize() //changing the number of fields should result in resizing
-        }
+        onLoaded: main.board.updateFieldSize() //changing the number of fields should result in resizing
         states:
         [
             State

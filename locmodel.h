@@ -27,6 +27,7 @@ public:
     void loadingFinished(const QString fileName);
     bool deleteLocFile(const QString fileName);
     void updateList();
+    QString currentLang() { return m_sCurrentLang; }
     QStringList canUpdate() { return m_CanUpdate; }
 
 signals:
@@ -55,4 +56,5 @@ private:
     QList<locListData> m_LocFiles;
 
     QStringList m_CanUpdate;
+    QString m_sCurrentLang = "";
 };

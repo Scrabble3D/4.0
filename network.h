@@ -24,15 +24,16 @@ public:
         nwCheckWord,     // special poll to check words in challenge mode
         nwChallenge,     // result of the challenge
         nwNextPlayer,    // submit move within group
+        nwCambioSecco,   // active player exchanged all letters
         nwRemoteGames,   // retrieves a list of games on server that can be loaded (and continued if not ended)
         nwLoadGame,      // loads a game stored on the server by its consecutive number
 //        nwEndGame,       // obsolete; was the message to run the final reckoning
         nwGameResult,    // updates rating; also sets GameEnd flag in saved game on game server, returns message with new rating
         nwBestValues,
+
         /*
     'nwPause'        : acPauseExecute(nil);
     'nwKibitz'       : DoKibitz;
-    'nwCambioSecco'  : DoCambioSecco;
     'nwJokerize'     : DoJokerize(TLetter(Scrabble.Letters[aMsg.Value('LetterIndex',-1)]));
     'nwHighscore'    : DoHighscore;
     'nwEndGame'      : if (gsRunning in Scrabble.GameState) then DoGameEnd(self);
@@ -46,10 +47,15 @@ public:
     Q_ENUM(MessageType);
 
     network(QObject *parent = nullptr,
-            const QString name = "", const QString password = "", const QString email = "",
-            const QString country = "", const QString city = "");
+            const QString name = "",
+            const QString password = "",
+            const QString email = "",
+            const QString country = "",
+            const QString city = "",
+            const QString lang = "");
     void connect(const QString sHostname, const uint iPort); //connect to host and send nwConnect message
     const QString localPlayerName() { return m_sName; }
+    bool isConnected() { return m_bIsConnected; }
 
 public slots:
     void doSend(const network::MessageType msgType, QString msgReceiver, QString msgText);
@@ -64,6 +70,7 @@ signals:
     void onChat(const QString aWhat, const QString aWho); //gameplay
     void onInvite(QVariantMap aMsg); //gameplay
     void onJoin(QVariantMap aMsg); //gameplay
+    void onCambioSecco(); //gameplay
 //    void onLeave(QVariantMap aMsg); //gameplay
     void onSyncNewGame(QVariantMap aMsg); //gameplay
     void onNextPlayer(QVariantMap aMsg); //gameplay
@@ -85,7 +92,9 @@ private:
     QString m_sEmail;
     QString m_sCountry;
     QString m_sCity;
+    QString m_sLanguage;
 
     QByteArray m_aData;
+    bool m_bIsConnected;
 };
 

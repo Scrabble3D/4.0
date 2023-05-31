@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 ColumnLayout {
-    palette: config.myPalette
 
     property alias board: board
     property alias cube: cube
@@ -27,6 +26,7 @@ ColumnLayout {
             title: qsTr("&Game")
             MenuItem { action: acNewGame }
             MenuItem { action: acNextPlayer }
+            MenuItem { action: acCambioSecco }
             MenuItem { action: acChallenge }
             MenuItem { action: acComputeMove }
             MenuSeparator { }
@@ -39,11 +39,10 @@ ColumnLayout {
             MenuItem { action: acDictionary }
             MenuSeparator { }
             Menu {
-                //TODO: mainform: view type actions as true radiobuttons; menuitemgroup doesnt work
                 title: qsTr("&View Mode")
-                MenuItem { action: acAutomaticView }
-                MenuItem { action: acLandscapeView }
-                MenuItem { action: acPortraitView }
+                RadioButton { action: acAutomaticView }
+                RadioButton { action: acLandscapeView }
+                RadioButton { action: acPortraitView }
             }
 //            MenuItem { action: acUpdate } //testing purpose
         }
@@ -56,7 +55,6 @@ ColumnLayout {
 
     ToolBar {
         id: toolBar
-        palette: config.myPalette
         background: Rectangle { color: "transparent" }
         RowLayout {
             spacing: 3
@@ -172,7 +170,7 @@ ColumnLayout {
                             anchors.rightMargin: 2
                             anchors.topMargin: 2
                             color: "#FF0000"
-                            visible: messages.newMessage
+                            visible: messages.newMessage && tabs.currentIndex !== 0
                         }
                     }
                     TabButton {
@@ -183,6 +181,7 @@ ColumnLayout {
                         text: qsTr("Players")
                         width: contentItem.implicitWidth + leftPadding + rightPadding
                         visible: GamePlay.isConnected
+                        onVisibleChanged: visible ? tabs.setCurrentIndex(2) : tabs.setCurrentIndex(0)
                     }
                 }
             }

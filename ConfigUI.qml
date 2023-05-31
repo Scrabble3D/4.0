@@ -15,7 +15,6 @@ ListView {
     delegate: locViewItem
     boundsMovement: Flickable.StopAtBounds
     currentIndex: -1
-    palette: config.myPalette
 
     Menu {
         id: locContextMenu
@@ -62,28 +61,28 @@ ListView {
         Rectangle {
             id: entry1
             width: colWidth[0]; height: listHeader.height; color: "transparent"; border.color: palette.midlight
-            Label { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter
+            ColorLabel { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter
                 text: qsTr("Native") }
         }
         Rectangle {
             id: entry2
             anchors.left: entry1.right
             width: colWidth[1]; height: listHeader.height; color: "transparent"; border.color: palette.midlight
-            Label { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter
+            ColorLabel { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter
                 text: qsTr("English") }
         }
         Rectangle {
             id: entry3
             anchors.left: entry2.right
             width: colWidth[2]; height: listHeader.height; color: "transparent"; border.color: palette.midlight
-            Label { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter
+            ColorLabel { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter
                 text: qsTr("Installed") }
         }
         Rectangle {
             id: entry4
             anchors.left: entry3.right
             width: colWidth[3]; height: listHeader.height; color: "transparent"; border.color: palette.midlight
-            Label { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter
+            ColorLabel { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter
                 text: qsTr("Available") }
         }
     }

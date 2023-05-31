@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 GridLayout {
-    palette: config.myPalette
     columns: 2
     columnSpacing: 8
     rowSpacing: 8
@@ -135,15 +134,15 @@ GridLayout {
         leftPadding: 8
         Layout.alignment: Qt.AlignRight | Qt.AlignTop
         Layout.topMargin: cbClabbers.topPadding
-        enabled: false //TODO: CLABBERS
+        enabled: false
         text: qsTr("Options:")
     }
     RowLayout {
         ColorCheckBox {
             id: cbClabbers
             text: qsTr("CLABBERS variant")
-            enabled: false //TODO: CLABBERS
-            onToggled: config.clabbers = checked
+            enabled: false
+            onCheckStateChanged: config.clabbers = checked
         }
         InfoTip { tiptext: qsTr("Enable this option to allow scrambled letters like SCRABBLE -> CLABBERS\nThis option is not yet implemented") }
     }

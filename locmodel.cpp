@@ -71,8 +71,9 @@ void locList::loadingFinished(const QString fileName)
     if ( nIndex > -1 )
     {
         beginResetModel();
+        m_sCurrentLang = m_LocFiles[nIndex].NativeName + " (" + m_LocFiles[nIndex].EnglishName +")";
         emit onMessage( tr("Localization %1 successfully loaded.")
-                           .arg(m_LocFiles[nIndex].NativeName + " (" + m_LocFiles[nIndex].EnglishName +")" ) );
+                           .arg( m_sCurrentLang ) );
 
         m_nLoadedLocFile = nIndex;
         endResetModel();
