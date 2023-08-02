@@ -144,7 +144,7 @@ GridLayout {
             Layout.preferredWidth: contentWidth + sbLetterSet.width
             Layout.minimumHeight: 200
             Layout.fillHeight: true
-            ScrollBar.vertical: ScrollBar { id: sbLetterSet }
+            ScrollBar.vertical: ScrollBar { id: sbLetterSet; policy: Qt.ScrollBarAlwaysOn }
             clip: true
             model: tmLetterSet
             delegate: Rectangle {
@@ -278,24 +278,22 @@ GridLayout {
         }
         InfoTip { tiptext: qsTr("Random letters are picked from the distribution, also in case of zero count, and will be added to the letter set") }
     }
-    //todo: configletter: reading direction not yet implemented
     ColorLabel {
         id: lbReadingDirection
         Layout.alignment: Qt.AlignRight
         text: qsTr("Reading direction:")
-        enabled: false
     }
     RowLayout {
         id: layoutReadingDirection
         ColorRadioButton {
             id: rbReadingDirectionLTR
             text: qsTr("left to right")
-            enabled: false
+            onCheckedChanged: if (checked) config.ltr = true
         }
         ColorRadioButton {
             id: rbReadingDirectionRTL
             text: qsTr("right to left")
-            enabled: false
+            onCheckedChanged: if (checked) config.ltr = false
         }
     }
 }

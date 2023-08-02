@@ -19,6 +19,7 @@ Window {
     property int numberOfLettersOnRack: 7 // ConfigLetter::sbPieces.value
     property int numberOfRandomLetters: 0 // ConfigLetter::sbRandoms.value
     property int numberOfJokers: 2        // ConfigLetter::sbJoker.value
+    property bool ltr: true               // configLetter::rbReadingDirectionLTR
 
     property int numberOfPasses: 3        // ConfigTime::sbPasses
     property int timeControl: 0           // ConfigTime::rbNoLimit/rbPerMove/rbPerGame

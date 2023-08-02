@@ -30,15 +30,13 @@ Item {
     function updateLabelsModel() {
         horizLabelModel.clear()
         vertLabelModel.clear()
-        horizLabelModel.append({"label":""}); //empty dummy for the top left corner
-        vertLabelModel.append({"label":""});
-        for (var i=0; i<GamePlay.boardSize; i++)
+        for (var i = 0; i < GamePlay.boardSize; i++)
         {
             horizLabelModel.append({"label":i+1})
             if (i < 26)
                 vertLabelModel.append({"label":String.fromCharCode(65 + i)});
             else
-                vertLabelModel.append({"label":String.fromCharCode(65 + i % 26) + Math.floor(i / 26)});
+                vertLabelModel.append({"label":String.fromCharCode(65 + i % 26) + Math.floor(i / 26)}); //A..Z,A1..Z1,A2..Z2...
         }
     }
 
@@ -84,10 +82,14 @@ Item {
                          ? config.playercolors.get(who).itemColor //colored shadow to show who placed a piece
                          : "transparent"
 
-            bonusTop:    config.bMarkers && (bonustop>0)    ? config.colors.get(bonustop).itemColor   : "transparent"
-            bonusLeft:   config.bMarkers && (bonusleft>0)   ? config.colors.get(bonusleft).itemColor  : "transparent"
-            bonusRight:  config.bMarkers && (bonusright>0)  ? config.colors.get(bonusright).itemColor : "transparent"
-            bonusBottom: config.bMarkers && (bonusbottom>0) ? config.colors.get(bonusbottom).itemColor : "transparent"
+            bonusTop:    config.bMarkers && (bonustop > 0)    ? config.colors.get(bonustop).itemColor   : "transparent"
+            bonusBottom: config.bMarkers && (bonusbottom > 0) ? config.colors.get(bonusbottom).itemColor : "transparent"
+            bonusLeft: config.ltr
+                ? config.bMarkers && (bonusleft > 0) ? config.colors.get(bonusleft).itemColor  : "transparent"
+                : config.bMarkers && (bonusright > 0) ? config.colors.get(bonusright).itemColor : "transparent"
+            bonusRight: config.ltr
+                ? config.bMarkers && (bonusright > 0) ? config.colors.get(bonusright).itemColor : "transparent"
+                : config.bMarkers && (bonusleft > 0) ? config.colors.get(bonusleft).itemColor  : "transparent"
 
             ToolTip {
                 id: tipMeaning
@@ -232,25 +234,28 @@ Item {
     }
 
     ListView {
+        id: vertLabels
+        anchors.top: gdBoard.top
+        anchors.left: parent.left
+        height: fieldSize * GamePlay.boardSize
+        width: fieldSize
+        model: vertLabelModel
+        delegate: labelDelegate
+        orientation: ListView.Vertical
+        interactive: false
+    }
+    ListView {
         id: horzLabels
         anchors.top: parent.top
-        anchors.left: parent.left
+        anchors.left: gdBoard.left
         width: fieldSize * GamePlay.boardSize
         height: fieldSize
         model: horizLabelModel
         delegate: labelDelegate
         orientation: ListView.Horizontal
         interactive: false
-    }
-    ListView {
-        id: vertLabels
-        anchors.top: parent.top
-        anchors.left: parent.left
-        height: fieldSize * GamePlay.boardSize
-        model: vertLabelModel
-        delegate: labelDelegate
-        orientation: ListView.Vertical
-        interactive: false
+        layoutDirection: config.ltr ? Qt.LeftToRight : Qt.RightToLeft
+        onLayoutDirectionChanged: config.ltr ? anchors.left = gdBoard.left : anchors.right = gdBoard.right
     }
     GridView {
         id: gdBoard
@@ -265,6 +270,7 @@ Item {
         model: GamePlay.boardModel
         delegate: boardDelegate
         interactive: false
+        layoutDirection: config.ltr ? Qt.LeftToRight : Qt.RightToLeft
     }
     ListView {
         id: rackList
@@ -279,5 +285,4 @@ Item {
         model: GamePlay.rackModel
         delegate: rackDelegate
     }
-
 }

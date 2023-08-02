@@ -99,9 +99,8 @@ ColumnLayout {
                                  : config.myPalette.windowText
                     shadowPadding: (model.column === 1) ? 6 : 0 //some padding for the word column
                     shadowVertAlign: Text.AlignTop
-                    //TODO: statistics: align word column depending on LTR/RTL settings
                     shadowHorzAlign: (model.column === 1)
-                                     ? Text.AlignLeft  //word column aligns left
+                                     ? config.ltr ? Text.AlignLeft : Text.AlignRight //word column aligns left
                                      : Text.AlignRight
                 }
                 Image {

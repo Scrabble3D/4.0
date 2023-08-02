@@ -230,16 +230,16 @@ Dialog {
             gameConfig["LetterList"] = config.getLetterSet(-1) //Letters[letter,value,count]
             gameConfig["NumberOfRandoms"] = config.numberOfRandomLetters
             gameConfig["NumberOfJokers"] = config.numberOfJokers
-            gameConfig["CanJokerExchange"] = true //NOTE: newgame CanJokerExchange
+            gameConfig["CanJokerExchange"] = true //FEATURE: newgame CanJokerExchange
             gameConfig["GameEndBonus"] = config.gameEndBonus
             gameConfig["NumberOfPasses"] = config.numberOfPasses
             gameConfig["JokerPenalty"] = config.jokerPenalty
             gameConfig["ChangeIsPass"] = config.changeIsPass
             gameConfig["TimeControlType"] = config.timeControl // tcNoLimit=0, tcPerMove=1, tcPerGame=2
             gameConfig["TimeControlValue"] = config.timeControlValue
-            gameConfig["LimitedExchange"] = 3 //NOTE: newgame LimitedExchange
+            gameConfig["LimitedExchange"] = 3 //FEATURE: newgame LimitedExchange
             gameConfig["CambioSecco"] = config.cambiosecco
-            gameConfig["Whatif"] = false //NOTE: newgame Whatif
+            gameConfig["Whatif"] = false //FEATURE: newgame Whatif
             gameConfig["Add"] = config.addLetters
             gameConfig["Substract"] = config.substractLetters
             gameConfig["TimePenaltyValue"] = config.buytimepenalty

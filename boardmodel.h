@@ -29,7 +29,6 @@ public:
     void reset(); //resetmodel() -> after initialization of board the boardmodel needs to be updated
     void updateSquare(Point3D aPos); // after dropletter -> WhatRole ... IsPlacedRole
     void updateAllSquares(); //after placeletters() -> WhatRole ... IsPlacedRole
-    void updateAllFields(); //after setdimension() -> WhatRole ... IsPlacedRole, FieldTypeRole ... BonusRole
 
 protected:
     QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;

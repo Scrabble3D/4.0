@@ -361,14 +361,14 @@ const clientInfo playersTree::playerData(QString name)
         return {};
 }
 
-const QStringList playersTree::groupData(QString name)
+const QString playersTree::groupData(QString name)
 {
     int nLocalPlayer = playerIndex(name);
     QStringList groupInfo;
-    for (int i=0; i<m_lPlayers.count(); i++)
+    for (int i = 0; i < m_lPlayers.count(); i++)
         if (m_lPlayers.at(i).groupID == m_lPlayers.at(nLocalPlayer).groupID)
             groupInfo.append(m_lPlayers.at(i).playerName);
-    return groupInfo;
+    return groupInfo.join(",");
 }
 
 void playersTree::doLogout(QString playerName)

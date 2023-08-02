@@ -20,7 +20,7 @@ bool move::addLetter(Letter aLetter, const bool doCheck)
         return true;
 }
 
-Letter move::getLetter(unsigned int index) const
+Letter move::getLetter(int index) const
 {
     if (index < m_PlacedLetters.count())
         return m_PlacedLetters[index];
@@ -30,7 +30,7 @@ Letter move::getLetter(unsigned int index) const
 
 bool move::deleteLetter(const unsigned int x)
 {
-    for (unsigned int i=0; i<m_PlacedLetters.count(); i++)
+    for (int i = 0; i < m_PlacedLetters.count(); i++)
         if (x == m_PlacedLetters.at(i).Where) {
             m_PlacedLetters.remove(i);
             m_IsScrabble = false;
@@ -294,7 +294,7 @@ bool move::checkConnection()
     bool bHasConnection = false;
     Point3D aPoint;
 
-    for (unsigned int i=0; i<=m_PlacedLetters.count()-1; i++)
+    for (int i = 0; i <= m_PlacedLetters.count()-1; i++)
     {
         aPoint = m_PlacedLetters[i].Point;
         if ((leftOf(aPoint).State == LetterState::lsPlaced) ||

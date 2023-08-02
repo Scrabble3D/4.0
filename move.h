@@ -14,7 +14,7 @@ public:
     unsigned int Value() {return m_Value + m_nBonusValue; }
     void setBonus(unsigned int nBonus, bool bIsScrabble) { m_nBonusValue = nBonus; m_IsScrabble = bIsScrabble; }
     bool addLetter(Letter aLetter, const bool doCheck = true);
-    Letter getLetter(unsigned int index) const;
+    Letter getLetter(int index) const;
     bool deleteLetter(const unsigned int x);
     int letterCount() { return m_PlacedLetters.count(); }
     bool checkMove();

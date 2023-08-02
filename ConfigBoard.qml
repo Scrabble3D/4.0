@@ -180,7 +180,6 @@ GridLayout {
             }
         }
         InfoTip {
-//            anchors.top: glBonusFields.top
             Layout.alignment: Qt.AlignTop
             tiptext: qsTr("Click the fields to iterate through types")
         }

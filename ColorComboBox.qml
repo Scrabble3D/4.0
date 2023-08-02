@@ -96,9 +96,10 @@ ComboBox {
             implicitHeight: contentHeight
             model: control.popup.visible ? control.delegateModel : null
             currentIndex: control.highlightedIndex
-            //TODO: combobox: set minimum scrollbar size
-            ScrollIndicator.vertical: ScrollIndicator { }
-        }
+            ScrollBar.vertical: ScrollBar {
+                policy: control.count > 8 ? Qt.ScrollBarAlwaysOn : Qt.ScrollBarAsNeeded // do not hide SB for logn lists
+            }
+         }
     }
 
 }

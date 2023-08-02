@@ -33,7 +33,7 @@ TableView {
             id: msgText
             leftPadding: 4
             rightPadding: 4
-            text: display //TODO: messages: emoticons :-) = U+1F600
+            text: display // FEATURE: messages: emoticons :-) = U+1F600
             onLinkActivated: (link)=> Qt.openUrlExternally(link)
             width: delegateRect.width
             wrapMode: (model.column === 1)

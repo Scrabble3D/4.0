@@ -16,6 +16,7 @@ ListView {
     delegate: dictViewItem
     boundsMovement: Flickable.StopAtBounds
     currentIndex: -1
+    ScrollBar.vertical: ScrollBar { policy: Qt.ScrollBarAlwaysOn }
 
     property string dictionaryName: "" //used via ScrConfig in ScrNewGame
     property string dictionaryFile: "" //used in ScrConfig to load/save config
@@ -95,26 +96,13 @@ ListView {
                                 dictView.width * 1/3,
                                 dictView.width * 1/6,
                                 dictView.width * 1/6];
+    // TODO: dictionary/ui: TableView + HorizontalHeaderView
     header: Rectangle {
         id: listHeader
         width: dictView.width
         height: tm.height + 8
         color: palette.mid
-/*        gradient: Gradient {
-            GradientStop {
-                position: 0.0
-                color: !down ? Qt.lighter(palette.button, 1.2) : palette.button
-            }
-            GradientStop {
-                position: 0.2
-                color: palette.button
-            }
-            GradientStop {
-                position: 0.8
-                color: !down ? Qt.darker(palette.button, 1.2) : palette.button
-            }
-        }
-*/        Rectangle {
+        Rectangle {
             id: entry1
             width: colWidth[0]; height: listHeader.height; color: "transparent"; border.color: palette.midlight
             ColorLabel { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter
@@ -290,6 +278,5 @@ ListView {
         }
         onPressed: acLoadDictionary.trigger()
     }
-
 
 }

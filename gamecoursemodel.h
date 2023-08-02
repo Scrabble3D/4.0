@@ -15,7 +15,6 @@ public:
         BestValueRole,
         IsScrabbleRole,
         TimeRole,
-        SelectedRole
     };
 
     explicit gamecoursemodel(QObject *parent = nullptr);

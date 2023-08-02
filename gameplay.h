@@ -284,8 +284,8 @@ private:
     bool m_bChangeIsPass;                     // whether changing letters is treated as pass and counted for game end
     TimeControlType m_eTimeControlType;       // type of time control (no, per game, per moves)
     uint m_nTimeControlValue;                 // actual time limit
-    uint m_nLimitedExchange;                  // //NOTE: gameplay: limited exchange to n letters, eg. Italian rules
-    bool m_bWhatif;                           // //NOTE: gameplay: whether whatif is allowed
+    uint m_nLimitedExchange;                  // FEATURE: gameplay: limited exchange to n letters, eg. Italian rules
+    bool m_bWhatif;                           // FEATURE: gameplay: whether whatif is allowed
     bool m_bAdd;                              // whether to add values of remaining tiles from other players to the winner's result
     bool m_bSubstract;                        // whether to deduct the remaining pieces' values from the individual result
     uint m_nJokerPenalty;                     // penalty for joker left on game end
@@ -297,7 +297,7 @@ private:
     uint m_nWordCheckPenalty;                 // penalty when challenge was wrong
     int m_nWordCheckBonus;                    // bonus for correct objection
     int m_nScrabbleBonus;                     // bonus when all pieces are placed, usually 50
-    bool m_bIsCLABBERS;                       // //NOTE: gameplay: whether CLABBER variant is allowed
+    bool m_bIsCLABBERS;                       // FEATURE: gameplay: whether CLABBER variant is allowed
     QList<sharedMove> m_pMoves;
     int m_nCurrentMove;
     int m_nMoveHistory;

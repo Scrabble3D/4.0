@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Dialog {
+    id: about
     title: qsTr("About Scrabble3D")
     standardButtons: Dialog.Close
     modal: true
@@ -14,15 +15,17 @@ Dialog {
 
     GridLayout {
         anchors.fill: parent
+        anchors.margins: 8
         columns: 2
         Image {
             Layout.columnSpan: 2
-            Layout.leftMargin: about.width / 4 // Layout.alignment: Qt.AlignHCenter does not work since layout exceed dialog width
-            Layout.topMargin: 12
-            Layout.bottomMargin: 12
             Layout.preferredWidth: about.width / 2
             Layout.preferredHeight: about.width / 2
             Layout.minimumWidth: 50
+            Layout.leftMargin: about.width / 4
+//            Layout.alignment: Qt.AlignHCenter // does not work since layout exceed dialog width
+            Layout.topMargin: 12
+            Layout.bottomMargin: 12
             source: "qrc:///resources/about.png"
         }
         Label { text: qsTr("Version:")    } Label {   text: GamePlay.version() }

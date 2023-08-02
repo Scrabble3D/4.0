@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Qt.labs.platform //native dialog, instead of import QtQuick.Dialogs
-import Qt.labs.settings //TODO: main: replace settings
+import Qt.labs.platform // native dialog, instead of import QtQuick.Dialogs
+import Qt.labs.settings // INTERNAL: main: replace settings by QtCore
 
 ApplicationWindow {
     id: scrabble3D
