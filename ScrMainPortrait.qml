@@ -131,17 +131,17 @@ ColumnLayout {
             MenuItem { action: acCambioSecco }
             MenuItem { action: acChallenge }
             MenuItem { action: acComputeMove }
-            MenuItem { action: acDictionary }
             MenuSeparator { }
             MenuItem { action: acLoadGame }
             MenuItem { action: acSaveGame }
             MenuSeparator { }
+            MenuItem { action: acDictionary }
             MenuItem { action: acNetwork; icon.source: ""; text: qsTr("Network") }
             MenuSeparator { }
             MenuItem { action: acConfiguration }
             Menu {
                 title: qsTr("View Mode")
-                RadioButton { action: acAutomaticView }
+//                RadioButton { action: acAutomaticView }
                 RadioButton { action: acLandscapeView }
                 RadioButton { action: acPortraitView }
             }

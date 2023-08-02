@@ -61,7 +61,7 @@ public:
     QString fromTDateTimeF(const double tDateTime);
     void clearAll();
     const clientInfo playerData(QString name);
-    const QStringList groupData(QString name);
+    const QString groupData(QString name);
 
 public slots:
     void doLogout(QString playerName);

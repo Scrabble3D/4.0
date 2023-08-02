@@ -54,7 +54,7 @@ void DownloadManager::checkUpdates(QStringList canUpdate) {
         //: Updates available /n Do you want to start now?
         QMessageBox::question(nullptr, tr("Updates available"),
                               //: Updates available /n Do you want to start now?
-                              tr("Do you want to start now?")) == QMessageBox::Yes )
+                              tr("Do you want to update now?")) == QMessageBox::Yes )
     {
         for (int i=0; i<canUpdate.count(); i++)
             download( canUpdate[i] );

@@ -29,23 +29,13 @@ void boardmodel::updateAllSquares()
 {
     QModelIndex aIndex;
     int z = m_pBoard->getBoardSize();
-    for (int i=0; i<z; i++)
-     for (int j=0; j<z; j++)
+    for (int i = 0; i < z; i++)
+     for (int j = 0; j < z; j++)
      {
          aIndex = this->index( i * m_pBoard->getBoardSize() + j );
-         emit dataChanged(aIndex, aIndex, { WhatRole, ValueRole, WhoRole, WhenRole, IsJokerRole, IsRandomRole, IsPlacedRole } );
-     }
-}
-
-void boardmodel::updateAllFields() //TODO: boardmodel: MERGE with func above
-{
-    QModelIndex aIndex;
-    int z = m_pBoard->getBoardSize();
-    for (int i=0; i<z; i++)
-     for (int j=0; j<z; j++)
-     {
-         aIndex = this->index( i * m_pBoard->getBoardSize() + j );
-         emit dataChanged(aIndex, aIndex, { WhatRole, ValueRole, WhoRole, WhenRole, IsJokerRole, IsRandomRole, IsPlacedRole, FieldTypeRole, BonusTopRole, BonusBottomRole, BonusLeftRole, BonusRightRole } );
+         emit dataChanged(aIndex, aIndex, { WhatRole, ValueRole, WhoRole, WhenRole,
+                                            IsJokerRole, IsRandomRole, IsPlacedRole, FieldTypeRole,
+                                            BonusTopRole, BonusBottomRole, BonusLeftRole, BonusRightRole } );
      }
 }
 

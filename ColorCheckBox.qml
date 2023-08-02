@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 
+// needed for dark mode on Android
 CheckBox {
     id: control
     spacing: 6

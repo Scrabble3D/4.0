@@ -69,6 +69,8 @@ void GamePlay::connect(QString name, QString password, QString email, QString co
     //TODO: network: make server variable
     m_pNetwork->connect("scrabble3d.ignorelist.com",5001);
 
+    m_bIsRunning = false; // cancel running game
+    emit isRunningChanged();
     m_bIsConnected = true;
     emit connectedChanged();
 }
@@ -148,7 +150,7 @@ void GamePlay::doNetworkInvite(QVariantMap aMsg)
     case 1:
         msgBox.setText( tr("%1 invites you to kibitz.").arg(aMsg["Sender"].toString()) );
         break;
-    case 2: //TODO: gameplay ?
+    case 2: //TODO: gameplay network invitation ?
         msgBox.setText( tr("%1 invites you to a new game.").arg(aMsg["Sender"].toString()) );
         break;
     }
@@ -199,9 +201,9 @@ void GamePlay::syncNewGame(QVariantMap aConfig)
         configData.append(confKeys[i] + "=" + aConfig[confKeys[i]].toString());
 
     //add player names
-    const QStringList groupInfo = m_PlayersTreeModel->groupData(m_pNetwork->localPlayerName());
+    const QStringList groupInfo = m_PlayersTreeModel->groupData(m_pNetwork->localPlayerName()).split(",");
     configData.append("playerCount="+QString::number(groupInfo.count()));
-    for (int i=0; i<groupInfo.count(); i++)
+    for (int i = 0; i < groupInfo.count(); i++)
         configData.append("player"+QString::number(i+1) + "=" + groupInfo[i]);
 
     //seed for equal randomization
@@ -385,7 +387,7 @@ void GamePlay::doNetworkAnswer(QVariantMap aMsg)
     // append answer
     m_lAnswer[aMsg["Sender"].toString()] = aMsg["Answer"].toString();
 
-    const QStringList players = m_PlayersTreeModel->groupData(m_pNetwork->localPlayerName());
+    const QStringList players = m_PlayersTreeModel->groupData(m_pNetwork->localPlayerName()).split(",");
 
     // feedback
     QVariantList lAnswers;

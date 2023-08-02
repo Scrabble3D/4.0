@@ -66,7 +66,6 @@ class GamePlay : public QObject
     Q_PROPERTY(QVariantList statTotal READ getStatTotal NOTIFY statTotalChanged)
     //compute move
     Q_PROPERTY(int computeProgress READ getComputeProgress WRITE setComputeProgress NOTIFY computeProgressChanged)
-    Q_PROPERTY(int placedValue READ getPlacedValue NOTIFY placedValueChanged)
     Q_PROPERTY(int computeResults READ getcomputeResults WRITE setComputeResults NOTIFY computeResultsChanged)
     //dictionary
     Q_PROPERTY(int wordCount READ getWordCount NOTIFY wordCountChanged)
@@ -93,7 +92,7 @@ signals:
     void numberOfPlayersChanged();
     void computeResultsChanged();
     void computeProgressChanged();
-    void placedValueChanged();
+    void placedValueChanged(uint);
     void wordCountChanged();
     void statInfoChanged();
     void statTotalChanged();
@@ -251,7 +250,6 @@ private:
     int getActivePosition();
     int getComputeProgress() { return m_nProgress; }
     void doComputeMove();
-    int getPlacedValue() { return m_pMoves.count()>0 ? m_pMoves.last()->Value() : 0; }
     void resetPieces(); //removeLetter(*)
     void rollbackLastMove();
     void doGameEnd();
@@ -284,8 +282,8 @@ private:
     bool m_bChangeIsPass;                     // whether changing letters is treated as pass and counted for game end
     TimeControlType m_eTimeControlType;       // type of time control (no, per game, per moves)
     uint m_nTimeControlValue;                 // actual time limit
-    uint m_nLimitedExchange;                  // //NOTE: gameplay: limited exchange to n letters, eg. Italian rules
-    bool m_bWhatif;                           // //NOTE: gameplay: whether whatif is allowed
+    uint m_nLimitedExchange;                  // FEATURE: gameplay: limited exchange to n letters, eg. Italian rules
+    bool m_bWhatif;                           // FEATURE: gameplay: whether whatif is allowed
     bool m_bAdd;                              // whether to add values of remaining tiles from other players to the winner's result
     bool m_bSubstract;                        // whether to deduct the remaining pieces' values from the individual result
     uint m_nJokerPenalty;                     // penalty for joker left on game end
@@ -297,11 +295,12 @@ private:
     uint m_nWordCheckPenalty;                 // penalty when challenge was wrong
     int m_nWordCheckBonus;                    // bonus for correct objection
     int m_nScrabbleBonus;                     // bonus when all pieces are placed, usually 50
-    bool m_bIsCLABBERS;                       // //NOTE: gameplay: whether CLABBER variant is allowed
+    bool m_bIsCLABBERS;                       // FEATURE: gameplay: whether CLABBER variant is allowed
+    uint m_nPerformance;                      // absolute value: 0 = always the best word; >0 = randomly picked => doComputeMove()
     QList<sharedMove> m_pMoves;
     int m_nCurrentMove;
     int m_nMoveHistory;
-    int m_nCurrentPlayer;
+    int m_nCurrentPlayer = 0;
     uint m_nPasses;
     uint m_nPlayerCount = 1; // movecount % playercount=0 crashes
 
@@ -340,7 +339,7 @@ private:
 //    remoteGamesProxy *m_RemoteGamesProxy;
 
     computemove *m_pComputeMove;
-    int m_nComputeResults;
+    int m_nComputeResults = 0;
     DownloadManager *m_pDownloadManager;
 
     QTranslator *m_pTranslator;

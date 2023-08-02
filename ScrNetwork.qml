@@ -11,6 +11,7 @@ Dialog {
     x: (scrabble3D.width - network.width) / 2
     y: (scrabble3D.height - network.height) / 2
     padding: 12
+    width: contentWidth + 2 * padding //silences the warning Binding loop detected for property "implicitWidth"
 
     ListModel {
         id: countriesModel
@@ -284,7 +285,6 @@ Dialog {
     contentItem: FocusScope {
         id: focus //required to receive return key
         Keys.onReturnPressed: accept()
-        focus: standardButton(Dialog.Ok)
         ColumnLayout {
             anchors.fill: parent
             spacing: 6
@@ -303,7 +303,7 @@ Dialog {
                 KeyNavigation.tab: password
             }
             Label { text: qsTr("Password:") }
-            TextInput {
+            TextField {
                 id: password
                 Layout.fillWidth: true
                 echoMode: TextInput.Password
@@ -362,7 +362,6 @@ Dialog {
     }
 
     onAccepted: {
-//        acNetwork.checked = true
         GamePlay.connect(name.text, password.text, email.text, countryBox.currentText, city.text)
 
         var configData = {}

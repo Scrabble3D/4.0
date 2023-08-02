@@ -19,6 +19,7 @@ Window {
     property int numberOfLettersOnRack: 7 // ConfigLetter::sbPieces.value
     property int numberOfRandomLetters: 0 // ConfigLetter::sbRandoms.value
     property int numberOfJokers: 2        // ConfigLetter::sbJoker.value
+    property bool ltr: true               // configLetter::rbReadingDirectionLTR
 
     property int numberOfPasses: 3        // ConfigTime::sbPasses
     property int timeControl: 0           // ConfigTime::rbNoLimit/rbPerMove/rbPerGame
@@ -31,10 +32,11 @@ Window {
     property int jokerPenalty: 0          // ConfigRules::sbJokerPanelty
     property bool changeIsPass: false     // ConfigRules::cbChangeIsPass
     property bool cambiosecco: false      // ConfigRules::cbCambioSecco
+    property int performance: 0           // ConfigRules::slPerformance
 
     property int wordCheckMode: 0         // ConfigWordCheck::rbTakeback = 0, rbPoll = 1, rbChallenge = 2
-    property int wordCheckPeriod: 0       // ConfigWordCheck::sbPeriod.value
-    property int wordCheckPenalty: 0      // ConfigWordCheck::sbPenalty.value
+    property int wordCheckPeriod: 10       // ConfigWordCheck::sbPeriod.value
+    property int wordCheckPenalty: 10      // ConfigWordCheck::sbPenalty.value
     property int wordCheckBonus: 0        // ConfigWordCheck::sbBonus.value
     property bool clabbers: false         // ConfigWordCheck::cbClabbers
 
@@ -124,6 +126,8 @@ Window {
         configData["cbSubstractLetters"] = configRules.cbSubstractLetters.checked
         configData["cbChangeIsPass"] = configRules.cbChangeIsPass.checked
         configData["cbCambioSecco"] = configRules.cbCambioSecco.checked
+        configData["slPerformance"] = configRules.slPerformance.value
+
         //dictionary
         configData["dictionary"] = configDictionary.dictionaryFile
         const dictionaryCategories = configDictionary.dictionaryCategories
@@ -199,8 +203,8 @@ Window {
         configWordCheck.rbTakeback.checked = getConfigValue("rbTakeback", "true") === "true"
         configWordCheck.rbPoll.checked = getConfigValue("rbPoll", "false") === "true"
         configWordCheck.rbChallenge.checked = getConfigValue("rbChallenge", "false") === "true"
-        configWordCheck.sbPeriod.value = getConfigValue("sbPeriod", 0)
-        configWordCheck.sbPenalty.value = getConfigValue("sbPenalty", 0)
+        configWordCheck.sbPeriod.value = getConfigValue("sbPeriod", 10)
+        configWordCheck.sbPenalty.value = getConfigValue("sbPenalty", 10)
         configWordCheck.sbBonus.value = getConfigValue("sbBonus",0)
         configWordCheck.cbClabbers.checked = getConfigValue("cbClabbers", "false") === "true"
 
@@ -225,6 +229,8 @@ Window {
         configRules.cbSubstractLetters.checked = getConfigValue("cbSubstractLetters", "true") === "true"
         configRules.cbChangeIsPass.checked = getConfigValue("cbChangeIsPass", "false") === "true"
         configRules.cbCambioSecco.checked = getConfigValue("cbCambioSecco", "false") === "true"
+        configRules.slPerformance.value = getConfigValue("slPerformance", 10)
+
         // dictionary
         var aFileName = getConfigValue("dictionary","")
         var aCategories = getConfigValue("categories","")
@@ -336,6 +342,7 @@ Window {
         ListElement { name: qsTr("Dictionary"); imgname: "optdic.png" }
         ListElement { name: qsTr("Localization"); imgname: "optui.png" }
     }
+
     Component {
         id: lViewDelegates
         Rectangle {
@@ -480,13 +487,18 @@ Window {
                         id: configDictionary
                         visible: lView.currentIndex === 5
                         onVisibleChanged: {
-                            scrollView.contentHeight = configDictionary.height + 50 //some space for categories
-                            scrollView.contentWidth = configDictionary.width
+                            scrollView.contentHeight = rightPane.height
+                            scrollView.contentWidth = rightPane.width
                         }
                     }
                     ConfigUI {
                         id: configUI
                         visible: lView.currentIndex === 6
+                        onVisibleChanged: {
+                            ScrollBar.visible = false
+                            scrollView.contentHeight = rightPane.height
+                            scrollView.contentWidth = rightPane.width
+                        }
                     }
                 }
             }

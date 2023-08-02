@@ -14,7 +14,7 @@
 
 #undef doSort
 
-//NOTE: dicitionary: DAWG / Aho–Corasick algorithm
+//INTERNAL: dicitionary: DAWG / Aho–Corasick algorithm
 
 dictionary::dictionary(QObject* parent)
 {
@@ -124,10 +124,11 @@ void dictionary::doLoad(QString fileName, QString categories)
                 case scWords: {
                     sLine = decrypt(sLine, sKey);
                     nEqual = sLine.indexOf("=");
-                    nSemicolon=sLine.indexOf(";");
+                    nSemicolon = sLine.indexOf(";");
+                    if (nEqual == -1) nEqual = sLine.length();
                     dicEntry aItem;
                     aItem.word = sLine.first(nEqual>-1 ? nEqual : sLine.length());
-                    aItem.meaning = sLine.mid(nEqual+1,nSemicolon-nEqual-1);
+                    aItem.meaning = sLine.mid(nEqual+1, nSemicolon-nEqual-1);
                     aItem.category = nSemicolon>-1 ? sLine.last(sLine.length()-nSemicolon-1).toInt() : 0;
                     m_Words.append(aItem);
                 }; //scWords
@@ -247,8 +248,8 @@ void dictionary::charsFromWords()
     if (m_sChars.isEmpty())
     {
         QStringList chars;
-        for (uint i=0; i<m_Words.count(); i++)
-            for (uint j=0; j<m_Words[i].word.length(); j++)
+        for (int i =0 ; i < m_Words.count(); i++)
+            for (int j=0; j < m_Words[i].word.length(); j++)
                 if (chars.indexOf(m_Words[i].word[j]) == -1)
                     chars += m_Words[i].word[j];
         chars.sort();
@@ -260,7 +261,7 @@ void dictionary::charsFromWords()
 #endif
 }
 
-//NOTE: dictionary: More Efficient String Construction https://doc.qt.io/qt-6/qstring.html
+// INTERNAL: dictionary: More Efficient String Construction https://doc.qt.io/qt-6/qstring.html
 QString dictionary::variation(const QString aChars)
 /* Scrabble-like variation of letters
    ABC:

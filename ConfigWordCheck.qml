@@ -76,6 +76,7 @@ GridLayout {
             enabled: rbChallenge.checked
             from: 0 //0sec
             to: 300 //5min
+            value: 10
             onValueChanged: config.wordCheckPeriod = value
         }
         RowLayout {
@@ -97,6 +98,7 @@ GridLayout {
             enabled: rbChallenge.checked
             from: 0 //points
             to: 100
+            value: 10
             onValueChanged: config.wordCheckPenalty = value
         }
         RowLayout {
@@ -118,6 +120,7 @@ GridLayout {
             enabled: rbChallenge.checked
             from: 0 //points
             to: 100
+            value: 0
             onValueChanged: config.wordCheckBonus = value
         }
         RowLayout {

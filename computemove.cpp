@@ -78,7 +78,7 @@ void computemove::run(const bool isFirstMove,
     }
 #ifdef threaded
     // wait for the (potentially large) threads poll to be processed
-    // NOTE: computemove: processEvents discouraged
+    // INTERNAL: computemove: processEvents discouraged
     while (!QThreadPool::globalInstance()->waitForDone(100)) {
         QCoreApplication::processEvents();
     }
@@ -139,7 +139,7 @@ void computemove::threadFinished()
     m_nProgress = round((double(m_nDone)/double(m_nTotal))*100);
     if (nProgress != m_nProgress) {
         emit onComputeProgress(m_nProgress);
-        // NOTE: computemove: processEvents discouraged
+        // INTERNAL: computemove: processEvents discouraged
         qApp->processEvents();
     };
 }

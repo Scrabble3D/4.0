@@ -7,15 +7,16 @@ ListView {
     id: dictView
 
     property int pad: 12
-    width: rightPane.width - 2*pad
-    height: rightPane.height - 2*pad
+    width: rightPane.width
+    height: rightPane.height
     leftMargin: pad
-    topMargin: pad
 
     model: GamePlay.dicListModel
     delegate: dictViewItem
     boundsMovement: Flickable.StopAtBounds
     currentIndex: -1
+    //TODO: scrollbar from parent mixes up
+    ScrollBar.vertical: ScrollBar { policy: Qt.ScrollBarAlwaysOn }
 
     property string dictionaryName: "" //used via ScrConfig in ScrNewGame
     property string dictionaryFile: "" //used in ScrConfig to load/save config
@@ -91,30 +92,17 @@ ListView {
     }
 
     property var colWidth: [100,100,20,20];
-    onWidthChanged: colWidth = [dictView.width * 1/3,
-                                dictView.width * 1/3,
-                                dictView.width * 1/6,
-                                dictView.width * 1/6];
+    onWidthChanged: colWidth = [(dictView.width - 2*pad) * 1/3,
+                                (dictView.width - 2*pad) * 1/3,
+                                (dictView.width - 2*pad) * 1/6,
+                                (dictView.width - 2*pad) * 1/6]
+    // TODO: dictionary/ui: TableView + HorizontalHeaderView
     header: Rectangle {
         id: listHeader
-        width: dictView.width
+        width: dictView.width - 2*pad
         height: tm.height + 8
         color: palette.mid
-/*        gradient: Gradient {
-            GradientStop {
-                position: 0.0
-                color: !down ? Qt.lighter(palette.button, 1.2) : palette.button
-            }
-            GradientStop {
-                position: 0.2
-                color: palette.button
-            }
-            GradientStop {
-                position: 0.8
-                color: !down ? Qt.darker(palette.button, 1.2) : palette.button
-            }
-        }
-*/        Rectangle {
+        Rectangle {
             id: entry1
             width: colWidth[0]; height: listHeader.height; color: "transparent"; border.color: palette.midlight
             ColorLabel { x:2; width: parent.width-4; clip: true; anchors.verticalCenter: parent.verticalCenter
@@ -151,7 +139,7 @@ ListView {
                     : dictViewEntry.height
             Rectangle {
                 id: dictViewEntry
-                width: dictView.width
+                width: dictView.width - 2*pad
                 height: tm.height + 4
                 color: model.isLoaded
                        ? palette.highlight
@@ -201,7 +189,7 @@ ListView {
             }
             GridLayout {
                 id: dictViewDetails
-                width: dictView.width
+                width: dictView.width - 2*pad
                 visible: (dictView.currentIndex === index) && (model.installedversion !== "")
 
                 columns: 2
@@ -290,6 +278,5 @@ ListView {
         }
         onPressed: acLoadDictionary.trigger()
     }
-
 
 }

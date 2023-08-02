@@ -1,9 +1,10 @@
-#include <QApplication>
+#include <QApplication> //QChart must not use QGuiApplication
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QIcon>
 
 #include <gameplay.h>
+// TODO: Android: splash screen / app icon
 
 // https://bugreports.qt.io/browse/QTBUG-102634
 // use "set QT_D3D_ADAPTER_INDEX=1" on Windows

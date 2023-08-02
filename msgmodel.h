@@ -19,7 +19,7 @@ public:
         WhoRole = Qt::UserRole + 1
     };
 
-    explicit msgmodel(QObject *parent = nullptr);;
+    explicit msgmodel(QObject *parent = nullptr);
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     int rowCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
     int columnCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;

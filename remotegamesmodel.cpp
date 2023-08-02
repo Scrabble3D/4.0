@@ -86,9 +86,12 @@ void remoteGamesModel::setRemoteGames(const QVariantMap games, const QString sOw
         aGame.moves = games[sPrefix + ".Moves"].toInt();
         aGame.fileName = games[sPrefix + ".Name"].toString();
         QStringList aSequence = aGame.players.split(",");
-        /*
+//FIXME: stored sequence of players not according the actual game
+/*
 #if defined(Q_OS_LINUX) && defined(QT_DEBUG)
         qDebug() << aSequence;
+        qDebug() << aGame.moves;
+        qDebug() << aSequence.count();
         qDebug() << aGame.moves % aSequence.count();
         qDebug() << aSequence[aGame.moves % aSequence.count()];
         qDebug() << sOwnName;

@@ -49,7 +49,7 @@ GridLayout {
 
     function setLetterSet(letterlist) {
         tmLetterSet.clear();
-        for (var i=0; i<letterlist.length; i+=3)
+        for (var i = 0; i < letterlist.length; i+=3)
             tmLetterSet.appendRow( {
                 letter: letterlist[i + 0],
                 value:  parseInt(letterlist[i + 1]),
@@ -59,11 +59,12 @@ GridLayout {
     }
 
     function updateLetterSum() {
-        var z = 0
+        var nSum = 0
         if (tmLetterSet)
-            for (var i=0; i<tmLetterSet.rowCount; i++)
-                z += tmLetterSet.getRow(i).count
-        lbNumberOfLetters.text = z
+            for (var i = 0; i < tmLetterSet.rowCount; i++) {
+                nSum += tmLetterSet.getRow(i).count
+            }
+        lbNumberOfLetters.text = nSum.toString()
     }
 
     columns: 2
@@ -118,7 +119,7 @@ GridLayout {
         HorizontalHeaderView {
             id: horizontalHeader
             syncView: tvLetterSet
-            // requires 6.5(.1?), is needed because of QTBUG-115001
+            // requires +6.5(.1?), is needed because of QTBUG-115001
             resizableColumns: false
             model: [qsTr("Letter"), qsTr("Points"), qsTr("Count")]
             delegate: Rectangle {
@@ -144,63 +145,49 @@ GridLayout {
             Layout.preferredWidth: contentWidth + sbLetterSet.width
             Layout.minimumHeight: 200
             Layout.fillHeight: true
-            ScrollBar.vertical: ScrollBar { id: sbLetterSet }
+            ScrollBar.vertical: ScrollBar { id: sbLetterSet; policy: Qt.ScrollBarAlwaysOn }
             clip: true
             model: tmLetterSet
             delegate: Rectangle {
                 id: rcLetterSet
+                required property bool editing
+
                 implicitWidth: 75
                 implicitHeight: 20
                 color: myPalette.light
                 border.color: myPalette.midlight
                 Text {
                     text: display
+                    visible: !editing
                     padding: 2
                     color: myPalette.windowText
                     anchors.centerIn: parent
                 }
-                TapHandler {
-                    id: cellMouseArea
-                    onTapped: {
-                        editor.source = display
-                        editor.visible = true
-                        editor.item.forceActiveFocus()
-                    }
-                }
-                Loader {
-                    id: editor
-                    anchors.fill: parent
-                    visible: false
-                    sourceComponent: visible ? editComponent : undefined
-                    property var source;
+                TableView.editDelegate: TextInput {
+                        id: textField
+                        anchors.fill: parent
+                        horizontalAlignment: TextInput.AlignHCenter
+                        verticalAlignment: TextInput.AlignVCenter
 
-                    Component {
-                        id: editComponent
-                        TextField {
-                            id: textField
-                            validator: RegularExpressionValidator {
-                                regularExpression:
-                                    (column === 0) ? /.+/            // any character, as many as possible
-                                                   : /\d|[1-9][0-9]/ // either 0..9 or 1:9 followed by 0:9
-                            }
-                            horizontalAlignment: TextInput.AlignHCenter
-                            anchors { fill: parent }
-                            text: source
-                            Keys.onReturnPressed: editingFinished()
-                            onActiveFocusChanged: if (!activeFocus) editingFinished()
-                            onEditingFinished: {
-                                if (textField.text === "")
-                                    if (column === 0) text = "?"; else text = 0;
-                                var idx = tvLetterSet.model.index(row, column);
-                                tmLetterSet.setData(idx, "display",
-                                       (column === 0) ? text : parseInt(text))
-                                tvLetterSet.modelChanged() //update sum
-                                editor.visible = false
-                            }
+                        text: display
+                        color: myPalette.text
+                        selectionColor: myPalette.highlight
+                        selectedTextColor: myPalette.highlightedText
+                        Component.onCompleted: selectAll()
+                        validator: RegularExpressionValidator {
+                            regularExpression:
+                                (column === 0) ? /.+/            // any character, as many as possible
+                                               : /\d|[1-9][0-9]/ // either 0..9 or 1:9 followed by 0:9
+                        }
+                        TableView.onCommit: {
+                            var idx = tvLetterSet.model.index(row, column)
+                            tmLetterSet.setData(idx, "display",
+                                (column === 0) ? text : parseInt(text))
+                            tvLetterSet.modelChanged()
                         }
                     }
+
                 }
-            }
             onModelChanged: {
                 checkDefault()
                 updateLetterSum()
@@ -219,6 +206,7 @@ GridLayout {
                 id: sbMultiplier
                 Layout.preferredWidth: 75
                 from: 1
+                value: 1
                 onValueChanged: {
                     var idx
                     var z
@@ -250,6 +238,7 @@ GridLayout {
     RowLayout {
         ColorSpinBox {
             id: sbJoker
+            value: 2
             onValueChanged: config.numberOfJokers = value
         }
         InfoTip { tiptext: qsTr("The number of blank tiles, also known as jokers, will be added to the letter set") }
@@ -262,6 +251,7 @@ GridLayout {
     RowLayout {
         ColorSpinBox {
             id: sbPieces
+            value: 7
             onValueChanged: config.numberOfLettersOnRack = value
         }
         InfoTip { tiptext: qsTr("You can define how many tiles should be available on the rack") }
@@ -274,28 +264,27 @@ GridLayout {
     RowLayout {
         ColorSpinBox {
             id: sbRandoms
+            value: 0
             onValueChanged: config.numberOfRandomLetters = value
         }
         InfoTip { tiptext: qsTr("Random letters are picked from the distribution, also in case of zero count, and will be added to the letter set") }
     }
-    //todo: configletter: reading direction not yet implemented
     ColorLabel {
         id: lbReadingDirection
         Layout.alignment: Qt.AlignRight
         text: qsTr("Reading direction:")
-        enabled: false
     }
     RowLayout {
         id: layoutReadingDirection
         ColorRadioButton {
             id: rbReadingDirectionLTR
             text: qsTr("left to right")
-            enabled: false
+            onCheckedChanged: if (checked) config.ltr = true
         }
         ColorRadioButton {
             id: rbReadingDirectionRTL
             text: qsTr("right to left")
-            enabled: false
+            onCheckedChanged: if (checked) config.ltr = false
         }
     }
 }

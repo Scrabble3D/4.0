@@ -41,13 +41,15 @@ GridLayout {
 
         Layout.minimumWidth: 100
         Layout.preferredWidth: 250
-        model:
-            [ qsTr("Classic"),
+
+        model: [
+            qsTr("Classic"),
             qsTr("Supperscrabble"),
             qsTr("Scrabble 3D"),
             qsTr("Superscrabble 3D"),
             qsTr("User-defined")
         ]
+
         onCurrentIndexChanged: {
             switch (currentIndex) {
             case 0:
@@ -103,6 +105,7 @@ GridLayout {
     }
     ColorSpinBox {
         id: sbSize
+        value: 15
         onValueChanged: {
             var tmp = [] //new Array(sbSize.value*sbSize.value)
             var lastSize
@@ -110,9 +113,9 @@ GridLayout {
             if (rb3D.checked)
             {
                 lastSize = Math.round(Math.cbrt(config.board.length))
-                for (i=0; i<sbSize.value; i++)
-                    for (j=0; j<sbSize.value; j++)
-                        for (k=0; k<sbSize.value; k++) {
+                for (i = 0; i < sbSize.value; i++)
+                    for (j = 0; j < sbSize.value; j++)
+                        for (k = 0; k < sbSize.value; k++) {
                             z = i*lastSize*lastSize+j*lastSize+k
                             v = i*sbSize.value*sbSize.value+j*sbSize.value+k
                             if (isNaN(config.board[z]))
@@ -124,10 +127,10 @@ GridLayout {
             } else
             {
                 lastSize = Math.sqrt(config.board.length)
-                for (i=0; i<sbSize.value; i++)
-                    for (j=0; j<sbSize.value; j++) {
-                        z = i*lastSize+j
-                        v = i*sbSize.value+j
+                for (i = 0; i < sbSize.value; i++)
+                    for (j = 0; j < sbSize.value; j++) {
+                        z = i * lastSize + j
+                        v = i * sbSize.value+j
                         if (isNaN(config.board[z]))
                             tmp[v] = 1
                         else
@@ -180,7 +183,6 @@ GridLayout {
             }
         }
         InfoTip {
-//            anchors.top: glBonusFields.top
             Layout.alignment: Qt.AlignTop
             tiptext: qsTr("Click the fields to iterate through types")
         }

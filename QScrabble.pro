@@ -6,6 +6,7 @@ CONFIG += qmltypes
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.2.0
 
 ICON = resources/Scrabble3D.icns
+RC_ICONS = resources/app.ico
 
 SOURCES += \
         board.cpp \
@@ -67,18 +68,21 @@ QML_DESIGNER_IMPORT_PATH =
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
-android: include(/opt/Android/android_openssl/openssl.pri)
+android: include($$PWD/android-sdk/android_openssl/openssl.pri)
 
+# android-sdk created as soft link to the actual opensssl path
 contains(ANDROID_TARGET_ARCH,arm64-v8a) {
     ANDROID_EXTRA_LIBS = \
-        /opt/Android/android_openssl/ssl_3/arm64-v8a/libcrypto_3.so \
-        /opt/Android/android_openssl/ssl_3/arm64-v8a/libssl_3.so
-#        /opt/Android/android_openssl/latest/arm64/libcrypto_1_1.so \
-#        /opt/Android/android_openssl/latest/arm64/libssl_1_1.so \
-#        /opt/Android/android_openssl/latest/x86/libcrypto_1_1.so \
-#        /opt/Android/android_openssl/latest/x86/libssl_1_1.so \
-#        /opt/Android/android_openssl/latest/x86_64/libcrypto_1_1.so \
-#        /opt/Android/android_openssl/latest/x86_64/libssl_1_1.so
+        $$PWD/android-sdk/android_openssl/ssl_3/arm64-v8a/libcrypto_3.so \
+        $$PWD/android-sdk/android_openssl/ssl_3/arm64-v8a/libssl_3.so
+
+    ANDROID_PACKAGE_SOURCE_DIR = \
+        $$PWD/android
+}
+contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
+    ANDROID_EXTRA_LIBS = \
+        $$PWD/android-sdk/android_openssl/ssl_3/armeabi-v7a/libcrypto_3.so \
+        $$PWD/android-sdk/android_openssl/ssl_3/armeabi-v7a/libssl_3.so
 
     ANDROID_PACKAGE_SOURCE_DIR = \
         $$PWD/android
@@ -93,14 +97,3 @@ DISTFILES += \
     android/gradlew \
     android/gradlew.bat \
     android/res/values/libs.xml
-
-contains(ANDROID_TARGET_ARCH,arm64-v7a) {
-    ANDROID_PACKAGE_SOURCE_DIR = \
-        $$PWD/android
-}
-
-contains(ANDROID_TARGET_ARCH,arm64-v8a) {
-    ANDROID_EXTRA_LIBS = \
-    $$PWD/../../../../opt/Android/android_openssl/ssl_3/arm64-v8a/libcrypto_3.so \
-    $$PWD/../../../../opt/Android/android_openssl/ssl_3/arm64-v8a/libssl_3.so
-}

@@ -160,12 +160,12 @@ void network::doReadyRead()
         case nwCheckWord: emit onChallengeMove(aLastMessage["Sender"].toString()); break;
         case nwChallenge: emit onChallengeResult(aLastMessage); break;
         case nwRemoteGames: emit onRemoteGames(aLastMessage); break;
-        case nwBestValues: break; //TODO: network: bestvalues into gamrcourse
+        case nwBestValues: break; //TODO: network: bestvalues into gamecourse
         case nwGameResult: {
             if (aLastMessage["Sender"] == m_sName)
                 emit onGameResult(aLastMessage["OldRating"].toInt(), aLastMessage["NewRating"].toInt());
         } break;
-            //TODO: network: unknown message should be readable, eg. in case of /tell Foo (instead of whisper)
+        //TODO: network: unknown message should be readable, eg. in case of /tell Foo (instead of whisper)
         default:
 #if defined(Q_OS_LINUX) && defined(QT_DEBUG)
             qWarning() << "Unknown message: " << aLastMessage["MessageType"].toString()

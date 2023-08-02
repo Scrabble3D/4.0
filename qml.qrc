@@ -37,7 +37,6 @@
         <file>resources/star.png</file>
         <file>ScrAbout.qml</file>
         <file>resources/about.png</file>
-        <file>LinkText.qml</file>
         <file>resources/bingo.png</file>
         <file>ToolbarButton.qml</file>
         <file>resources/optdic.png</file>
@@ -320,7 +319,6 @@
         <file>ColorCheckBox.qml</file>
         <file>ColorButton.qml</file>
         <file>ColorRadioButton.qml</file>
-        <file>ColorTextField.qml</file>
         <file>resources/cambiosecco.png</file>
     </qresource>
 </RCC>

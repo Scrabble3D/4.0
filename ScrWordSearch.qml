@@ -39,6 +39,8 @@ Dialog {
 
     ColumnLayout {
         anchors.fill: parent
+        anchors.margins: 8
+
         TabBar {
             id: tabBar
             Layout.fillWidth: true
@@ -49,13 +51,14 @@ Dialog {
             currentIndex: tabBar.currentIndex
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.topMargin: 8
 
             GridLayout {
                 id: glSearch
                 columns: 2
                 rowSpacing: 8
                 Label { text: qsTr("Word:") }
-                //NOTE: wordsearch: digraph replacement (Espanol -> 1ACA = LLACA)
+                //FEATURE: wordsearch: digraph replacement (Espanol -> 1ACA = LLACA)
                 TextField {
                     id: dicWord
                     property string bgcolor: palette.light

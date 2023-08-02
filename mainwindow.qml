@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Qt.labs.platform //native dialog, instead of import QtQuick.Dialogs
-import Qt.labs.settings //TODO: main: replace settings
+import Qt.labs.platform // native dialog, instead of import QtQuick.Dialogs
+import Qt.labs.settings // INTERNAL: main: replace settings by QtCore
 
 ApplicationWindow {
     id: scrabble3D
@@ -83,7 +83,7 @@ ApplicationWindow {
     }
     Action {
         id: acChallenge
-        text: qsTr("Object placed word")
+        text: qsTr("Object Placed Word")
         icon.source: "qrc:///resources/challenge.png"
         icon.color: iconColor
         enabled: GamePlay.isRunning && GamePlay.isChallenge
@@ -128,7 +128,7 @@ ApplicationWindow {
     }
     Action {
         id: acComputeMove
-        text: qsTr("Compute move")
+        text: qsTr("Compute Move")
         shortcut: StandardKey.Find
         property string tip: text
         enabled: !GamePlay.isConnected && !GamePlay.isComputing &&
@@ -155,22 +155,23 @@ ApplicationWindow {
     ActionGroup {
         id: acViewType
         exclusive: true
-        Action {
+        // crashes when done repeatedly
+/*        Action {
             id: acAutomaticView
             checked: true
             checkable: true
             text: qsTr("Automatic")
         }
-        Action {
+*/        Action {
             id: acLandscapeView
-            checked: false
+            checked: Qt.platform.os !== "android"
             checkable: true
             text: qsTr("Desktop")
             onCheckedChanged: if (acLandscapeView.checked) mainLoader.state = "landscape"
         }
         Action {
             id: acPortraitView
-            checked: false
+            checked: Qt.platform.os === "android"
             checkable: true
             text: qsTr("Mobile")
             onCheckedChanged: if (acPortraitView.checked) mainLoader.state = "portrait"
@@ -178,7 +179,7 @@ ApplicationWindow {
     }
     Action {
         id: acDictionary
-        text: qsTr("Word search")
+        text: qsTr("Word Search")
         enabled: !GamePlay.isConnected || !GamePlay.isRunning
         onTriggered: dictionary.open()
     }
@@ -226,18 +227,18 @@ ApplicationWindow {
     ScrNetwork     { id: network }
     ScrRemoteGames { id: remotegames}
     ScrConfig      { id: config } //needs to come last trigger system palette change
-
+/*
     onWidthChanged: if (acAutomaticView.checked) {
         height > width
             ? mainLoader.state = "portrait"
             : mainLoader.state = "landscape"
     }
-
+*/
     Loader {
         id: mainLoader
         anchors.fill: parent
         asynchronous: true
-        state: "landscape"//"portrait"//
+        state: height > width ? "portrait" : "landscape"
         onLoaded: main.board.updateFieldSize() //changing the number of fields should result in resizing
         states:
         [

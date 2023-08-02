@@ -52,7 +52,7 @@ ListView {
     onWidthChanged: colWidth = [locView.width * 1/3,
                                 locView.width * 1/3,
                                 locView.width * 1/6,
-                                locView.width * 1/6];
+                                locView.width * 1/6]
     header: Rectangle {
         id: listHeader
         width: locView.width
@@ -157,4 +157,40 @@ ListView {
             }
         }
     }
+    RoundButton {
+        id: actionButton
+        implicitWidth: 50
+        implicitHeight: 50
+        x: rightPane.width - 75
+        y: rightPane.height - 75
+        enabled: !model.get(currentIndex).isLoaded
+        display: AbstractButton.IconOnly
+        icon.width: 32
+        icon.height: 32
+        icon.source: model.get(currentIndex).installedversion !== ""
+                        ? "qrc:///resources/dictionary.png"
+                        : "qrc:///resources/dictionarydown.png"
+        background: Rectangle {
+            anchors.fill: parent
+            radius: width / 2
+            gradient: Gradient {
+                GradientStop {
+                    position: actionButton.hovered ? 1.0 : 1.0
+                    color: actionButton.enabled ? "darkgreen" : "lightgrey"
+                }
+                GradientStop {
+                    position: actionButton.hovered ? 1.0 : 0.0
+                    color: actionButton.enabled ? "limegreen" : "lightgrey"
+                }
+            }
+        }
+        ToolTip {
+            text: qsTr("Load localization")
+            visible: actionButton.hovered
+            delay: 1000
+            timeout: 5000
+        }
+        onPressed: acLoadLocalization.trigger()
+    }
+
 }

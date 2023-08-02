@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 
+// needed for dark mode on Android
 SpinBox {
     id: control
     implicitWidth: 60 + 28

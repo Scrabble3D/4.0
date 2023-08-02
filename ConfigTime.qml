@@ -49,6 +49,27 @@ GridLayout {
         return nResult;
     }
 
+    component TimeField: TextField {
+        id: control
+        implicitWidth: 60 + 28
+
+        property bool accepted
+
+        validator: RegularExpressionValidator {
+            regularExpression: /^(?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d)$/
+        } //accept from 00:00:00 to 23:59:59
+
+        color: enabled ? "black" : "darkgrey"
+
+        background: Rectangle {
+            color: control.enabled
+                   ? (control.accepted)
+                      ? "red" : "white"
+                   : "lightgrey"
+        }
+
+    }
+
     ColorLabel {
         id: lbTimeControl
         leftPadding: 8
@@ -77,7 +98,7 @@ GridLayout {
                 tiPerMove.textChanged()
             }
         }
-        ColorTextField {
+        TimeField {
             id: tiPerMove
             enabled: rbPerMove.checked
             text: "0:01:00" //1 min
@@ -95,7 +116,7 @@ GridLayout {
                 tiPerGame.textChanged()
             }
         }
-        ColorTextField {
+        TimeField {
             id: tiPerGame
             enabled: rbPerGame.checked
             text: "1:00:00" //1 h
@@ -145,6 +166,7 @@ GridLayout {
                 enabled: rbPenalty.checked && rbPenalty.enabled
                 from: 1
                 to: 5000
+                value: 1
                 onValueChanged: config.buytimepenalty = value
             }
             ColorLabel {
@@ -163,6 +185,7 @@ GridLayout {
                 enabled: rbPenalty.checked && rbPenalty.enabled
                 from: 1
                 to: 5000
+                value: 1
                 onValueChanged: config.buytimecount = value
             }
             ColorLabel {

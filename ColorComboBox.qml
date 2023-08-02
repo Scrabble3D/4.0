@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 
+// needed for dark mode on Android
 ComboBox {
     id: control
 
@@ -11,9 +12,11 @@ ComboBox {
         highlighted: control.highlightedIndex === index
 
         contentItem: Text {
-            text: control.textRole
-                ? (Array.isArray(control.model) ? modelData[control.textRole] : model[control.textRole])
-                : modelData
+            text: modelData
+                  ? modelData[control.textRole]
+                    ? modelData[control.textRole]
+                    : modelData
+                  : model[control.textRole]
             color: isDark(bg.color) ? "white" : "black"
             font: control.font
             elide: Text.ElideRight
@@ -92,13 +95,15 @@ ComboBox {
         padding: 1
 
         contentItem: ListView {
+            readonly property int maxHeight: 300
             clip: true
-            implicitHeight: contentHeight
+            implicitHeight: contentHeight > maxHeight ? maxHeight : contentHeight
             model: control.popup.visible ? control.delegateModel : null
             currentIndex: control.highlightedIndex
-            //TODO: combobox: set minimum scrollbar size
-            ScrollIndicator.vertical: ScrollIndicator { }
-        }
+            ScrollBar.vertical: ScrollBar {
+                policy: control.count > 8 ? Qt.ScrollBarAlwaysOn : Qt.ScrollBarAsNeeded // do not hide SB for logn lists
+            }
+         }
     }
 
 }

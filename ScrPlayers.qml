@@ -48,7 +48,7 @@ ColumnLayout {
                        : "transparent"
 
             implicitWidth: layout.parent.width //3*padding + label.x + label.implicitWidth
-            implicitHeight: label.implicitHeight * 1.5
+            implicitHeight: label.implicitHeight * 1.2
 
             readonly property real indent: 20
             readonly property real padding: 5

@@ -47,9 +47,6 @@ QVariant gamecoursemodel::data(const QModelIndex &index, int role) const
       case TimeRole:
         return aData.time;
         break;
-      case SelectedRole:
-        return m_nSelected;
-        break;
     }
 
     return QVariant();
@@ -95,8 +92,6 @@ QHash<int, QByteArray> gamecoursemodel::roleNames() const
     roles[IsScrabbleRole] = "isScrabble";
     roles[BestValueRole] = "bonus";
     roles[TimeRole] = "time";
-    //TODO: gamecourse: selected not used/needed
-    roles[SelectedRole] = "selected";
     return roles;
 }
 

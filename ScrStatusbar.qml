@@ -5,7 +5,34 @@ import QtCharts
 
 RowLayout {
     property int tbHeight: 22
-    property string tip: "";
+    property string tip: ""
+
+    Connections {
+        target: GamePlay
+        function onShowPoll(bShow) {
+            poll.visible = bShow
+        }
+        function onAnswerChanged(pAnswers) {
+            pieSeries.clear()
+            for (var i = 0; i < pAnswers.length; i++) {
+                var pie = pieSeries.append("", 1)
+                switch (pAnswers[i]) {
+                  case  0: pie.color = config.myPalette.dark; break
+                  case -1: pie.color = "red"; break
+                  case  1: pie.color = "green"; break
+                }
+                pie.borderWidth = 0
+                pie.borderColor = pie.color
+             }
+        }
+        function onPlacedValueChanged(nValue) {
+            if (nValue > 50)
+                progressBar.width = statProgress.width
+            else
+                progressBar.width = Math.round(statProgress.width * nValue/50)
+            tip = qsTr("Score: %1 points").arg(nValue)
+        }
+    }
 
     Rectangle {
         id: statProgress
@@ -21,16 +48,11 @@ RowLayout {
             // without the item
             id: progressBar
 
-            property int placedValue: GamePlay.placedValue
             property int computeProgress: GamePlay.computeProgress
 
             height: parent.height - 2
             y: 1
             color: computeProgress > 0 ? "lightblue" : "lightgreen"
-            onPlacedValueChanged: {
-                width = placedValue > 50 ? parent.width : Math.round(parent.width * placedValue/50)
-                tip = qsTr("Score: %1 points").arg(placedValue)
-            }
             onComputeProgressChanged: {
                 width = Math.round(parent.width * computeProgress/100)
                 tip = ""
@@ -191,25 +213,6 @@ RowLayout {
             property int border: 1
             plotArea: Qt.rect(border, border, width - border*2, height - border*2)
             PieSeries { id: pieSeries; size: 1 }
-        }
-    }
-    Connections {
-        target: GamePlay
-        function onShowPoll(doShow) {
-            poll.visible = doShow
-        }
-        function onAnswerChanged(answers) {
-            pieSeries.clear()
-            for (var i=0; i<answers.length; i++) {
-                var pie = pieSeries.append("", 1)
-                switch (answers[i]) {
-                case  0: pie.color = config.myPalette.dark; break
-                case -1: pie.color = "red"; break
-                case  1: pie.color = "green"; break
-                }
-                pie.borderWidth = 0
-                pie.borderColor = pie.color
-             }
         }
     }
 }

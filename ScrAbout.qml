@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Dialog {
+    id: about
     title: qsTr("About Scrabble3D")
     standardButtons: Dialog.Close
     modal: true
@@ -12,17 +13,49 @@ Dialog {
     x: (scrabble3D.width - about.width) / 2
     y: (scrabble3D.height - about.height) / 2
 
+    component LinkText: Rectangle {
+        width: parent.width
+        height: theText.height
+        clip: true //rich text does not wrap or elide
+        color: "transparent"
+        property alias text: theText.text
+        Text {
+            id: theText
+            color: config.myPalette.windowText
+            text: ""
+            linkColor: isDark(config.myPalette.window) ? Qt.lighter("#0000FF") : "#0000FF"
+            onLinkActivated: Qt.openUrlExternally(link)
+            MouseArea {
+                id: maLink
+                anchors.fill: parent
+                hoverEnabled: true
+                acceptedButtons: Qt.NoButton
+                cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+            }
+            ToolTip {
+                text: theText.hoveredLink
+                visible: maLink.containsMouse
+                delay: 1000
+                timeout: 5000
+            }
+        }
+    }
+
     GridLayout {
         anchors.fill: parent
+        anchors.margins: 8
         columns: 2
         Image {
             Layout.columnSpan: 2
-            Layout.leftMargin: about.width / 4 // Layout.alignment: Qt.AlignHCenter does not work since layout exceed dialog width
-            Layout.topMargin: 12
-            Layout.bottomMargin: 12
             Layout.preferredWidth: about.width / 2
             Layout.preferredHeight: about.width / 2
             Layout.minimumWidth: 50
+            Layout.leftMargin: about.width / 4
+            // does not work since layout exceed dialog width
+            // do not attempt to bind the width or height of the dialog... https://doc.qt.io/qt-5/qml-qtquick-dialogs-dialog.html
+//            Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: 12
+            Layout.bottomMargin: 12
             source: "qrc:///resources/about.png"
         }
         Label { text: qsTr("Version:")    } Label {   text: GamePlay.version() }

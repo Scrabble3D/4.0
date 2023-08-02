@@ -40,7 +40,7 @@ ColumnLayout {
             MenuSeparator { }
             Menu {
                 title: qsTr("&View Mode")
-                RadioButton { action: acAutomaticView }
+//                RadioButton { action: acAutomaticView }
                 RadioButton { action: acLandscapeView }
                 RadioButton { action: acPortraitView }
             }

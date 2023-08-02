@@ -12,11 +12,13 @@ Dialog {
         standardButtons: Dialog.Ok | Dialog.Cancel
     }
     property alias playerNames: playerNames //used at poll
-
-    padding: mainLoader.state === "landscape" ? 12 : 0
+    property bool isMobileUI: mainLoader.state === "landscape"
+    padding: isMobileUI ? 12 : 3
 
     x: (scrabble3D.width - width) / 2
     y: (scrabble3D.height - height) / 2
+    height: Math.max(pnLeft.height, pnRight.height) + implicitFooterHeight + implicitHeaderHeight + padding
+    width: configInfo.width + 2 * padding
 
     property int rbIndex: 1
     property int seed: -1
@@ -113,18 +115,18 @@ Dialog {
                     spacing: 1
                     TextField   {
                         id: tiName
-                        width: 90
+                        width: 120
                         bottomPadding: topPadding
                         text: playerName
                         enabled: (rbIndex > index) && (!cbComputer.checked)
                         readOnly: GamePlay.isConnected
                         background: Rectangle {
                             color: tiName.enabled
-                                    ? "transparent"
-                                    : config.myPalette.mid
+                                   ? "transparent"
+                                   : config.myPalette.mid
                             border.color: tiName.enabled
-                                    ? config.myPalette.mid
-                                    : config.myPalette.midlight
+                                          ? config.myPalette.mid
+                                          : config.myPalette.midlight
                         }
                         leftPadding: 2
                         verticalAlignment: TextInput.AlignVCenter //Qt.AlignVCenter
@@ -147,139 +149,140 @@ Dialog {
                 }
             }
         }
-            RowLayout {
-                id: configInfo
-                spacing: 6
-                ColumnLayout {
-                    id: pnLeft
-                    Layout.leftMargin: mainLoader.state === "landscape" ? 12 : 0
-                    RowLayout {
-                        id: header
-                        Label  {
-                            leftPadding: 25 //~ width(radiobutton) + spacing
-                            // hash symbol indicating the number of players in the new_game-dialog
-                            text: "#"
-                            font.bold: true
-                        }
-                        Label {
-                            text: qsTr("player name")
-                            font.bold: true
-                        }
+        RowLayout {
+            id: configInfo
+            spacing: 12
+            ColumnLayout {
+                id: pnLeft
+                Layout.alignment: Qt.AlignTop
+                RowLayout {
+                    id: header
+                    Label  {
+                        leftPadding: 25 //~ width(radiobutton) + spacing
+                        // hash symbol indicating the number of players in the new_game-dialog
+                        text: "#"
+                        font.bold: true
                     }
-                    Repeater {
-                        model: playerNames
-                        delegate: playerDelegate
-                    }
-                    CheckBox {
-                        id: cbRandomized
-                        text: "Randomized order"
-                        focus: false
-                        enabled: !GamePlay.isConnected
+                    Label {
+                        text: qsTr("player name")
+                        font.bold: true
                     }
                 }
-                GridLayout {
-                    id: pnRight
-                    columns: 2
-                    rowSpacing: 6
-                    Layout.alignment: Qt.AlignTop
-                    Layout.rightMargin: mainLoader.state === "landscape" ? 24 : 3
-                    Layout.leftMargin: mainLoader.state === "landscape" ? 24 : 0
-                    Label { Layout.columnSpan: 2; text: qsTr("Settings:"); font.bold: true }
-                    Label { text: qsTr("Board:")} Label { text: config.boardName }
-                    Label { text: qsTr("Letters:") } Label { text: config.lettersetName }
-                    Label { text: qsTr("Dictionary:") } Label { text: config.dictionaryName }
-                    Label { text: qsTr("Time control:") }
-                    Label { text: config.timeControl == 0
-                                  ? qsTr("No time control")
-                                  : config.timeControl == 1
-                                    ? qsTr("Per Move") + " (" + getTimeString() + ")"
-                                    : qsTr("Per Game") + " (" + getTimeString() + ")"
-                    }
-                    Label { text: qsTr("Word check mode:") }
-                    Label { text: config.wordCheckMode == 0
-                                  ? qsTr("Takeback")
-                                  : config.timeControl == 1
-                                    ? qsTr("Poll")
-                                    : qsTr("Challenge") + " (" +
-                                      //: unit seconds
-                                      config.wordCheckPeriod + qsTr("s") + ")"
-                    }
-                    Label { text: qsTr("Cambio Secco:"); visible: config.cambiosecco }
-                    Label { text: qsTr("enabled"); visible: config.cambiosecco
-                    }
+                Repeater {
+                    model: playerNames
+                    delegate: playerDelegate
+                }
+                CheckBox {
+                    id: cbRandomized
+                    text: "Randomized order"
+                    focus: false
+                    enabled: !GamePlay.isConnected
                 }
             }
-        }
-
-        function getNames() {
-            let sRet = []
-            for (var i=0; i<rbIndex; i++)
-                if (playerNames.get(i).isComputer)
-                    sRet.push("Computer")
-                else
-                    sRet.push(playerNames.get(i).playerName)
-            return sRet
-        }
-        onAccepted: {
-            buttons.enabled = false //disabled as feedback while poll is active in network mode
-            var gameConfig = {}
-            gameConfig["PlayerNames"] = getNames()
-            gameConfig["RackSize"] = config.numberOfLettersOnRack
-            gameConfig["Is3D"] = config.bIs3D
-            gameConfig["FieldTypeArray"] = config.board
-            gameConfig["LetterList"] = config.getLetterSet(-1) //Letters[letter,value,count]
-            gameConfig["NumberOfRandoms"] = config.numberOfRandomLetters
-            gameConfig["NumberOfJokers"] = config.numberOfJokers
-            gameConfig["CanJokerExchange"] = true //NOTE: newgame CanJokerExchange
-            gameConfig["GameEndBonus"] = config.gameEndBonus
-            gameConfig["NumberOfPasses"] = config.numberOfPasses
-            gameConfig["JokerPenalty"] = config.jokerPenalty
-            gameConfig["ChangeIsPass"] = config.changeIsPass
-            gameConfig["TimeControlType"] = config.timeControl // tcNoLimit=0, tcPerMove=1, tcPerGame=2
-            gameConfig["TimeControlValue"] = config.timeControlValue
-            gameConfig["LimitedExchange"] = 3 //NOTE: newgame LimitedExchange
-            gameConfig["CambioSecco"] = config.cambiosecco
-            gameConfig["Whatif"] = false //NOTE: newgame Whatif
-            gameConfig["Add"] = config.addLetters
-            gameConfig["Substract"] = config.substractLetters
-            gameConfig["TimePenaltyValue"] = config.buytimepenalty
-            gameConfig["TimePenaltyCount"] = config.canbuytime ? config.buytimecount : 0
-            gameConfig["TimeGameLost"] = config.timegamelost
-            gameConfig["WordCheckType"] = config.wordCheckMode
-            gameConfig["WordCheckPeriod"] =config.wordCheckPeriod
-            gameConfig["WordCheckPenalty"] = config.wordCheckPenalty
-            gameConfig["WordCheckBonus"] = config.wordCheckBonus
-            gameConfig["ScrabbleBonus"] = config.bingoBonus
-            gameConfig["IsCLABBERS"] = config.clabbers
-            gameConfig["RandomSequence"] = cbRandomized.checked // -1 = generate
-            gameConfig["Seed"] = seed
-
-            if (!GamePlay.isConnected)
-                GamePlay.startNewGame(gameConfig)
-            else
-                GamePlay.startNewGameLater(gameConfig)
-
-            main.board.jokerPicker.updatePickerModel() //use current letterlist for joker picker
-            main.board.updateLabelsModel() //redraw labels on x/y axis
-            main.board.updateFieldSize() //changing the number of fields should result in resizing
-
-            //save last game settings except when in network mode
-            if (!GamePlay.isConnected) {
-                var configData = {}
-                configData["player1"] = playerNames.get(0).playerName
-                configData["player2"] = playerNames.get(1).playerName
-                configData["player3"] = playerNames.get(2).playerName
-                configData["player4"] = playerNames.get(3).playerName
-                configData["comp1"] = playerNames.get(0).isComputer
-                configData["comp2"] = playerNames.get(1).isComputer
-                configData["comp3"] = playerNames.get(2).isComputer
-                configData["comp4"] = playerNames.get(3).isComputer
-                configData["playerCount"] = rbIndex
-                configData["randomized"] = cbRandomized.checked
-                GamePlay.saveConfig("", configData) // player info only
-                config.saveConfig("") //all other config
+            GridLayout {
+                id: pnRight
+                columns: 2
+                rowSpacing: 6
+                Layout.alignment: Qt.AlignTop
+                Label { Layout.columnSpan: 2; text: qsTr("Settings:"); font.bold: true }
+                Label { text: qsTr("Board:"); Layout.columnSpan: isMobileUI ? 1 : 2}
+                Label { text: config.boardName; Layout.columnSpan: isMobileUI ? 1 : 2; leftPadding: isMobileUI ? 0 : 12 }
+                Label { text: qsTr("Letters:"); Layout.columnSpan: isMobileUI ? 1 : 2 }
+                Label { text: config.lettersetName; Layout.columnSpan: isMobileUI ? 1 : 2; leftPadding: isMobileUI ? 0 : 12  }
+                Label { text: qsTr("Dictionary:"); Layout.columnSpan: isMobileUI ? 1 : 2 }
+                Label { text: config.dictionaryName; Layout.columnSpan: isMobileUI ? 1 : 2; leftPadding: isMobileUI ? 0 : 12  }
+                Label { text: qsTr("Time control:"); Layout.columnSpan: isMobileUI ? 1 : 2 }
+                Label { text: config.timeControl == 0
+                              ? qsTr("No time control")
+                              : config.timeControl == 1
+                                ? qsTr("Per Move") + " (" + getTimeString() + ")"
+                                : qsTr("Per Game") + " (" + getTimeString() + ")"
+                        Layout.columnSpan: isMobileUI ? 1 : 2; leftPadding: isMobileUI ? 0 : 12 }
+                Label { text: qsTr("Word check mode:"); Layout.columnSpan: isMobileUI ? 1 : 2 }
+                Label { text: config.wordCheckMode == 0
+                              ? qsTr("Takeback")
+                              : config.wordCheckMode == 1
+                                ? qsTr("Poll")
+                                : qsTr("Challenge") + " (" +
+                                  //: unit seconds
+                                  config.wordCheckPeriod + qsTr("s") + ")";
+                        Layout.columnSpan: isMobileUI ? 1 : 2; leftPadding: isMobileUI ? 0 : 12 }
+                Label { text: qsTr("Cambio Secco:"); visible: config.cambiosecco; Layout.columnSpan: isMobileUI ? 1 : 2 }
+                Label { text: qsTr("enabled"); visible: config.cambiosecco; Layout.columnSpan: isMobileUI ? 1 : 2; leftPadding: isMobileUI ? 0 : 12  }
             }
-
         }
-        onRejected: GamePlay.rejectNewGame()
     }
+
+    function getNames() {
+        let sRet = []
+        for (var i = 0; i < rbIndex; i++)
+            if (playerNames.get(i).isComputer)
+                sRet.push("Computer")
+            else
+                sRet.push(playerNames.get(i).playerName)
+        return sRet
+    }
+    onAccepted: {
+        buttons.enabled = false //disabled as feedback while poll is active in network mode
+        var gameConfig = {}
+        gameConfig["PlayerNames"] = getNames()
+        gameConfig["RackSize"] = config.numberOfLettersOnRack
+        gameConfig["Is3D"] = config.bIs3D
+        gameConfig["FieldTypeArray"] = config.board
+        gameConfig["LetterList"] = config.getLetterSet(-1) //Letters[letter,value,count]
+        gameConfig["NumberOfRandoms"] = config.numberOfRandomLetters
+        gameConfig["NumberOfJokers"] = config.numberOfJokers
+        gameConfig["CanJokerExchange"] = true //FEATURE: newgame CanJokerExchange
+        gameConfig["GameEndBonus"] = config.gameEndBonus
+        gameConfig["NumberOfPasses"] = config.numberOfPasses
+        gameConfig["JokerPenalty"] = config.jokerPenalty
+        gameConfig["ChangeIsPass"] = config.changeIsPass
+        gameConfig["TimeControlType"] = config.timeControl // tcNoLimit=0, tcPerMove=1, tcPerGame=2
+        gameConfig["TimeControlValue"] = config.timeControlValue
+        gameConfig["LimitedExchange"] = 3 //FEATURE: newgame LimitedExchange
+        gameConfig["CambioSecco"] = config.cambiosecco
+        gameConfig["Whatif"] = false //FEATURE: newgame Whatif
+        gameConfig["Add"] = config.addLetters
+        gameConfig["Substract"] = config.substractLetters
+        gameConfig["TimePenaltyValue"] = config.buytimepenalty
+        gameConfig["TimePenaltyCount"] = config.canbuytime ? config.buytimecount : 0
+        gameConfig["TimeGameLost"] = config.timegamelost
+        gameConfig["WordCheckType"] = config.wordCheckMode
+        gameConfig["WordCheckPeriod"] =config.wordCheckPeriod
+        gameConfig["WordCheckPenalty"] = config.wordCheckPenalty
+        gameConfig["WordCheckBonus"] = config.wordCheckBonus
+        gameConfig["ScrabbleBonus"] = config.bingoBonus
+        gameConfig["IsCLABBERS"] = config.clabbers
+        gameConfig["RandomSequence"] = cbRandomized.checked // -1 = generate
+        gameConfig["Seed"] = seed
+        gameConfig["Performance"] = config.performance
+
+        if (!GamePlay.isConnected)
+            GamePlay.startNewGame(gameConfig)
+        else
+            GamePlay.startNewGameLater(gameConfig)
+
+        main.board.jokerPicker.updatePickerModel() //use current letterlist for joker picker
+        main.board.updateLabelsModel() //redraw labels on x/y axis
+        main.board.updateFieldSize() //changing the number of fields should result in resizing
+
+        //save last game settings except when in network mode
+        if (!GamePlay.isConnected) {
+            var configData = {}
+            configData["player1"] = playerNames.get(0).playerName
+            configData["player2"] = playerNames.get(1).playerName
+            configData["player3"] = playerNames.get(2).playerName
+            configData["player4"] = playerNames.get(3).playerName
+            configData["comp1"] = playerNames.get(0).isComputer
+            configData["comp2"] = playerNames.get(1).isComputer
+            configData["comp3"] = playerNames.get(2).isComputer
+            configData["comp4"] = playerNames.get(3).isComputer
+            configData["playerCount"] = rbIndex
+            configData["randomized"] = cbRandomized.checked
+            GamePlay.saveConfig("", configData) // player info only
+            config.saveConfig("") //all other config
+        }
+
+    }
+    onRejected: GamePlay.rejectNewGame()
+}

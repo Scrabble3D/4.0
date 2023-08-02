@@ -27,6 +27,7 @@ GridLayout {
     property alias sbJokerPenalty: sbJokerPenalty
     property alias cbChangeIsPass: cbChangeIsPass
     property alias cbCambioSecco: cbCambioSecco
+    property alias slPerformance: slPerformance
 
     ColorLabel {
         id: lbPasses
@@ -39,6 +40,7 @@ GridLayout {
         id: sbPasses
         from: 1
         to: 99
+        value: 3
         onValueChanged: config.numberOfPasses = value
     }
         InfoTip { tiptext: qsTr("The number of moves each player can pass consecutively until the game ends") }
@@ -54,6 +56,7 @@ GridLayout {
             id: sbBingo
             from: 0
             to: 999
+            value: 50
             onValueChanged: config.bingoBonus = value
         }
         InfoTip { tiptext: qsTr("The 'bingo' bonus when all tiles from the rack are placed at once") }
@@ -69,6 +72,7 @@ GridLayout {
             id: sbGameEnd
             from: 0
             to: 999
+            value: 0
             onValueChanged: config.gameEndBonus = value
         }
         InfoTip { tiptext: qsTr("Extra bonus awarded to the player who ends the game") }
@@ -84,6 +88,7 @@ GridLayout {
             id: sbJokerPenalty
             from: 0
             to: 999
+            value: 0
             onValueChanged: config.jokerPenalty = value
         }
         InfoTip { tiptext: qsTr("Extra penalty for blank tile on the rack when the game ends") }
@@ -127,5 +132,32 @@ GridLayout {
             onCheckStateChanged: config.cambiosecco = checked
         }
         InfoTip { tiptext: qsTr("Once per game you can exchange all pieces on the rack without losing the right to place") }
+    }
+    ColorLabel {
+        Layout.leftMargin: 8
+        Layout.topMargin: 16
+        text: qsTr("Computer performance:")
+    }
+    RowLayout {
+        Layout.columnSpan: 2
+        Layout.leftMargin: 16
+        Slider {
+            id: slPerformance
+            from: 0
+            to: 10
+            value: 10
+            stepSize: 1
+            snapMode: Slider.SnapAlways
+            onValueChanged: {
+                config.performance = 10 - value
+                slLabel.text = 100 - config.performance * 5 + " %"
+            }
+        }
+        ColorLabel {
+            id: slLabel
+            text: "100 %"
+        }
+
+        InfoTip { tiptext: qsTr("Constrains the computing performance by picking a random result out of the best moves") }
     }
 }

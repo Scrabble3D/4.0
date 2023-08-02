@@ -80,7 +80,7 @@ GamePlay::GamePlay(QQmlEngine *engine)
 */
 
 #ifdef Q_OS_ANDROID
-    loadGame(config::file("debug.ssg"), true); //silent
+    loadGame(config::file("lastgame.ssg"), true); //silent
 #endif
 }
 
@@ -204,7 +204,7 @@ void GamePlay::startNewGame(QVariantMap gameConfig)
     m_lBag.clear();
     QString sChars;
     QVariantList aLetterList = gameConfig["LetterList"].toList();
-    for (int i=0; i<aLetterList.count(); i+=3) {
+    for (int i = 0; i < aLetterList.count(); i+=3) {
         Letter aLetter;
         aLetter.What = aLetterList[i].toString();
         sChars += aLetter.What;
@@ -227,13 +227,16 @@ void GamePlay::startNewGame(QVariantMap gameConfig)
     }
 
     const int nJoker = gameConfig["NumberOfJokers"].toInt() | 0;
-    for (int i = 0; i < nJoker; i++) {
-        Letter aLetter;
-        aLetter.IsJoker = true;
-        aLetter.What = JokerChar;
-        aLetter.Value = 0;
-        m_lBag.append(aLetter);
+    if (nJoker > 0) {
+        for (int i = 0; i < nJoker; i++) {
+            Letter aLetter;
+            aLetter.IsJoker = true;
+            aLetter.What = JokerChar;
+            aLetter.Value = 0;
+            m_lBag.append(aLetter);
+        }
     }
+
 //    std::random_device rd;
     if (nSeed == -1) nSeed = time(0);
     std::mt19937 rng(nSeed);
@@ -282,7 +285,7 @@ void GamePlay::startNewGame(QVariantMap gameConfig)
     m_bIsInitialized = true;
     m_bIsFirstMove = true;
     m_nPasses = 0;
-
+    m_nPerformance = gameConfig["Performance"].isNull() ? 0 : gameConfig["Performance"].toUInt() + 1;
     m_pMoves.clear();
     m_pMoves.append(sharedMove(new move(m_bIsFirstMove, m_pBoard)));
     m_nCurrentMove = 0;
@@ -344,10 +347,10 @@ void GamePlay::nextPlayer(const bool bIsLoading)
         (!m_pMoves.last()->PlacedWord.isEmpty()))
         //: <Player 1> places <Foo> <<and>> <Far, Faz> and receives 42 points. ("and" is only added if the connected words = %2 are not empty)
         m_pMsgModel->addMessage(tr("%1 places %2 %3 and receives %4 points.")
-                                    .arg( m_lPlayerNames[m_nCurrentPlayer] )
-                                    .arg( m_pMoves.last()->PlacedWord )
-                                    .arg( !m_pMoves.last()->ConnectedWords.isEmpty() ? tr("and") + " " + m_pMoves.last()->ConnectedWords : "" )
-                                    .arg( QString::number(m_pMoves.last()->Value()) ),
+                                    .arg(  m_lPlayerNames[m_nCurrentPlayer]
+                                         , m_pMoves.last()->PlacedWord
+                                         , !m_pMoves.last()->ConnectedWords.isEmpty() ? tr("and") + " " + m_pMoves.last()->ConnectedWords : ""
+                                         , QString::number(m_pMoves.last()->Value())) ,
                                 m_lPlayerNames.at(m_nCurrentPlayer));
 
     // increase number of passes
@@ -370,8 +373,8 @@ void GamePlay::nextPlayer(const bool bIsLoading)
                                  tr("five"), tr("six"), tr("seven")};
     if (nExchange > 0)
         m_pMsgModel->addMessage(tr("%1 exchanges %2 piece(s).", "%1 = player name, %2 = one, two, three..., 8, 9...", nExchange)
-                                    .arg( m_lPlayerNames[m_nCurrentPlayer] )
-                                    .arg( nExchange < 8 ? numerals[nExchange-1] : QString::number(nExchange) ),
+                                    .arg( m_lPlayerNames[m_nCurrentPlayer]
+                                         , nExchange < 8 ? numerals[nExchange-1] : QString::number(nExchange) ),
                                 m_lPlayerNames[m_nCurrentPlayer]);
 
     //lMoves is zero before first move
@@ -456,7 +459,7 @@ void GamePlay::nextPlayer(const bool bIsLoading)
 
 #ifdef Q_OS_ANDROID //store moves on Android to load when coming back from sleep
     if (!m_bIsConnected)
-        saveGame(config::file("debug.ssg"), true); //silent
+        saveGame(config::file("lastgame.ssg"), true); //silent
 #endif
 
     //clear computemove
@@ -842,7 +845,7 @@ void GamePlay::dropLetter(const uint rackIndex, const uint boardIndex)
         }
     }
 
-    emit placedValueChanged();
+    emit placedValueChanged(m_pMoves.last()->Value());
     emit isAcceptedChanged();
     emit lastErrorChanged();
 }
@@ -891,7 +894,7 @@ int GamePlay::removeLetter(Letter aLetter)
 
         m_bIsAccepted = m_pMoves.last()->deleteLetter(z); // deleteLetter() clears the bonus too
 
-        emit placedValueChanged();
+        emit placedValueChanged(m_pMoves.last()->Value());
         emit isAcceptedChanged();
         emit lastErrorChanged();
     }
@@ -909,7 +912,7 @@ void GamePlay::setActiveDimension(const unsigned int aDimension)
     if (aDim != m_pBoard->getActiveDimension())
     {
         m_pBoard->setActiveDimension(aDim);
-        m_pBoardModel->updateAllFields();
+        m_pBoardModel->updateAllSquares();
         emit activeDimensionChanged();
     }
 }
@@ -928,8 +931,8 @@ void GamePlay::setActivePosition(const int aPosition, const bool bSilent)
     {
         m_pBoard->setActivePosition(aPosition);
         if (bSilent) return;
-        m_pBoardModel->updateAllFields();
-        emit activePositionChanged(); //TODO: gameplay: consolidate activePosition & activeDimension
+        m_pBoardModel->updateAllSquares();
+        emit activePositionChanged();
     }
 }
 
@@ -942,15 +945,15 @@ QString GamePlay::getMeaningAt(const int index)
 {
     QString sWords = m_pBoard->getWordsAt(index);
 
-    bool bPlaced = false;
-    for (int i=0; i<m_pRackModel->rackSize(); i++)
-        if (m_pRackModel->getLetter(i).IsEmpty())
-            bPlaced = true;
+    bool bDoShow = true;
 
-    if ( m_bIsHistory || // browsing through game course
-        !m_bIsRunning || // game has ended
-        !m_pRackModel->isLocalIsActive() || //local player is on move
-        !bPlaced) // nothing has been placed //TODO: gameplay: getMeaningAt() fails at game end
+    if (!m_bIsHistory && m_bIsRunning) //local player is on move
+    {
+        for (int i = 0; i < m_pRackModel->rackSize(); i++)
+            if (m_pRackModel->getLetter(i).IsEmpty())
+                bDoShow = false;
+    }
+    if (bDoShow)
     {
         sWords = m_pDictionary->getMeanings(sWords);
         sWords = replaceAllLetters(sWords);
@@ -1056,7 +1059,10 @@ void GamePlay::doComputeMove()
         (m_lBag.count() >= m_pRackModel->rackSize()))
         m_pComputeMove->markLettersForExchange(m_pRackModel);
     else
-        placeBestMove(1);
+    {
+        int nMove = QRandomGenerator::global()->bounded(m_nPerformance);
+        placeBestMove(nMove + 1);
+    }
     nextPlayer();
 }
 
@@ -1083,6 +1089,8 @@ void GamePlay::placeBestMove(const int index)
         if (aLetter.IsJoker)
             jokerLetter(boardIndex, aLetter.What);
     }
+
+    emit placedValueChanged(aMove->Value());
 }
 
 void GamePlay::setComputeProgress(const int aProgress)
@@ -1160,7 +1168,7 @@ void GamePlay::saveGame(QString fileName, const bool bSilent)
         settings.setValue("TimeControlValue", m_nTimeControlValue);
         settings.setValue("LimitedExchange", m_nLimitedExchange);
         QStringList aList;
-        for (uint i = 0; i < m_bCanCambioSecco.count(); i++)
+        for (int i = 0; i < m_bCanCambioSecco.count(); i++)
             aList.append(QString::number(m_bCanCambioSecco[i]));
         settings.setValue("CambioSecco", aList.join(","));
         settings.setValue("Whatif", m_bWhatif);
