@@ -141,14 +141,15 @@ void GamePlay::doDownloadFinished(DlType fileType, QString fileName)
                 if (xmlReader.isStartElement() &&
                     (xmlReader.name().toString() == "version"))
                 {
+                    // TODO: make 'binaries' server a variable in *conf
                     QString sRemoteVersion = xmlReader.readElementText();
                     if ( version::fromString( version::current() ) <
                         version::fromString( sRemoteVersion ) ) {
                         m_pMsgModel->addMessage( tr("Application: %1 < %2").arg(
                             version::current(), sRemoteVersion));
+                        // TODO: make link interactive or auto update
                         if (!InstFileName.isEmpty()) {
-                            const QString sLink = QString("<a href=\"%1\">%1</a>").arg(server + "Binaries/raw/main/" + InstFileName);
-                            m_pMsgModel->addMessage( tr("Please update from %1").arg(sLink) );
+                            m_pMsgModel->addMessage( tr("Please update from %1").arg(binaries) );
                         }
                     }
                 }

@@ -41,7 +41,9 @@ ListView {
 
     Connections {
         target: GamePlay
+
         function onLoadingFinished(aId) {
+            actionButton.enabled = false
             var dicInfo = model.get(aId)
             dictionaryFile = dicInfo.filename
             dictionaryName = dicInfo.english +
@@ -183,6 +185,7 @@ ListView {
                     onClicked: (mouse)=> {
                                    if (mouse.button === Qt.RightButton)
                                    dictContextMenu.popup()
+                                   actionButton.enabled = !model.isLoaded
                                }
                     onPressAndHold: dictContextMenu.popup()
                 } // MouseArea
@@ -253,20 +256,30 @@ ListView {
         display: AbstractButton.IconOnly
         icon.width: 32
         icon.height: 32
+
         icon.source: model.get(currentIndex).installedversion !== ""
                         ? "qrc:///resources/dictionary.png"
                         : "qrc:///resources/dictionarydown.png"
+
+        property int downloadProgress: GamePlay.computeProgress //gameplay.cpp: SIGNAL(onProgress(int)) => SLOT(setComputeProgress(int))
+
         background: Rectangle {
             anchors.fill: parent
             radius: width / 2
+            anchors.topMargin: parent.downloadProgress == 0 ? 0 :
+                parent.height - (parent.height * parent.downloadProgress/100)
             gradient: Gradient {
                 GradientStop {
                     position: actionButton.hovered ? 1.0 : 1.0
-                    color: actionButton.enabled ? "darkgreen" : "lightgrey"
+                    color: actionButton.enabled
+                           ? model.get(currentIndex).installedversion ? "darkgreen" : "mediumblue"
+                           : "darkgrey"
                 }
                 GradientStop {
                     position: actionButton.hovered ? 1.0 : 0.0
-                    color: actionButton.enabled ? "limegreen" : "lightgrey"
+                    color: actionButton.enabled
+                           ? model.get(currentIndex).installedversion ? "limegreen" : "lightskyblue"
+                           : "lightgrey"
                 }
             }
         }

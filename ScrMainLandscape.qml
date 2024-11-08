@@ -40,6 +40,7 @@ ColumnLayout {
             MenuSeparator { }
             Menu {
                 title: qsTr("&View Mode")
+                // TODO: enable on Android
 //                RadioButton { action: acAutomaticView }
                 RadioButton { action: acLandscapeView }
                 RadioButton { action: acPortraitView }

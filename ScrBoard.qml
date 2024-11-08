@@ -96,6 +96,9 @@ Item {
                 visible: maBoard.containsMouse && (text !== "<html>\n</html>") && (text !== "")
                 delay: 1000
                 timeout: 5000
+                background: Rectangle { // required on macOS
+                    color: config.myPalette.ToolTipBase ? config.myPalette.ToolTipBase : "#ffffca"
+                }
             }
 
             DropArea {

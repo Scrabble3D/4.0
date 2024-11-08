@@ -15,14 +15,15 @@
     const QString InstFileName = "Scrabble3D_Linux.gz";
 #endif
 
-static const QString server = "https://github.com/Scrabble3D/";
+static const QString github = "https://github.com/Scrabble3D/";
+static const QString binaries = "https://scrabble3d.itch.io/Scrabble3d";
 
 class version
 {
 
 #define VERSION_MAJOR 4
 #define VERSION_MINOR 0
-#define VERSION_BUILD 10
+#define VERSION_BUILD 11
 
 public:
     version() {};

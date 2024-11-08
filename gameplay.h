@@ -105,6 +105,7 @@ signals:
     void applyConfig(QVariantMap); // triggers scrconfig::applyconfig()
     void showRemoteGames(); // shows ScrRemoteGames()
     void loadingFinished(int);
+    void loadingProgress(int);
 
 public:
     explicit GamePlay(QQmlEngine *engine);

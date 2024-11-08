@@ -156,6 +156,7 @@ ApplicationWindow {
         id: acViewType
         exclusive: true
         // crashes when done repeatedly
+        // TODO: enable on Android
 /*        Action {
             id: acAutomaticView
             checked: true
@@ -223,8 +224,8 @@ ApplicationWindow {
     ScrDefaults    { id: defaults }
     ScrNewGame     { id: newgame }
     ScrWordSearch  { id: dictionary }
-    ScrAbout       { id: about }
     ScrNetwork     { id: network }
+    ScrAbout       { id: about }
     ScrRemoteGames { id: remotegames}
     ScrConfig      { id: config } //needs to come last trigger system palette change
 /*
