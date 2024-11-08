@@ -21,6 +21,10 @@ Image {
         delay: 0
         timeout: 5000
         text: tiptext
+        background: Rectangle { //required on macOS
+            color: config.myPalette.ToolTipBase
+                   ? config.myPalette.ToolTipBase : "#ffffca"
+        }
         implicitWidth: tipMetrics.width > tipWidth
                            ? tipWidth
                            : tipMetrics.width + tip.leftMargin + tip.rightMargin

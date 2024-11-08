@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.impl //iconimage
 import QtQuick.Layouts
 import Qt.labs.qmlmodels // delegate choice
 

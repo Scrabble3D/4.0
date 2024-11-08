@@ -16,6 +16,8 @@
 
 //INTERNAL: dicitionary: DAWG / Aho–Corasick algorithm
 
+//FIXME: license not read? -> deutsch.dic
+
 dictionary::dictionary(QObject* parent)
 {
     Q_UNUSED(parent);

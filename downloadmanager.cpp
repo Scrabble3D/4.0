@@ -19,7 +19,7 @@ DownloadManager::DownloadManager(QObject* parent)
 void DownloadManager::download(const QString fileName)
 {
 
-    QUrl url(server + fileName);
+    QUrl url(github + fileName);
     QNetworkRequest request(url);
     QNetworkReply *reply = manager.get(request);
 
