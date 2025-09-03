@@ -1,4 +1,4 @@
-#include <QApplication> //QChart must not use QGuiApplication
+#include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QIcon>
@@ -11,6 +11,9 @@
 int main(int argc, char *argv[])
 {
     QApplication scrabble3D(argc, argv);
+    // macOS messes up with native main menu
+    scrabble3D.setAttribute(Qt::AA_DontUseNativeMenuBar);
+
     QThread::currentThread()->setObjectName("Main Thread");
 
     scrabble3D.setWindowIcon(QIcon(":/resources/app.ico"));

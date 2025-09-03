@@ -96,6 +96,11 @@ Item {
                 visible: maBoard.containsMouse && (text !== "<html>\n</html>") && (text !== "")
                 delay: 1000
                 timeout: 5000
+
+                contentItem: Label {
+                    color: config.myPalette.ToolTipText ? config.myPalette.toolTipText : "#000000"
+                    text: tipMeaning.text
+                }
                 background: Rectangle { // required on macOS
                     color: config.myPalette.ToolTipBase ? config.myPalette.ToolTipBase : "#ffffca"
                 }

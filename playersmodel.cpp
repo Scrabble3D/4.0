@@ -333,7 +333,7 @@ QModelIndex playersTree::playerIndex(QString name)
 QDateTime playersTree::fromTDateTime(const double tDateTime)
 {
     const double since01Jan1970 = 25569.16666; //TDateTime starts at December 30, 1899
-    const int secPerDay = 24*60*60;
+    const int secPerDay = 24 * 60 * 60;
     int time_t = (int) ((tDateTime - since01Jan1970) * secPerDay);
     return QDateTime::fromSecsSinceEpoch(time_t, Qt::LocalTime);
 }

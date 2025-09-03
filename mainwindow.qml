@@ -142,8 +142,10 @@ ApplicationWindow {
     Action {
         id: acNetwork
         checked: GamePlay.isConnected
-        checkable: GamePlay.isConnected
-        text: "" //set on menus to avoid showing up at toolbar on l10n
+        // FIXME: menu size not sufficient for long text?
+        text: GamePlay.isConnected
+              ? qsTr("Disconnect from game server")
+              : qsTr("Connect to game server")
         icon.source: GamePlay.isConnected
                      ? "qrc:///resources/netw_disco.png"
                      : "qrc:///resources/netw_connect.png"
@@ -155,15 +157,13 @@ ApplicationWindow {
     ActionGroup {
         id: acViewType
         exclusive: true
-        // crashes when done repeatedly
-        // TODO: enable on Android
-/*        Action {
+        Action {
             id: acAutomaticView
-            checked: true
+            checked: Qt.platform.os === "android"
             checkable: true
             text: qsTr("Automatic")
         }
-*/        Action {
+        Action {
             id: acLandscapeView
             checked: Qt.platform.os !== "android"
             checkable: true
@@ -172,7 +172,7 @@ ApplicationWindow {
         }
         Action {
             id: acPortraitView
-            checked: Qt.platform.os === "android"
+            checked: false
             checkable: true
             text: qsTr("Mobile")
             onCheckedChanged: if (acPortraitView.checked) mainLoader.state = "portrait"
@@ -228,13 +228,13 @@ ApplicationWindow {
     ScrAbout       { id: about }
     ScrRemoteGames { id: remotegames}
     ScrConfig      { id: config } //needs to come last trigger system palette change
-/*
+
     onWidthChanged: if (acAutomaticView.checked) {
         height > width
             ? mainLoader.state = "portrait"
             : mainLoader.state = "landscape"
     }
-*/
+
     Loader {
         id: mainLoader
         anchors.fill: parent

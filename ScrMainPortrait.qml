@@ -136,13 +136,18 @@ ColumnLayout {
             MenuItem { action: acSaveGame }
             MenuSeparator { }
             MenuItem { action: acDictionary }
-            MenuItem { action: acNetwork; icon.source: ""; text: qsTr("Network") }
+            MenuItem { action: acNetwork; icon.source: "" }
+
             MenuSeparator { }
             MenuItem { action: acConfiguration }
             Menu {
                 title: qsTr("View Mode")
-//                RadioButton { action: acAutomaticView }
-                RadioButton { action: acLandscapeView }
+                RadioButton {
+                    action: acAutomaticView
+                    visible: Qt.platform.os === "android"
+                    implicitHeight: Qt.platform.os === "android" ? miLandscapeView.implicitHeight : 0
+                }
+                RadioButton { id: miLandscapeView; action: acLandscapeView }
                 RadioButton { action: acPortraitView }
             }
             MenuItem { action: acAbout }

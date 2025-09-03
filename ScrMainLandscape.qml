@@ -30,7 +30,7 @@ ColumnLayout {
             MenuItem { action: acChallenge }
             MenuItem { action: acComputeMove }
             MenuSeparator { }
-            MenuItem { action: acNetwork; text: qsTr("Network") }
+            MenuItem { action: acNetwork }
         }
         Menu {
             id: viewMenu
@@ -40,8 +40,11 @@ ColumnLayout {
             MenuSeparator { }
             Menu {
                 title: qsTr("&View Mode")
-                // TODO: enable on Android
-//                RadioButton { action: acAutomaticView }
+                RadioButton {
+                    action: acAutomaticView
+                    visible: Qt.platform.os === "android"
+                    implicitHeight: Qt.platform.os === "android" ? implicitHeight : 0
+                }
                 RadioButton { action: acLandscapeView }
                 RadioButton { action: acPortraitView }
             }
@@ -75,7 +78,7 @@ ColumnLayout {
                 action: acNextPlayer
                 text: ""
                 ToolTip {
-                    text: acNextPlayer.tip
+                    text: acNextPlayer.text
                     visible: text.length === 0 ? false : btnNextPlayer.hovered
                     delay: 1000
                     timeout: 5000
@@ -96,6 +99,12 @@ ColumnLayout {
                 id: btnComputeMove
                 text: ""
                 action: acComputeMove
+                ToolTip {
+                    text: acComputeMove.text
+                    visible: text.length === 0 ? false : btnComputeMove.hovered
+                    delay: 1000
+                    timeout: 5000
+                }
             }
             SpinBox {
                 id: sbBestMoveSpinner
@@ -104,10 +113,23 @@ ColumnLayout {
                 editable: true
                 onValueChanged: GamePlay.placeBestMove(value)
                 onToChanged: value = 0
+                ToolTip {
+                    text: qsTr("Iterate through found words")
+                    visible: text.length === 0 ? false : sbBestMoveSpinner.hovered
+                    delay: 1000
+                    timeout: 5000
+                }
             }
             ToolbarButton {
                 id: btnNetwork
                 action: acNetwork
+                text: ""
+                ToolTip {
+                    text: acNetwork.text
+                    visible: text.length === 0 ? false : btnNetwork.hovered
+                    delay: 1000
+                    timeout: 5000
+                }
             }
         }
     }
