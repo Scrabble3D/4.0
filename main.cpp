@@ -1,4 +1,4 @@
-#include <QApplication> //QChart must not use QGuiApplication
+#include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QIcon>
@@ -10,7 +10,7 @@
 // use "set QT_D3D_ADAPTER_INDEX=1" on Windows
 int main(int argc, char *argv[])
 {
-    QApplication scrabble3D(argc, argv);
+    QGuiApplication scrabble3D(argc, argv);
     QThread::currentThread()->setObjectName("Main Thread");
 
     scrabble3D.setWindowIcon(QIcon(":/resources/app.ico"));
