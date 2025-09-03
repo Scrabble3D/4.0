@@ -7,7 +7,7 @@ ListView {
     id: dictView
 
     property int pad: 12
-    width: rightPane.width
+    width: rightPane.width - pad // avoid bleeding text into the scrollbar
     height: rightPane.height
     leftMargin: pad
 
@@ -199,11 +199,27 @@ ListView {
                 rowSpacing: 1
                 x: 16
 
-                ColorLabel { Layout.topMargin: 12; text: qsTr("Author:") }
-                ColorLabel { Layout.topMargin: 12; text: model.author }
+                ColorLabel {
+                    Layout.topMargin: 12
+                    Layout.alignment: Qt.AlignTop
+                    text: qsTr("Author:")
+                }
+                ColorLabel {
+                    Layout.topMargin: 12
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    text: model.author
+                }
 
-                ColorLabel { text: qsTr("License:"); }
-                ColorLabel { text: model.license }
+                ColorLabel {
+                    Layout.alignment: Qt.AlignTop
+                    text: qsTr("License:")
+                }
+                ColorLabel {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    text: model.license
+                }
 
                 ColorLabel { text: qsTr("Release:"); }
                 ColorLabel { text: model.release }
