@@ -155,6 +155,7 @@ void dictionarymodel::getInfo(dicListData *aData)
         else
             aData->InstalledVersionNumber = aVersion.toInt();
         aData->InstalledVersion = version::toString(aData->InstalledVersionNumber);
+        // INFO: use quotes for strings containing commas or semicolons
         aData->Author  = settings.value("Header/Author" ).toString();
         aData->License = settings.value("Header/Licence").toString();
         aData->Release = settings.value("Header/Release").toString();

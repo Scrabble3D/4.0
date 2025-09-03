@@ -1,4 +1,4 @@
-#include <QApplication> //QChart must not use QGuiApplication
+#include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QIcon>
