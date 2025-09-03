@@ -9,11 +9,13 @@ class gamecoursemodel : public QAbstractTableModel
 
 public:
     enum ModelRoles {
-        //Display = placed, connected, value
         WhoRole = Qt::UserRole + 1,
+        MoveRole,
+        WordRole,
         ConnectedWords,
-        BestValueRole,
+        ValueRole,
         IsScrabbleRole,
+        BestValueRole,
         TimeRole,
     };
 

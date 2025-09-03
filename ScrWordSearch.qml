@@ -140,18 +140,18 @@ Dialog {
                     model: dicSearchModel
                     clip: true
                     delegate: Rectangle {
+                        id: dicSearchResultBackground
                         height: delegateText.font.pixelSize + 8
                         width: dicPattern.width
-                        // NOTE: ScrWordSearch: palette at search not working with dark themes on Android
-                        color: ListView.isCurrentItem ? palette.highlight : palette.window
+                        color: dicSearchResult.currentIndex === index ? palette.highlight : palette.window
                         Text {
                             id: delegateText
                             text: word
                             anchors.fill: parent
                             leftPadding: 3
                             verticalAlignment: Text.AlignVCenter
-                            color: dicSearchResult.currentIndex === index
-                                   ? palette.highlightedText : palette.windowText
+                            // both palette.highlighttext and palette.windowtext are white (on a dark theme)
+                            color: isDark(dicSearchResultBackground.color) ? '#FFFFFF' : '#000000'
                         }
                         MouseArea {
                             anchors.fill: parent

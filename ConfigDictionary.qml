@@ -6,21 +6,19 @@ import QtQuick.Dialogs
 ListView {
     id: dictView
 
-    property int pad: 12
     width: rightPane.width
-    height: rightPane.height
-    leftMargin: pad
+    height: rightPane.height - tm.height
 
     model: GamePlay.dicListModel
     delegate: dictViewItem
     boundsMovement: Flickable.StopAtBounds
     currentIndex: -1
-    //TODO: scrollbar from parent mixes up
+
     ScrollBar.vertical: ScrollBar { policy: Qt.ScrollBarAlwaysOn }
 
     property string dictionaryName: "" //used via ScrConfig in ScrNewGame
     property string dictionaryFile: "" //used in ScrConfig to load/save config
-    property var dictionaryCategories: "" //used in ScrConfig to load/save config; must not be a string!
+    property string dictionaryCategories: "" //used in ScrConfig to load/save config; must not be a string!
     property string letterDistribution: "" //submitted to configLetter setLetterSet() in msgDlg()
 
     function setCategories(aCategories) {
@@ -43,7 +41,7 @@ ListView {
         target: GamePlay
 
         function onLoadingFinished(aId) {
-            actionButton.enabled = false
+            dictView.currentItemChanged()
             var dicInfo = model.get(aId)
             dictionaryFile = dicInfo.filename
             dictionaryName = dicInfo.english +
@@ -94,14 +92,14 @@ ListView {
     }
 
     property var colWidth: [100,100,20,20];
-    onWidthChanged: colWidth = [(dictView.width - 2*pad) * 1/3,
-                                (dictView.width - 2*pad) * 1/3,
-                                (dictView.width - 2*pad) * 1/6,
-                                (dictView.width - 2*pad) * 1/6]
-    // TODO: dictionary/ui: TableView + HorizontalHeaderView
+    onWidthChanged: colWidth = [dictView.width * 1/3,
+                                dictView.width * 1/3,
+                                dictView.width * 1/6,
+                                dictView.width * 1/6]
+
     header: Rectangle {
         id: listHeader
-        width: dictView.width - 2*pad
+        width: dictView.width
         height: tm.height + 8
         color: palette.mid
         Rectangle {
@@ -141,7 +139,7 @@ ListView {
                     : dictViewEntry.height
             Rectangle {
                 id: dictViewEntry
-                width: dictView.width - 2*pad
+                width: dictView.width
                 height: tm.height + 4
                 color: model.isLoaded
                        ? palette.highlight
@@ -183,27 +181,42 @@ ListView {
                                         acLoadDictionary.trigger()
                     onPressed: dictView.currentIndex = index
                     onClicked: (mouse)=> {
-                                   if (mouse.button === Qt.RightButton)
-                                   dictContextMenu.popup()
-                                   actionButton.enabled = !model.isLoaded
+                                    if (mouse.button === Qt.RightButton)
+                                        dictContextMenu.popup()
                                }
                     onPressAndHold: dictContextMenu.popup()
                 } // MouseArea
             }
             GridLayout {
                 id: dictViewDetails
-                width: dictView.width - 2*pad
+                width: dictView.width
                 visible: (dictView.currentIndex === index) && (model.installedversion !== "")
 
                 columns: 2
                 rowSpacing: 1
                 x: 16
 
-                ColorLabel { Layout.topMargin: 12; text: qsTr("Author:") }
-                ColorLabel { Layout.topMargin: 12; text: model.author }
+                ColorLabel {
+                    Layout.topMargin: 12
+                    Layout.alignment: Qt.AlignTop
+                    text: qsTr("Author:")
+                }
+                ColorLabel {
+                    Layout.topMargin: 12
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    text: model.author
+                }
 
-                ColorLabel { text: qsTr("License:"); }
-                ColorLabel { text: model.license }
+                ColorLabel {
+                    Layout.alignment: Qt.AlignTop
+                    text: qsTr("License:")
+                }
+                ColorLabel {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    text: model.license
+                }
 
                 ColorLabel { text: qsTr("Release:"); }
                 ColorLabel { text: model.release }
@@ -245,51 +258,34 @@ ListView {
             }
         }
     }
-
-    RoundButton {
+    onCurrentIndexChanged: {
+        actionButton.isActive =
+            !model.get(currentIndex).isLoaded
+        actionButton.tiptext =
+            model.get(currentIndex).installedversion !== ""
+                ? qsTr("Load dictionary")
+                : qsTr("Download dictionary")
+        actionButton.icon.source =
+            model.get(currentIndex).installedversion !== ""
+                ? "qrc:///resources/dictionary.png"
+                : "qrc:///resources/dictionarydown.png"
+        actionButton.color =
+            !model.get(currentIndex).isLoaded
+                ? model.get(currentIndex).installedversion ? "limegreen" : "steelblue"
+                : "darkgrey"
+        actionButton.progress = 0 // repaint the background
+    }
+    ProgressButton {
         id: actionButton
-        implicitWidth: 50
-        implicitHeight: 50
         x: rightPane.width - 75
         y: rightPane.height - 75
-        enabled: !model.get(currentIndex).isLoaded
-        display: AbstractButton.IconOnly
-        icon.width: 32
-        icon.height: 32
+        property int computeProgress: GamePlay.computeProgress //gameplay.cpp: SIGNAL(onProgress(int)) => SLOT(setComputeProgress(int))
+        onComputeProgressChanged: progress = computeProgress
 
-        icon.source: model.get(currentIndex).installedversion !== ""
-                        ? "qrc:///resources/dictionary.png"
-                        : "qrc:///resources/dictionarydown.png"
-
-        property int downloadProgress: GamePlay.computeProgress //gameplay.cpp: SIGNAL(onProgress(int)) => SLOT(setComputeProgress(int))
-
-        background: Rectangle {
+        MouseArea {
             anchors.fill: parent
-            radius: width / 2
-            anchors.topMargin: parent.downloadProgress == 0 ? 0 :
-                parent.height - (parent.height * parent.downloadProgress/100)
-            gradient: Gradient {
-                GradientStop {
-                    position: actionButton.hovered ? 1.0 : 1.0
-                    color: actionButton.enabled
-                           ? model.get(currentIndex).installedversion ? "darkgreen" : "mediumblue"
-                           : "darkgrey"
-                }
-                GradientStop {
-                    position: actionButton.hovered ? 1.0 : 0.0
-                    color: actionButton.enabled
-                           ? model.get(currentIndex).installedversion ? "limegreen" : "lightskyblue"
-                           : "lightgrey"
-                }
-            }
+            onClicked: if (actionButton.isActive) acLoadDictionary.trigger()
         }
-        ToolTip {
-            text: qsTr("Load dictionary")
-            visible: actionButton.hovered
-            delay: 1000
-            timeout: 5000
-        }
-        onPressed: acLoadDictionary.trigger()
     }
 
 }

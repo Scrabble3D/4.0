@@ -4,11 +4,11 @@ import QtQuick.Layouts
 
 GridLayout {
     //aliases required for save/loadConfig in ScrConfig
-    property alias cbMarkers: cbMarkers;
-    property alias rb2D: rb2D;
-    property alias rb3D: rb3D;
-    property alias sbSize: sbSize;
-    property alias cbPlayerColors: cbPlayerColors;
+    property alias cbMarkers: cbMarkers
+    property alias rb2D: rb2D
+    property alias rb3D: rb3D
+    property alias sbSize: sbSize
+    property alias cbPlayerColors: cbPlayerColors
 
     //aliases for newgame infobox
     property string boardName: cbDefaultBoard.currentText
@@ -26,13 +26,14 @@ GridLayout {
         else if (comp === JSON.stringify(defaults.boardSuperScrabble3D))
             cbDefaultBoard.currentIndex = 3
         else
-            cbDefaultBoard.currentIndex = 4;
+            cbDefaultBoard.currentIndex = 4
     }
 
     //needed on Android with dark mode
     ColorLabel {
         id: lbPreset
-        leftPadding: 8
+        Layout.leftMargin: 8
+        Layout.topMargin: 8
         text: qsTr("Preset:")
         Layout.alignment: Qt.AlignRight
     }
@@ -41,14 +42,10 @@ GridLayout {
 
         Layout.minimumWidth: 100
         Layout.preferredWidth: 250
+        Layout.topMargin: 8
 
-        model: [
-            qsTr("Classic"),
-            qsTr("Supperscrabble"),
-            qsTr("Scrabble 3D"),
-            qsTr("Superscrabble 3D"),
-            qsTr("User-defined")
-        ]
+        model: [qsTr("Classic"), qsTr("Supperscrabble"), qsTr(
+                "Scrabble 3D"), qsTr("Superscrabble 3D"), qsTr("User-defined")]
 
         onCurrentIndexChanged: {
             switch (currentIndex) {
@@ -74,7 +71,9 @@ GridLayout {
             if (currentIndex < 2)
                 sbSize.value = Math.sqrt(config.board.length)
             else if (currentIndex < 4)
-                sbSize.value = Math.round(Math.cbrt(config.board.length)) //cubic root = 14.99999
+                sbSize.value = Math.round(
+                            Math.cbrt(
+                                config.board.length)) //cubic root = 14.99999
         }
     }
     ColorLabel {
@@ -109,28 +108,25 @@ GridLayout {
         onValueChanged: {
             var tmp = [] //new Array(sbSize.value*sbSize.value)
             var lastSize
-            var i,j,k,z,v
-            if (rb3D.checked)
-            {
+            var i, j, k, z, v
+            if (rb3D.checked) {
                 lastSize = Math.round(Math.cbrt(config.board.length))
                 for (i = 0; i < sbSize.value; i++)
                     for (j = 0; j < sbSize.value; j++)
                         for (k = 0; k < sbSize.value; k++) {
-                            z = i*lastSize*lastSize+j*lastSize+k
-                            v = i*sbSize.value*sbSize.value+j*sbSize.value+k
+                            z = i * lastSize * lastSize + j * lastSize + k
+                            v = i * sbSize.value * sbSize.value + j * sbSize.value + k
                             if (isNaN(config.board[z]))
                                 tmp[v] = 1
                             else
                                 tmp[v] = config.board[z]
                         }
-
-            } else
-            {
+            } else {
                 lastSize = Math.sqrt(config.board.length)
                 for (i = 0; i < sbSize.value; i++)
                     for (j = 0; j < sbSize.value; j++) {
                         z = i * lastSize + j
-                        v = i * sbSize.value+j
+                        v = i * sbSize.value + j
                         if (isNaN(config.board[z]))
                             tmp[v] = 1
                         else
@@ -159,10 +155,10 @@ GridLayout {
                 Rectangle {
                     Layout.minimumWidth: 10
                     Layout.minimumHeight: 10
-                    //TODO: configboard: fit size to parent
-                    Layout.preferredWidth: 15// (scrollView.contentWidth - 50) / sbSize.value
-                    Layout.preferredHeight: 15//Layout.preferredWidth
-                    property int i: index+sbSize.value*sbSize.value*(pos3D.value-1)
+                    property int nSize: Math.max(200, rightPane.width - 200)
+                    Layout.preferredWidth: nSize / sbSize.value
+                    Layout.preferredHeight: nSize / sbSize.value
+                    property int i: index + sbSize.value * sbSize.value * (pos3D.value - 1)
                     color: colors.get(config.board[i]).itemColor
                     border.width: 0.1
                     MouseArea {
@@ -170,7 +166,7 @@ GridLayout {
                         onClicked: {
                             var tmp = []
                             tmp = config.board
-                            tmp[i] = (config.board[i]+1) % 8
+                            tmp[i] = (config.board[i] + 1) % 8
                             config.board = tmp
                             checkDefault()
                         }
@@ -205,7 +201,9 @@ GridLayout {
         ColorLabel {
             text: pos3D.value
         }
-        InfoTip { tiptext: qsTr("Use the slider to access the levels in the 3D cube") }
+        InfoTip {
+            tiptext: qsTr("Use the slider to access the levels in the 3D cube")
+        }
     }
     ColorLabel {
         id: lbBonusMarker

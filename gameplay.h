@@ -45,7 +45,6 @@ class GamePlay : public QObject
     Q_PROPERTY(locList* locListModel READ locListModel CONSTANT)
     Q_PROPERTY(playersTree* playersTreeModel READ playersTreeModel CONSTANT)
     Q_PROPERTY(remoteGamesModel* remoteGames READ remoteGames CONSTANT)
-    //    Q_PROPERTY(remoteGamesProxy* remoteGames READ remoteGames CONSTANT)
 
     Q_PROPERTY(bool isChallenge READ getIsChallenge NOTIFY isChallengeChanged)
     Q_PROPERTY(bool isRunning READ getIsRunning NOTIFY isRunningChanged)
@@ -161,6 +160,7 @@ public:
 
     Q_INVOKABLE QString networkName() { return m_pNetwork->localPlayerName(); }
     Q_INVOKABLE void doInvite(QString sName);
+    Q_INVOKABLE void setOpenForGames(bool isOpen) { emit onSend(network::nwRefresh, "all", isOpen ? "SetState=csOpenForGames" : "SetState=csNotOpen"); }
     Q_INVOKABLE void doLeave();
     Q_INVOKABLE void syncNewGame(QVariantMap aConfig);
     Q_INVOKABLE void rejectNewGame() { if (m_bIsConnected) emit onSend(network::nwAnswer, "group", "Answer=false"); }
@@ -177,7 +177,6 @@ public:
     locList *locListModel() { return m_pLocListModel; }
     playersTree *playersTreeModel() { return m_PlayersTreeModel; }
     remoteGamesModel *remoteGames() { return m_RemoteGamesModel; }
-    //NOTE: gameplay: remoteGamesProxy <-> remoteGames();
 
 public slots:
     void startNewGame(QVariantMap gameConfig);
@@ -337,7 +336,6 @@ private:
     locList *m_pLocListModel;
     playersTree *m_PlayersTreeModel;
     remoteGamesModel *m_RemoteGamesModel;
-//    remoteGamesProxy *m_RemoteGamesProxy;
 
     computemove *m_pComputeMove;
     int m_nComputeResults = 0;

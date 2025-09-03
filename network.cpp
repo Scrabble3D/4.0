@@ -37,7 +37,6 @@ void network::doSend(const MessageType msgType, QString msgReceiver, QString msg
 #if defined(Q_OS_LINUX) && defined(QT_DEBUG)
     qDebug() << "sent" << QVariant::fromValue(msgType).toString() << "from" << m_sName;
 #endif
-
 }
 
 void network::doConnected()
@@ -71,7 +70,7 @@ void network::doConnected()
     lData.append("Version=5"); //server version, must not be <4
     lData.append("Country=" + m_sCountry);
     lData.append("City=" + m_sCity);
-    lData.append("UID="); //NOTE: network: mac address
+    lData.append("UID="); //TODO: network: mac address
     lData.append("Email=" + m_sEmail);
     lData.append("Release=" + version::current() + "_" + sOS); //v3.1 uses underscore to separate platform
 
@@ -145,14 +144,14 @@ void network::doReadyRead()
         case nwAnswer: emit onAnswer(aLastMessage); break;
         //gameplay::doInvite() invitation received to join a group, gameplay::doNetworkInvite
         case nwInvite: emit onInvite(aLastMessage); break;
-        //send = about leaving a group, receive = abort running game in TODO: network nwLeave
+        //send = about leaving a group, receive = abort running game in TODO: network: nwLeave
         case nwLeave: {
             //TODO: network: doSend(nwLoadGame,"","");
             //reset game
             //TODO: network: kibitz must not be the last player in a group!
             doSend(nwRefresh, "all", "");
         } break;
-        //send = invitation accepted, receive = loadgame in TODO: network nwJoin
+        //send = invitation accepted, receive = loadgame in TODO: network: nwJoin
         case nwJoin: emit onJoin(aLastMessage); break;
         case nwSyncNewGame: emit onSyncNewGame(aLastMessage); break;
         case nwNextPlayer: emit onNextPlayer(aLastMessage); break;

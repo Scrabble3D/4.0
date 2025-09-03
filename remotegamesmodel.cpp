@@ -6,11 +6,6 @@ remoteGamesModel::remoteGamesModel(QObject *parent)
     : QAbstractTableModel(parent),
     m_RemoteGames(0)
 {
-    /*
-    QSortFilterProxyModel proxyModel;
-    proxyModel.setSourceModel( this );
-    table.setModel( &proxyModel );
-*/
 }
 
 QVariant remoteGamesModel::data(const QModelIndex &index, int role) const
@@ -32,6 +27,20 @@ QVariant remoteGamesModel::data(const QModelIndex &index, int role) const
     return aReturn;
 }
 
+QVariant remoteGamesModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    if ((role == Qt::DisplayRole) && (orientation == Qt::Horizontal))
+    {
+        if (section == 0)
+            return tr("Date/Time");
+        else if (section == 1)
+            return tr("Players");
+        else if (section == 2)
+            return tr("Moves");
+    }
+    return QVariant();
+}
+
 int remoteGamesModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
@@ -47,6 +56,7 @@ int remoteGamesModel::columnCount(const QModelIndex &parent) const
 QHash<int, QByteArray> remoteGamesModel::roleNames() const
 {
     QHash<int, QByteArray> roles;
+    roles[Qt::DisplayRole] = "display"; // needed for headerdata
     roles[DateRole] = "created";
     roles[LastAccessRole] = "lastaccess";
     roles[PlayerNameRole] = "playernames";
@@ -63,7 +73,8 @@ QString fromTDateTime(const double tDateTime)
     const double since01Jan1970 = 25569.16666; //TDateTime starts at December 30, 1899
     const int secPerDay = 24*60*60;
     int time_t = (int) ((tDateTime - since01Jan1970) * secPerDay);
-    const QDateTime datetime = QDateTime::fromSecsSinceEpoch(time_t, Qt::LocalTime);
+    //depreacted: const QDateTime datetime = QDateTime::fromSecsSinceEpoch(time_t, Qt::LocalTime);
+    const QDateTime datetime = QDateTime::currentDateTime().fromSecsSinceEpoch(time_t);
     QLocale loc;
     return datetime.toString(loc.dateTimeFormat(QLocale::ShortFormat));
 }
@@ -86,7 +97,7 @@ void remoteGamesModel::setRemoteGames(const QVariantMap games, const QString sOw
         aGame.moves = games[sPrefix + ".Moves"].toInt();
         aGame.fileName = games[sPrefix + ".Name"].toString();
         QStringList aSequence = aGame.players.split(",");
-//FIXME: stored sequence of players not according the actual game
+//TODO: remotegames: stored sequence of players not according the actual game
 /*
 #if defined(Q_OS_LINUX) && defined(QT_DEBUG)
         qDebug() << aSequence;
@@ -110,36 +121,3 @@ void remoteGamesModel::setRemoteGames(const QVariantMap games, const QString sOw
     std::sort(m_RemoteGames.begin(),m_RemoteGames.end(), sortByLastAccess);
     endResetModel();
 }
-/*
-remoteGamesProxy::remoteGamesProxy(QObject *parent)
-    : QSortFilterProxyModel(parent)
-{
-}
-
-bool remoteGamesProxy::lessThan(const QModelIndex &left, const QModelIndex &right) const
-{
-    QVariant leftData = sourceModel()->data(left);
-    QVariant rightData = sourceModel()->data(right);
-    qDebug() << leftData << rightData;
-    if (leftData.userType() == QMetaType::QDateTime) {
-        return leftData.toDateTime() < rightData.toDateTime();
-    } else {
-        static const QRegularExpression emailPattern("[\\w\\.]*@[\\w\\.]*");
-
-        QString leftString = leftData.toString();
-        if (left.column() == 1) {
-            const QRegularExpressionMatch match = emailPattern.match(leftString);
-            if (match.hasMatch())
-                leftString = match.captured(0);
-        }
-        QString rightString = rightData.toString();
-        if (right.column() == 1) {
-            const QRegularExpressionMatch match = emailPattern.match(rightString);
-            if (match.hasMatch())
-                rightString = match.captured(0);
-        }
-
-        return QString::localeAwareCompare(leftString, rightString) < 0;
-    }
-}
-*/

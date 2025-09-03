@@ -10,6 +10,7 @@ Dialog {
     title: qsTr("Load game from server")
     modal: true
     width: 380 > screen.width ? screen.width : 380
+    height: 360
 
     x: (scrabble3D.width - width) / 2
     y: (scrabble3D.height - height) / 2
@@ -20,173 +21,125 @@ Dialog {
     }
 
     property int pad: 5 //padding for content
-    property var colWidths: [120,200,60] //default values for column width
-    onColWidthsChanged: contentItemChanged() //update column width to header/content
 
     property int selectedRow: 1
     onSelectedRowChanged: buttons.standardButton(Dialog.Ok).enabled = true
-
-    TextMetrics {
-        id: textMetrics
-    }
-    function getWidth(text) {
-        textMetrics.text = text
-        return textMetrics.width
-    }
 
     onAboutToShow: {
         //disable Ok until something has been selected
         selectedRow = -1
         buttons.standardButton(Dialog.Ok).enabled = false
-
-        //assigning value at initialization produces a binding loop warning
-        colWidths[0] = Math.max( getWidth(headerText.get(0).text) + 2*pad,
-                                 getWidth("01.01.1970 00:00") + 12 + 2*pad) //icon width
-        colWidths[1] = remotegame.width - colWidths[0] - colWidths[2] - 2*remotegame.padding
-        colWidths[2] = Math.max( getWidth(headerText.get(2).text) + 2*pad,
-                                 getWidth("123") + 2*pad)
     }
 
-    ListModel {
-        id: headerText
-        ListElement { text: qsTr("Date/Time") }
-        ListElement { text: qsTr("Players") }
-        ListElement { text: qsTr("Moves") }
-    }
+    property var _roleName: ["lastaccess", "playernames", "moves"]
+    property int _sortIndex: 0
+    property int _sortOrder: 0
 
-    contentItem: Column {
+    contentItem: ColumnLayout {
+
+        SortFilterProxyModel {
+            id: sortModel
+            model: GamePlay.remoteGames
+            sorters: [
+                RoleSorter {
+                    roleName: _roleName[_sortIndex]
+                    sortOrder: _sortOrder === 0 ? Qt.DescendingOrder : Qt.AscendingOrder
+                }
+            ]
+        }
         HorizontalHeaderView {
             id: tableHeader
             syncView: tableView
-            model: headerText
-            textRole: "text"
-            //TODO: remote games: sort on click
-//            TapHandler { onTapped: console.log(model.) }
+            boundsMovement: Flickable.StopAtBounds
+            Layout.fillWidth: true
+            delegate: HorizontalHeaderViewDelegate {
+                TapHandler {
+                    onTapped: {
+                        if (index == _sortIndex)
+                            _sortOrder ^= 1
+                        else
+                            _sortIndex = index
+                    }
+                }
+            }
         }
         TableView {
             id: tableView
+            Layout.fillWidth: true
+            Layout.fillHeight: true
             ScrollBar.vertical: ScrollBar {}
-            height: 300
-            width: colWidths[0] + colWidths[1] + colWidths[2]
-            model: GamePlay.remoteGames
+            clip: true
+            boundsMovement: Flickable.StopAtBounds
+            columnSpacing: 1
+            rowSpacing: 3
+
+            model: sortModel
 
             columnWidthProvider: function(column) {
-                return colWidths[column]
+                if (column < 2)
+                    return (remotegame.implicitContentWidth - pad) * 0.4
+                else
+                    return (remotegame.implicitContentWidth - pad) * 0.2
             }
 
-            DelegateChooser {
-                id: chooser
-                DelegateChoice {
-                    column: 0
-                    Rectangle {
-                        id: bgRect
-                        color: selectedRow === row ? config.myPalette.highlight : "transparent"
-                        implicitHeight: 2*textMetrics.height + 2*pad
-                        Column {
-                            Row {
-                                spacing: pad
-                                topPadding: pad
-                                IconImage {
-                                    id: imgDate
-                                    anchors.verticalCenter: contentDate.verticalCenter
-                                    source: "qrc:///resources/create.png"
-                                    color: config.myPalette.buttonText
-                                    height: 12//textMetrics.height
-                                    width: height
-                                }
-                                Text {
-                                    id: contentDate
-                                    text: model.created
-                                    color: selectedRow === row
-                                           ? config.myPalette.highlightedText
-                                           : config.myPalette.windowText
-                                }
-                            }
-                            Row {
-                                spacing: pad
-                                bottomPadding: pad
-                                //TODO: remotegames icon gameend
-                                //TODO: remotegames icon color own move
-                                IconImage {
-                                    id: imgModified
-                                    source: "qrc:///resources/change.png"
-                                    anchors.verticalCenter: contentText.verticalCenter
-                                    height: 12//textMetrics.height
-                                    width: height
-                                    color: model.hasEnded
-                                           ? "red"
-                                           : model.isOwnTurn
-                                             ? "green"
-                                             : config.myPalette.buttonText
-                                }
-                                Text {
-                                    id: contentText
-                                    text: model.lastaccess
-                                    // TODO: remotegames highlightedtext color on Android
-                                    color: selectedRow === row
-                                           ? config.myPalette.highlightedText
-                                           : config.myPalette.windowText
-                                }
-                            }
+            TextMetrics { id: tm; text: "123" }
+
+            delegate: Rectangle {
+                color: selectedRow === row ? config.myPalette.highlight : "transparent"
+                implicitHeight: 2 * tm.height
+                implicitWidth: tableView.width
+                Row {
+                    spacing: 3
+                    ColumnLayout {
+                        spacing: 0
+                        Layout.leftMargin: 3
+                        Layout.rightMargin: 3
+                        IconImage {
+                            source: "qrc:///resources/create.png"
+                            height: tm.height
+                            width: height
+                            visible: model.column === 0
+                            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+                            Layout.preferredHeight: tm.height
+                            color: config.myPalette.buttonText
                         }
-                        MouseArea {
-                            anchors.fill: parent
-                            TapHandler {
-                                onTapped: selectedRow = row
-                            }
+
+                        //TODO: QML remotegames: icon gameend
+                        //TODO: QML remotegames: icon color own move
+                        IconImage {
+                            source: "qrc:///resources/change.png"
+                            height: tm.height
+                            width: height
+                            visible: model.column === 0
+                            Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+                            Layout.preferredHeight: tm.height
+                            color: model.hasEnded
+                                   ? "red"
+                                   : model.isOwnTurn
+                                     ? "green"
+                                     : config.myPalette.buttonText
                         }
                     }
-                }
-                DelegateChoice {
-                    column: 1
-                    Rectangle {
-                        color: selectedRow === row ? config.myPalette.highlight : "transparent"
-                        implicitHeight: plNames.height
-                        Text {
-                            id: plNames
-                            leftPadding: pad
-                            text: model.playernames
-                            verticalAlignment: Qt.AlignTop
-                            color: selectedRow === row
-                                   ? config.myPalette.highlightedText
-                                   : config.myPalette.windowText
-                            width: colWidths[1]
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            padding: pad
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            TapHandler {
-                                onTapped: selectedRow = row
-                            }
-                        }
+                    Text {
+                        text: model.column === 0
+                              ? model.created + "\n" + model.lastaccess
+                              : model.column === 1
+                                ? model.playernames
+                                : model.column === 2
+                                  ? model.moves
+                                  : ""
+                        color: selectedRow === row
+                               ? config.myPalette.highlightedText // BUG: QML remotegames: highlightedtext color is black on dark blue on Android
+                               : config.myPalette.windowText
                     }
                 }
-                DelegateChoice {
-                    column: 2
-                    Rectangle {
-                        color: selectedRow === row ? config.myPalette.highlight : "transparent"
-                        Text {
-                            text: model.moves
-                            width: colWidths[2]
-                            verticalAlignment: Qt.AlignTop
-                            horizontalAlignment: Qt.AlignRight
-                            color: selectedRow === row
-                                   ? config.myPalette.highlightedText
-                                   : config.myPalette.windowText
-                            padding: pad
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            TapHandler {
-                                onTapped: selectedRow = row
-                            }
-                        }
+                MouseArea {
+                    anchors.fill: parent
+                    TapHandler {
+                        onTapped: selectedRow = row
                     }
                 }
             }
-
-            delegate: chooser
         }
     }
     onAccepted: GamePlay.loadRemoteGame(selectedRow)

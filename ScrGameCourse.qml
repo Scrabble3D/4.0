@@ -1,53 +1,39 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtCharts
 
 ColumnLayout {
     Layout.fillHeight: true
     Layout.fillWidth: true
 
-    //required for height of table header and rows
-    FontMetrics {
-        id: fontMetrics
+    TextMetrics { id: tm }
+
+    property var _roleName: ["move", "word", "value", "best", "time"]
+    property int _sortIndex: 0
+    property int _sortOrder: 0
+
+    SortFilterProxyModel {
+        id: sortModel
+        model: GamePlay.gamecourseModel
+        sorters: [
+            RoleSorter {
+                roleName: _roleName[_sortIndex]
+                sortOrder: _sortOrder === 0 ? Qt.DescendingOrder : Qt.AscendingOrder
+            }
+        ]
     }
-
-    //use 20px for first column and calculate 0 in respect to parent
-    property var colwidths: [20,0,0,0,0]
-
-    SplitView {
-        id: statHeader
+    HorizontalHeaderView {
+        id: tableHeader
         Layout.fillWidth: true
-
-        implicitHeight: fontMetrics.height + 6
-        Repeater {
-            id: headerColumn
-            model: [qsTr("#"),qsTr("Word"),qsTr("Value"),qsTr("Best"),qsTr("Time")]
-            Item {
-                SplitView.minimumWidth: text.implicitWidth
-                SplitView.preferredWidth: (colwidths[index] === 0) ? parent.width / 5 - 20 : colwidths[index]
-                SplitView.fillWidth: (index === 1) ? true : false //expand the "Word" column
-                implicitHeight: text.implicitHeight + 2
-                clip: true
-
-                Rectangle {
-                    anchors.fill: parent
-                    color: config.myPalette.button
-                    Text {
-                        id: text
-                        text: modelData
-                        width: parent.width
-                        onWidthChanged: {
-                            colwidths[index] = width
-                            statTable.forceLayout()
-                        }
-                        height: parent.height
-                        verticalAlignment: Text.AlignVCenter
-                        horizontalAlignment: (index === 1) ? Text.AlignLeft : Text.AlignRight
-                        leftPadding: 5
-                        rightPadding: 5
-                        color: config.myPalette.windowText
-                    }
+        syncView: statTable
+        boundsMovement: Flickable.StopAtBounds
+        delegate: HorizontalHeaderViewDelegate {
+            TapHandler {
+                onTapped: {
+                    if (index == _sortIndex)
+                        _sortOrder ^= 1
+                    else
+                        _sortIndex = index
                 }
             }
         }
@@ -58,9 +44,21 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.fillHeight: true
         clip: true
-        columnWidthProvider: function(column) { return colwidths[column] } //follows the statHeader column width
+        boundsMovement: Flickable.StopAtBounds
+
+        columnWidthProvider: function(column) {
+            const pad = 12
+            var col = []
+            for (var i = 0; i < 5; i++)
+            {
+                tm.text = model.headerData(i, Qt.Horizontal)
+                col[i] = tm.width + 2 * pad
+            }
+            col[1] = statTable.width - pad - col[0] - col[2] - col[3] - col[4]
+            return col[column]
+        }
         ScrollBar.vertical: ScrollBar { }
-        model: GamePlay.gamecourseModel
+        model: sortModel
         columnSpacing: 1
         rowSpacing: 1
 
@@ -73,21 +71,32 @@ ColumnLayout {
             if (GamePlay.is3D)
                 cube.roll()
         }
+
         delegate: Rectangle {
             implicitWidth: parent.width
             implicitHeight: (connectedWords !== "")
                             ? msgText.height * 2 //we need 2x height in case of connected words
                             : msgText.height
-            color: GamePlay.gamecourseModel.selectedMove === row
+            color: GamePlay.gamecourseModel.selectedMove === model.move
                    ? config.myPalette.highlight
                    : config.myPalette.window
 
             ShadowText {
                 id: msgText
                 width: parent.width
-                height: fontMetrics.height
+                height: tm.height
                 color: parent.color
-                shadowText: (model.column !== 3 || display > 0) ? display : "" //suppress 0 for not calculated (best) moves
+                shadowText: model.column === 0
+                            ? move
+                            : model.column === 1
+                              ? word
+                              : model.column === 2
+                                ? value
+                                : model.column === 3
+                                  ? best
+                                  : model.column === 4
+                                    ? time
+                                    : ""
                 shadowColor: who > -1 && config.bColoredPlayers //color the words according the player, if checked
                              ? Qt.lighter(config.playercolors.get(who).itemColor)
                              : config.myPalette.windowText
@@ -100,7 +109,7 @@ ColumnLayout {
             Image {
                 source: "qrc:///resources/bingo.png"
                 visible: (model.column === 2) && isScrabble
-                width: fontMetrics.height
+                width: tm.height
                 height: width
             }
             Text {
@@ -117,10 +126,10 @@ ColumnLayout {
 
             MouseArea {
                 anchors.fill: parent
-                //TODO: gamecourse: should be avail in network mode too
+                //TODO: gamecourse: history should be avail in network mode too
                 onClicked: if (!GamePlay.isConnected) {
                     forceActiveFocus()
-                    GamePlay.gamecourseModel.selectedMove = row
+                    GamePlay.gamecourseModel.selectedMove = model.move
                 }
             }
         }

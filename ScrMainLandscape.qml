@@ -11,37 +11,47 @@ ColumnLayout {
     anchors.fill: parent
     spacing: 0
 
+    component LongMenuItem: MenuItem {
+        onImplicitWidthChanged: {
+            if (menu.contentWidth < implicitWidth)
+                menu.contentWidth = implicitWidth + 12
+        }
+    }
+
     MenuBar {
         id: menuBar
         Menu {
             id: fileMenu
             title: qsTr("&File")
-            MenuItem { action: acLoadGame }
-            MenuItem { action: acSaveGame }
+            LongMenuItem { action: acLoadGame }
+            LongMenuItem { action: acSaveGame }
             MenuSeparator { }
-            MenuItem { action: acExit }
+            LongMenuItem { action: acExit }
         }
         Menu {
             id: editMenu
             title: qsTr("&Game")
-            MenuItem { action: acNewGame }
-            MenuItem { action: acNextPlayer }
-            MenuItem { action: acCambioSecco }
-            MenuItem { action: acChallenge }
-            MenuItem { action: acComputeMove }
+            LongMenuItem { action: acNewGame }
+            LongMenuItem { action: acNextPlayer }
+            LongMenuItem { action: acCambioSecco }
+            LongMenuItem { action: acChallenge }
+            LongMenuItem { action: acComputeMove }
             MenuSeparator { }
-            MenuItem { action: acNetwork; text: qsTr("Network") }
+            LongMenuItem { action: acNetwork }
         }
         Menu {
             id: viewMenu
             title: qsTr("&Configuration")
-            MenuItem { action: acConfiguration }
-            MenuItem { action: acDictionary }
+            LongMenuItem { action: acConfiguration }
+            LongMenuItem { action: acDictionary }
             MenuSeparator { }
             Menu {
                 title: qsTr("&View Mode")
-                // TODO: enable on Android
-//                RadioButton { action: acAutomaticView }
+                RadioButton {
+                    action: acAutomaticView
+                    visible: Qt.platform.os === "android"
+                    implicitHeight: Qt.platform.os === "android" ? implicitHeight : 0
+                }
                 RadioButton { action: acLandscapeView }
                 RadioButton { action: acPortraitView }
             }
@@ -50,7 +60,7 @@ ColumnLayout {
         Menu {
             id: helpMenu
             title: qsTr("&Help")
-            MenuItem { action: acAbout }
+            LongMenuItem { action: acAbout }
         }
     }
 
@@ -75,7 +85,7 @@ ColumnLayout {
                 action: acNextPlayer
                 text: ""
                 ToolTip {
-                    text: acNextPlayer.tip
+                    text: acNextPlayer.text
                     visible: text.length === 0 ? false : btnNextPlayer.hovered
                     delay: 1000
                     timeout: 5000
@@ -96,6 +106,12 @@ ColumnLayout {
                 id: btnComputeMove
                 text: ""
                 action: acComputeMove
+                ToolTip {
+                    text: acComputeMove.text
+                    visible: text.length === 0 ? false : btnComputeMove.hovered
+                    delay: 1000
+                    timeout: 5000
+                }
             }
             SpinBox {
                 id: sbBestMoveSpinner
@@ -104,10 +120,23 @@ ColumnLayout {
                 editable: true
                 onValueChanged: GamePlay.placeBestMove(value)
                 onToChanged: value = 0
+                ToolTip {
+                    text: qsTr("Iterate through found words")
+                    visible: text.length === 0 ? false : sbBestMoveSpinner.hovered
+                    delay: 1000
+                    timeout: 5000
+                }
             }
             ToolbarButton {
                 id: btnNetwork
                 action: acNetwork
+                text: ""
+                ToolTip {
+                    text: acNetwork.text
+                    visible: text.length === 0 ? false : btnNetwork.hovered
+                    delay: 1000
+                    timeout: 5000
+                }
             }
         }
     }

@@ -73,11 +73,6 @@ GamePlay::GamePlay(QQmlEngine *engine)
         if (finfo.exists()) //loading a l10n-file that has been deleted triggers a download confirmation, but shouldn't on startup
             localize(locFile);
     }
-/*    m_RemoteGamesProxy = new remoteGamesProxy(this);
-    m_RemoteGamesProxy->setSourceModel(m_RemoteGamesModel);
-    m_RemoteGamesProxy->setDynamicSortFilter(true);
-//    m_RemoteGamesProxy->setSortRole(remoteGamesModel::LastAccessRole);
-*/
 
 #ifdef Q_OS_ANDROID
     loadGame(config::file("lastgame.ssg"), true); //silent
@@ -115,7 +110,7 @@ void GamePlay::localize(const QString fileName)
     };
 }
 
-//NOTE: gameplay: better signal/slot when dic has been loaded
+//TODO: gameplay: better signal/slot when dic has been loaded
 void GamePlay::doDictionaryLoadingFinished(QString aFileName)
 {
     m_pDicListModel->doLoadingFinished(aFileName);
@@ -141,13 +136,13 @@ void GamePlay::doDownloadFinished(DlType fileType, QString fileName)
                 if (xmlReader.isStartElement() &&
                     (xmlReader.name().toString() == "version"))
                 {
-                    // TODO: make 'binaries' server a variable in *conf
+                    // TODO: gameplay: make 'binaries' server a variable in *conf
                     QString sRemoteVersion = xmlReader.readElementText();
                     if ( version::fromString( version::current() ) <
                         version::fromString( sRemoteVersion ) ) {
                         m_pMsgModel->addMessage( tr("Application: %1 < %2").arg(
                             version::current(), sRemoteVersion));
-                        // TODO: make link interactive or auto update
+                        // TODO: gameplay: make link interactive or auto update
                         if (!InstFileName.isEmpty()) {
                             m_pMsgModel->addMessage( tr("Please update from %1").arg(binaries) );
                         }
@@ -581,7 +576,7 @@ void GamePlay::doUpdateRack()
             rackLetter.State = LetterState::lsBag;
             rackLetter.RackPos = 0;
             rackLetter.IsExchange = false;
-            //FIXME: gameplay: do not append exchanged letters but randomly insert
+            //TODO: gameplay: do not append exchanged letters but randomly insert
             m_lBag.append(rackLetter);
             m_pRackModel->placeLetter(i, false); //set empty
             Letter aLetter = m_lBag[0];
@@ -721,7 +716,7 @@ void GamePlay::rollbackLastMove()
             m_pBoardModel->updateSquare(aPoint);
             if (m_pBoard->is3D()) cubeModel()->updateSquare(aPoint);//aIndex);
 
-            //NOTE: gameplay: rollbackLastMove() fails with multiple start fields
+            //TODO: gameplay: rollbackLastMove() fails with multiple start fields
             if (m_pBoard->getFieldtype(i) == FieldType::ftStart) { // make current move the first
                 m_pMoves.last()->setFirstMove(true);
                 m_bIsFirstMove = true;
@@ -839,7 +834,7 @@ void GamePlay::dropLetter(const uint rackIndex, const uint boardIndex)
 
     if (!m_bIsHistory) {
         m_bIsAccepted = m_pMoves.last()->addLetter(aLetter);
-        if (m_bIsAccepted) //FIXME: history bonus not done correctly due to last()
+        if (m_bIsAccepted) //TODO: gameplay: history bonus not done correctly due to last()
         {
             if (m_pRackModel->rackSize() == m_pMoves.last()->letterCount())
                 m_pMoves.last()->setBonus( m_nScrabbleBonus, true );

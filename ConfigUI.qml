@@ -5,11 +5,8 @@ import QtQuick.Layouts
 ListView {
     id: locView
 
-    property int pad: 12
-    width: rightPane.width - 2*pad
-    height: rightPane.height - 2*pad
-    leftMargin: pad
-    topMargin: pad
+    width: rightPane.width
+    height: rightPane.height - tm.height
 
     model: GamePlay.locListModel
     delegate: locViewItem
@@ -157,40 +154,35 @@ ListView {
             }
         }
     }
-    RoundButton {
+
+    onCurrentItemChanged: {
+        actionButton.isActive =
+            !model.get(currentIndex).isLoaded
+        actionButton.tiptext =
+            model.get(currentIndex).installedversion !== ""
+                ? qsTr("Load localization")
+                : qsTr("Download localization")
+        actionButton.icon.source =
+            model.get(currentIndex).installedversion !== ""
+                ? "qrc:///resources/dictionary.png"
+                : "qrc:///resources/dictionarydown.png"
+        actionButton.color =
+            !model.get(currentIndex).isLoaded
+                ? model.get(currentIndex).installedversion ? "limegreen" : "steelblue"
+                : "darkgrey"
+        actionButton.progress = 0 // repaint the background
+    }
+
+    ProgressButton {
         id: actionButton
-        implicitWidth: 50
-        implicitHeight: 50
         x: rightPane.width - 75
         y: rightPane.height - 75
-        enabled: !model.get(currentIndex).isLoaded
-        display: AbstractButton.IconOnly
-        icon.width: 32
-        icon.height: 32
-        icon.source: model.get(currentIndex).installedversion !== ""
-                        ? "qrc:///resources/dictionary.png"
-                        : "qrc:///resources/dictionarydown.png"
-        background: Rectangle {
+
+        progress: -1 // initial repaint
+        MouseArea {
             anchors.fill: parent
-            radius: width / 2
-            gradient: Gradient {
-                GradientStop {
-                    position: actionButton.hovered ? 1.0 : 1.0
-                    color: actionButton.enabled ? "darkgreen" : "lightgrey"
-                }
-                GradientStop {
-                    position: actionButton.hovered ? 1.0 : 0.0
-                    color: actionButton.enabled ? "limegreen" : "lightgrey"
-                }
-            }
+            onPressed: if (actionButton.isActive) acLoadLocalization.trigger()
         }
-        ToolTip {
-            text: qsTr("Load localization")
-            visible: actionButton.hovered
-            delay: 1000
-            timeout: 5000
-        }
-        onPressed: acLoadLocalization.trigger()
     }
 
 }
