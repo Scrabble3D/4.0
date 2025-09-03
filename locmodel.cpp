@@ -86,10 +86,8 @@ bool locList::deleteLocFile(const QString fileName)
     {
         emit onMessage( tr("Localization %1 successfully deleted.").arg(fileName));
 
-        beginResetModel();
         updateList();
         m_nLoadedLocFile = -1;
-        endResetModel();
         return true;
     };
 

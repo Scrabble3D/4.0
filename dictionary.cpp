@@ -14,9 +14,7 @@
 
 #undef doSort
 
-//INTERNAL: dicitionary: DAWG / Aho–Corasick algorithm
-
-//FIXME: license not read? -> deutsch.dic
+//TODO: dicitionary: DAWG / Aho–Corasick algorithm
 
 dictionary::dictionary(QObject* parent)
 {

@@ -320,5 +320,7 @@
         <file>ColorButton.qml</file>
         <file>ColorRadioButton.qml</file>
         <file>resources/cambiosecco.png</file>
+        <file>PieChart.qml</file>
+        <file>ProgressButton.qml</file>
     </qresource>
 </RCC>
