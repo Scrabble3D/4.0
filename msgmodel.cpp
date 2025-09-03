@@ -11,17 +11,15 @@ QVariant msgmodel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    const unsigned int i = m_msglist.count() - index.row() - 1;
-
     switch (role) {
       case Qt::DisplayRole:
         if (index.column() == 0)
-            return m_msglist[i].When.toString("hh:mm:ss");
+              return m_msglist[index.row()].When.toString("hh:mm:ss");
         else if (index.column() == 1)
-            return m_msglist[i].What;
+            return m_msglist[index.row()].What;
         break;
       case WhoRole:
-        return m_lPlayerNames.indexOf(m_msglist[i].Who);
+        return m_lPlayerNames.indexOf(m_msglist[index.row()].Who);
         break;
     }
 

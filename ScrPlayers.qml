@@ -20,10 +20,24 @@ ColumnLayout {
         text: qsTr("Leave group")
         onTriggered: GamePlay.doLeave()
     }
+    Action {
+        id: acOpenForGames
+        text: qsTr("Open for games")
+        checkable: true
+        checked: true
+        onTriggered: GamePlay.setOpenForGames(checked)
+    }
+
     Menu {
         id: contextMenu
         MenuItem { action: acInvite }
         MenuItem { action: acLeave }
+        MenuItem {
+            id: miOpenForGames
+            action: acOpenForGames
+            visible: false
+            height: visible ? implicitHeight : 0
+        }
     }
 
     TreeView {
@@ -59,7 +73,7 @@ ColumnLayout {
             required property int hasChildren
             required property int depth
 
-            //TODO: scrplayers: remember expanded state
+            //TODO: QML players: remember expanded state
             onTreeViewChanged: treeView.toggleExpanded(row)
 
             function getText(md) { //suppress Unable to assign [undefined] to QString
@@ -115,7 +129,7 @@ ColumnLayout {
             }
             HoverHandler {
                 id: hoverHandler
-                onHoveredChanged: toolTip.visible = hovered
+                onHoveredChanged: toolTip.visible = hovered && !treeDelegate.hasChildren
             }
             TapHandler {
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
@@ -133,7 +147,9 @@ ColumnLayout {
                     {
                         acLeave.enabled = (depth === 1) && (treeView.selected === GamePlay.networkName()) //in a group
                         acInvite.enabled = (treeView.selected !== GamePlay.networkName()) &&  //don't invite yourself
-                                           (model.version === 4) // don't group with old program version
+                                           (model.version === 4) && // don't group with old program version
+                                           (model.isOpenForGames) // open for games
+                        miOpenForGames.visible = treeView.selected === GamePlay.networkName()
                         contextMenu.popup()
                     }
             }
@@ -163,6 +179,17 @@ ColumnLayout {
                 width: 9
                 height: 6
             }
+            Image {
+                id: playerState
+                source: (model.isOpenForGames || treeDelegate.hasChildren)
+                        ? ""
+                        : "qrc:///resources/notopen.png"
+                x: playerImage.x + 13
+                y: playerImage.y + 1
+                width: 7
+                height: 7
+            }
+
             Text {
                 id: label
                 x: playerImage.x + playerImage.width + padding

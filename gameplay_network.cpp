@@ -77,7 +77,6 @@ void GamePlay::connect(QString name, QString password, QString email, QString co
 
 void GamePlay::disconnect()
 {
-    #ifndef Q_OS_ANDROID // FIXME: messagebox ends in dead loop on Android
     if (m_pNetwork->isConnected()) //do not ask if connection has failed
     {
         QSettings settings(config::ini(), QSettings::IniFormat);
@@ -104,7 +103,6 @@ void GamePlay::disconnect()
             #endif
         }
     }
-    #endif
     #if defined(Q_OS_LINUX) && defined(QT_DEBUG)
     qWarning() << "off";
     #endif
@@ -263,7 +261,7 @@ void GamePlay::syncNextPlayer()
     m_pNetwork->doSend(network::nwNextPlayer, "group", moveData.join("\a"));
 }
 
-void GamePlay::syncChallengeWord()
+void GamePlay::doNetworkSyncChallengeWord()
 {
     m_pNetwork->doSend(network::nwCheckWord, "group", "");
 }

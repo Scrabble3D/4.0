@@ -1,5 +1,7 @@
 #include "playersmodel.h"
 
+#include <QTimeZone>
+
 void playersTree::playerTree(QObject *parent)
 {
     Q_UNUSED(parent);
@@ -310,7 +312,7 @@ QHash<int, QByteArray> playersTree::roleNames() const
     roles[isKibitz] = "isKibitz";
     roles[groupID] = "groupID";
     roles[gameID] = "gameID";
-    roles[clientState] = "clientState";
+    roles[isOpenForGames] = "isOpenForGames";
     roles[flag] = "flag";
     return roles;
 }
@@ -333,9 +335,10 @@ QModelIndex playersTree::playerIndex(QString name)
 QDateTime playersTree::fromTDateTime(const double tDateTime)
 {
     const double since01Jan1970 = 25569.16666; //TDateTime starts at December 30, 1899
-    const int secPerDay = 24*60*60;
-    int time_t = (int) ((tDateTime - since01Jan1970) * secPerDay);
-    return QDateTime::fromSecsSinceEpoch(time_t, Qt::LocalTime);
+    const int secPerDay = 24 * 60 * 60;
+    const int time_t = (int) ((tDateTime - since01Jan1970) * secPerDay);
+    const QTimeZone aTimeZone(QTimeZone::LocalTime);
+    return QDateTime::fromSecsSinceEpoch(time_t, aTimeZone);
 }
 
 QString playersTree::fromTDateTimeF(const double tDateTime)
@@ -398,8 +401,12 @@ void playersTree::doRefresh(QVariantMap msg)
             m_lPlayers[nPlayerIndex].gameStarted = fromTDateTime(msg[QString::number(i) + "_GameStarted"].toDouble());
             m_lPlayers[nPlayerIndex].moveNumber = msg[QString::number(i) + "_MoveNumber"].toInt();
             m_lPlayers[nPlayerIndex].allowKibitz = msg[QString::number(i) + "_AllowKibitz"].toBool();
-            //TODO: players: add clientstate
-//            m_lPlayers[nPlayerIndex].clientState = msg[QString::number(i) + "_ClientState"].toString();
+            QString aState = msg[QString::number(i) + "_ClientState"].toString();
+            // ignore the states csAfk and csBusy
+            if (aState == "csNotOpen")
+                m_lPlayers[nPlayerIndex].isOpenForGames = false;
+            else if (aState == "csOpenForGames")
+                m_lPlayers[nPlayerIndex].isOpenForGames = true;
         }
     }
     updateTree();
@@ -478,7 +485,7 @@ void playersTree::updateTree()
         aNode->setData(m_lPlayers[i].gameStarted, gameStarted);
         aNode->setData(m_lPlayers[i].moveNumber, moveNumber);
         aNode->setData(m_lPlayers[i].allowKibitz, allowKibitz);
-        aNode->setData(m_lPlayers[i].clientState, clientState);
+        aNode->setData(m_lPlayers[i].isOpenForGames, isOpenForGames);
 
         if (gameNode->data(playerName) != "")
             gameNode->appendRow(aNode);

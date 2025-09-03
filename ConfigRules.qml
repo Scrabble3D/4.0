@@ -13,7 +13,7 @@ GridLayout {
         sbBingo.value = defaults.languages[defaultLetterSet].scrabbleBonus
         sbGameEnd.value = defaults.languages[defaultLetterSet].endBonus
         cbAddLetters.checked = defaults.languages[defaultLetterSet].addLetters
-        cbSubstractLetters.checked = defaults.languages[defaultLetterSet].substractLetters
+        cbSubtractLetters.checked = defaults.languages[defaultLetterSet].subtractLetters
         sbJokerPenalty.value = defaults.languages[defaultLetterSet].jokerPenalty
         cbChangeIsPass.checked = defaults.languages[defaultLetterSet].changeIsPass
         cbCambioSecco.checked = defaults.languages[defaultLetterSet].cambioSecco
@@ -23,7 +23,7 @@ GridLayout {
     property alias sbBingo: sbBingo
     property alias sbGameEnd: sbGameEnd
     property alias cbAddLetters: cbAddLetters
-    property alias cbSubstractLetters: cbSubstractLetters
+    property alias cbSubtractLetters: cbSubtractLetters
     property alias sbJokerPenalty: sbJokerPenalty
     property alias cbChangeIsPass: cbChangeIsPass
     property alias cbCambioSecco: cbCambioSecco
@@ -31,24 +31,27 @@ GridLayout {
 
     ColorLabel {
         id: lbPasses
-        leftPadding: 8
-        Layout.alignment: Qt.AlignRight | Qt.AlignTopmitspieler
+        Layout.leftMargin: 8
+        Layout.topMargin: 8
+        Layout.alignment: Qt.AlignRight
         text: qsTr("Passes until game end:")
     }
     RowLayout {
+        Layout.topMargin: 8
         ColorSpinBox {
-        id: sbPasses
-        from: 1
-        to: 99
-        value: 3
-        onValueChanged: config.numberOfPasses = value
-    }
+            id: sbPasses
+            from: 1
+            to: 99
+            value: 3
+            onValueChanged: config.numberOfPasses = value
+        }
         InfoTip { tiptext: qsTr("The number of moves each player can pass consecutively until the game ends") }
     }
+
     ColorLabel {
         id: lbBingo
-        leftPadding: 8
-        Layout.alignment: Qt.AlignRight | Qt.AlignTop
+        Layout.leftMargin: 8
+        Layout.alignment: Qt.AlignRight
         text: qsTr("Bonus for Scrabble/Bingos:")
     }
     RowLayout {
@@ -61,10 +64,11 @@ GridLayout {
         }
         InfoTip { tiptext: qsTr("The 'bingo' bonus when all tiles from the rack are placed at once") }
     }
+
     ColorLabel {
         id: lbGameEnd
-        leftPadding: 8
-        Layout.alignment: Qt.AlignRight | Qt.AlignTop
+        Layout.leftMargin: 8
+        Layout.alignment: Qt.AlignRight
         text: qsTr("Bonus on game end:")
     }
     RowLayout {
@@ -77,10 +81,11 @@ GridLayout {
         }
         InfoTip { tiptext: qsTr("Extra bonus awarded to the player who ends the game") }
     }
+
     ColorLabel {
         id: lbJokerPenalty
-        leftPadding: 8
-        Layout.alignment: Qt.AlignRight | Qt.AlignTop
+        Layout.leftMargin: 8
+        Layout.alignment: Qt.AlignRight
         text: qsTr("Penalty for left blanks:")
     }
     RowLayout {
@@ -93,6 +98,7 @@ GridLayout {
         }
         InfoTip { tiptext: qsTr("Extra penalty for blank tile on the rack when the game ends") }
     }
+
     RowLayout {
         Layout.columnSpan: 2
         Layout.leftMargin: 8
@@ -107,9 +113,9 @@ GridLayout {
         Layout.columnSpan: 2
         Layout.leftMargin: 8
         ColorCheckBox {
-            id: cbSubstractLetters
-            text: qsTr("Substract the value of left letters")
-            onCheckStateChanged: config.substractLetters = checked
+            id: cbSubtractLetters
+            text: qsTr("Subtract the value of left letters")
+            onCheckStateChanged: config.subtractLetters = checked
         }
         InfoTip { tiptext: qsTr("The value of the remaining tiles is deducted from each player's result") }
     }
@@ -133,6 +139,7 @@ GridLayout {
         }
         InfoTip { tiptext: qsTr("Once per game you can exchange all pieces on the rack without losing the right to place") }
     }
+
     ColorLabel {
         Layout.leftMargin: 8
         Layout.topMargin: 16
@@ -157,7 +164,6 @@ GridLayout {
             id: slLabel
             text: "100 %"
         }
-
         InfoTip { tiptext: qsTr("Constrains the computing performance by picking a random result out of the best moves") }
     }
 }

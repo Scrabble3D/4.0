@@ -45,7 +45,6 @@ class GamePlay : public QObject
     Q_PROPERTY(locList* locListModel READ locListModel CONSTANT)
     Q_PROPERTY(playersTree* playersTreeModel READ playersTreeModel CONSTANT)
     Q_PROPERTY(remoteGamesModel* remoteGames READ remoteGames CONSTANT)
-    //    Q_PROPERTY(remoteGamesProxy* remoteGames READ remoteGames CONSTANT)
 
     Q_PROPERTY(bool isChallenge READ getIsChallenge NOTIFY isChallengeChanged)
     Q_PROPERTY(bool isRunning READ getIsRunning NOTIFY isRunningChanged)
@@ -111,6 +110,7 @@ public:
     explicit GamePlay(QQmlEngine *engine);
 
     Q_INVOKABLE void checkForUpdates();
+    Q_INVOKABLE void runDemo();
 
     Q_INVOKABLE void localize(const QString fileName);
     Q_INVOKABLE bool deleteLocFile(const QString fileName) { return m_pLocListModel->deleteLocFile(fileName); };
@@ -161,6 +161,7 @@ public:
 
     Q_INVOKABLE QString networkName() { return m_pNetwork->localPlayerName(); }
     Q_INVOKABLE void doInvite(QString sName);
+    Q_INVOKABLE void setOpenForGames(bool isOpen) { emit onSend(network::nwRefresh, "all", isOpen ? "SetState=csOpenForGames" : "SetState=csNotOpen"); }
     Q_INVOKABLE void doLeave();
     Q_INVOKABLE void syncNewGame(QVariantMap aConfig);
     Q_INVOKABLE void rejectNewGame() { if (m_bIsConnected) emit onSend(network::nwAnswer, "group", "Answer=false"); }
@@ -177,7 +178,6 @@ public:
     locList *locListModel() { return m_pLocListModel; }
     playersTree *playersTreeModel() { return m_PlayersTreeModel; }
     remoteGamesModel *remoteGames() { return m_RemoteGamesModel; }
-    //NOTE: gameplay: remoteGamesProxy <-> remoteGames();
 
 public slots:
     void startNewGame(QVariantMap gameConfig);
@@ -218,6 +218,7 @@ public slots:
     void doNetworkGameResult(int oldRating, int newRating);
     void doNetworkChallengeMove(QString aSender);
     void doNetworkChallengeResult(QVariantMap aMsg);
+    void doNetworkSyncChallengeWord();
 
     void doDictionaryLoadingFinished(QString aFileName);
 
@@ -286,7 +287,7 @@ private:
     uint m_nLimitedExchange;                  // FEATURE: gameplay: limited exchange to n letters, eg. Italian rules
     bool m_bWhatif;                           // FEATURE: gameplay: whether whatif is allowed
     bool m_bAdd;                              // whether to add values of remaining tiles from other players to the winner's result
-    bool m_bSubstract;                        // whether to deduct the remaining pieces' values from the individual result
+    bool m_bSubtract;                        // whether to deduct the remaining pieces' values from the individual result
     uint m_nJokerPenalty;                     // penalty for joker left on game end
     uint m_nTimePenaltyValue;                 // penalty to continue game after time out
     QList<uint> m_nTimePenaltyCount;          // number of accepted time outs at game end
@@ -337,7 +338,6 @@ private:
     locList *m_pLocListModel;
     playersTree *m_PlayersTreeModel;
     remoteGamesModel *m_RemoteGamesModel;
-//    remoteGamesProxy *m_RemoteGamesProxy;
 
     computemove *m_pComputeMove;
     int m_nComputeResults = 0;

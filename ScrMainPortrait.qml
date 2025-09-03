@@ -9,6 +9,13 @@ ColumnLayout {
 
     anchors.fill: parent
 
+    component LongMenuItem: MenuItem {
+        onImplicitWidthChanged: {
+            if (menu.contentWidth < implicitWidth)
+                menu.contentWidth = implicitWidth + 12
+        }
+    }
+
     ToolBar {
         id: toolBar
         Layout.margins: 6
@@ -126,28 +133,33 @@ ColumnLayout {
         }
         Menu {
             id: contextMenu
-            MenuItem { action: acNewGame }
-            MenuItem { action: acNextPlayer }
-            MenuItem { action: acCambioSecco }
-            MenuItem { action: acChallenge }
-            MenuItem { action: acComputeMove }
+            LongMenuItem { action: acNewGame }
+            LongMenuItem { action: acNextPlayer }
+            LongMenuItem { action: acCambioSecco }
+            LongMenuItem { action: acChallenge }
+            LongMenuItem { action: acComputeMove }
             MenuSeparator { }
-            MenuItem { action: acLoadGame }
-            MenuItem { action: acSaveGame }
+            LongMenuItem { action: acLoadGame }
+            LongMenuItem { action: acSaveGame }
             MenuSeparator { }
-            MenuItem { action: acDictionary }
-            MenuItem { action: acNetwork; icon.source: ""; text: qsTr("Network") }
+            LongMenuItem { action: acDictionary }
+            LongMenuItem { action: acNetwork; icon.source: "" }
+
             MenuSeparator { }
-            MenuItem { action: acConfiguration }
+            LongMenuItem { action: acConfiguration }
             Menu {
                 title: qsTr("View Mode")
-//                RadioButton { action: acAutomaticView }
-                RadioButton { action: acLandscapeView }
+                RadioButton {
+                    action: acAutomaticView
+                    visible: Qt.platform.os === "android"
+                    implicitHeight: Qt.platform.os === "android" ? miLandscapeView.implicitHeight : 0
+                }
+                RadioButton { id: miLandscapeView; action: acLandscapeView }
                 RadioButton { action: acPortraitView }
             }
-            MenuItem { action: acAbout }
+            LongMenuItem { action: acAbout }
             MenuSeparator { }
-            MenuItem { action: acExit }
+            LongMenuItem { action: acExit }
         }
     }
     TabBar {

@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
-import QtCharts
 
 RowLayout {
     property int tbHeight: 22
@@ -13,16 +12,13 @@ RowLayout {
             poll.visible = bShow
         }
         function onAnswerChanged(pAnswers) {
-            pieSeries.clear()
+            poll.points = []
             for (var i = 0; i < pAnswers.length; i++) {
-                var pie = pieSeries.append("", 1)
                 switch (pAnswers[i]) {
-                  case  0: pie.color = config.myPalette.dark; break
-                  case -1: pie.color = "red"; break
-                  case  1: pie.color = "green"; break
+                  case  0: poll.points.push(config.myPalette.dark); break
+                  case -1: poll.points.push('red'); break
+                  case  1: poll.points.push('green'); break
                 }
-                pie.borderWidth = 0
-                pie.borderColor = pie.color
              }
         }
         function onPlacedValueChanged(nValue) {
@@ -203,16 +199,11 @@ RowLayout {
     Item {
         Layout.preferredHeight: tbHeight * poll.visible
         Layout.preferredWidth: tbHeight * poll.visible
-        ChartView {
+        PieChart {
             id: poll
             visible: false
             anchors.fill: parent
-            legend.visible: false
             antialiasing: true
-            margins { top: 0; bottom: 0; left: 0; right: 0 }
-            property int border: 1
-            plotArea: Qt.rect(border, border, width - border*2, height - border*2)
-            PieSeries { id: pieSeries; size: 1 }
         }
     }
 }

@@ -741,7 +741,7 @@ Item {
         property bool jokerExchange:false;
         property bool changeIsPass: true        //page 25, V.C.2
         property bool cambioSecco: false
-        property bool substractLetters: true    //page 25, V.F.1. (adapted to the current features of Scrabble3D)
+        property bool subtractLetters: true    //page 25, V.F.1. (adapted to the current features of Scrabble3D)
         property bool addLetters: true          //page 25, V.F.1. (adapted to the current features of Scrabble3D)
         property int jokerPenalty: 0
         property int numberOfPasses: 3          //page 25, V.C.2
@@ -805,7 +805,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: true             //page 21, 5.2
         property bool cambioSecco: false
-        property bool substractLetters: true         //page 21, 5.1.4
+        property bool subtractLetters: true         //page 21, 5.1.4
         property bool addLetters: true               //page 21, 5.1.4
         property int jokerPenalty: 0
         property int numberOfPasses: 3               //page 21, 5.2
@@ -871,8 +871,8 @@ Item {
         property bool jokerExchange: false             //allow to exchange placed jokers by the corresponding tile
         property bool changeIsPass: true               //treat exchange of tiles from rack as pass or not
         property bool cambioSecco: false               //cambio secco
-        property bool substractLetters: true           //deduct remaining tiles' value from result
-        property bool addLetters: true                 //winner get all values that have been substracted
+        property bool subtractLetters: true           //deduct remaining tiles' value from result
+        property bool addLetters: true                 //winner get all values that have been subtracted
         property int jokerPenalty: 0                   //penlty for left jokers after game end
         property int numberOfPasses: 3                 //how often every player is allowed to pass in sequence
         property int limitExchange: 7                  //number of tiles that have to be left in bag for exchanging tiles on rack
@@ -928,7 +928,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: false     //page 4, point 4 b)
         property bool cambioSecco: true       //since the "Senyors" rule is not possible in Scrabble3D, the Italian Cambio secco has been chosen instead
-        property bool substractLetters: true
+        property bool subtractLetters: true
         property bool addLetters: true
         property int jokerPenalty: 0
         property int numberOfPasses: 3        //page 4, point 4 b)
@@ -994,7 +994,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: true        //page 21, 5.2
         property bool cambioSecco: false
-        property bool substractLetters: true    //page 21, 5.1.4
+        property bool subtractLetters: true    //page 21, 5.1.4
         property bool addLetters: true          //page 21, 5.1.4
         property int jokerPenalty: 0
         property int numberOfPasses: 3          //page 21, 5.2
@@ -1066,7 +1066,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: true
         property bool cambioSecco: false
-        property bool substractLetters: true
+        property bool subtractLetters: true
         property bool addLetters: true
         property int jokerPenalty: 0
         property int numberOfPasses: 3
@@ -1141,7 +1141,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: false           //not explicitly mentioned, therefore derived indirectly from point 4.2 and 4.3; JE CHANGE ≠ JE PASSE
         property bool cambioSecco: false
-        property bool substractLetters: true        //point 7
+        property bool subtractLetters: true        //point 7
         property bool addLetters: true              //point 7
         property int jokerPenalty: 0
         property int numberOfPasses: 3              //point 7
@@ -1210,7 +1210,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: false           //not explicitly mentioned, but derived indirectly from point 5.1.b as well as point 3.2 and 3.3
         property bool cambioSecco: false
-        property bool substractLetters: true        //http://www.scrabble.de/rules.php?f=&sub=2 - point 4 i)
+        property bool subtractLetters: true        //http://www.scrabble.de/rules.php?f=&sub=2 - point 4 i)
         property bool addLetters: true              //http://www.scrabble.de/rules.php?f=&sub=2 - point 4 i)
         property int jokerPenalty: 0
         property int numberOfPasses: 2              //page 12, point 5.1
@@ -1276,7 +1276,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: true                //OK - 5.ΤΕΛΟΣ του ΑΓΩΝΑ
         property bool cambioSecco: false
-        property bool substractLetters: true            //OK - 5.ΤΕΛΟΣ του ΑΓΩΝΑ
+        property bool subtractLetters: true            //OK - 5.ΤΕΛΟΣ του ΑΓΩΝΑ
         property bool addLetters: true
         property int jokerPenalty: 0
         property int numberOfPasses: 3                  //OK - 5.ΤΕΛΟΣ του ΑΓΩΝΑ
@@ -1344,7 +1344,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: true            //page 21, 5.2
         property bool cambioSecco: false
-        property bool substractLetters: true        //page 21, 5.1.4
+        property bool subtractLetters: true        //page 21, 5.1.4
         property bool addLetters: true              //page 21, 5.1.4
         property int jokerPenalty: 0
         property int numberOfPasses:3               //page 21, 5.2
@@ -1410,7 +1410,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: true
         property bool cambioSecco: false
-        property bool substractLetters: true
+        property bool subtractLetters: true
         property bool addLetters: true
         property int jokerPenalty: 0
         property int numberOfPasses: 3
@@ -1488,7 +1488,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: true        //page 21, 5.2
         property bool cambioSecco: false
-        property bool substractLetters: true    //page 21, 5.1.4
+        property bool subtractLetters: true    //page 21, 5.1.4
         property bool addLetters: true          //page 21, 5.1.4
         property int jokerPenalty: 0
         property int numberOfPasses:3           //page 21, 5.2
@@ -1557,7 +1557,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: true        //page 11, point 39 b)
         property bool cambioSecco: true         //page 11, point 35
-        property bool substractLetters: true    //page 12, point 40
+        property bool subtractLetters: true    //page 12, point 40
         property bool addLetters: false         //page 12, point 40 (not explicitly mentioned, but derived indirectly)
         property int jokerPenalty: 7            //page 12, point 40
         property int numberOfPasses:3           //page 11, point 39 b)
@@ -1620,7 +1620,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: false           //in order to alleviate this issue, this setting has been chosen arbitrarily, because nowadays NOBODY has Latin as native language
         property bool cambioSecco: false            //CS has not been chosen, because this Italian rule is rather unknown all over the world
-        property bool substractLetters: true
+        property bool subtractLetters: true
         property bool addLetters: true
         property int jokerPenalty: 0
         property int numberOfPasses: 3
@@ -1687,7 +1687,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: true        //page 25, V.C.2
         property bool cambioSecco: false
-        property bool substractLetters: true    //page 25, V.F.1. (adapted to the current features of Scrabble3D)
+        property bool subtractLetters: true    //page 25, V.F.1. (adapted to the current features of Scrabble3D)
         property bool addLetters: true          //page 25, V.F.1. (adapted to the current features of Scrabble3D)
         property int jokerPenalty: 0
         property int numberOfPasses: 3          //page 25, V.C.2
@@ -1767,8 +1767,8 @@ Item {
         property bool jokerExchange: false      //allow to exchange placed jokers by the corresponding tile
         property bool changeIsPass: true        //treat exchange of tiles from rack as pass or not
         property bool cambioSecco: false        //cambio secco
-        property bool substractLetters: true    //deduct remaining tiles' value from result
-        property bool addLetters: true          //winner get all values that have been substracted
+        property bool subtractLetters: true    //deduct remaining tiles' value from result
+        property bool addLetters: true          //winner get all values that have been subtracted
         property int jokerPenalty: 0            //penlty for left jokers after game end
         property int numberOfPasses: 3          //how often every player is allowed to pass in sequence
         property int limitExchange: 7           //number of tiles that have to be left in bag for exchanging tiles on rack
@@ -1826,7 +1826,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: true
         property bool cambioSecco: false
-        property bool substractLetters: true
+        property bool subtractLetters: true
         property bool addLetters: true
         property int jokerPenalty: 0
         property int numberOfPasses: 3
@@ -1891,7 +1891,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: true        //page 21, 5.2
         property bool cambioSecco: false
-        property bool substractLetters: true    //page 21, 5.1.4
+        property bool subtractLetters: true    //page 21, 5.1.4
         property bool addLetters: true          //page 21, 5.1.4
         property int jokerPenalty: 0
         property int numberOfPasses: 3          //page 21, 5.2
@@ -1965,7 +1965,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: true        //page 21, 5.2
         property bool cambioSecco: false
-        property bool substractLetters: true    //page 21, 5.1.4
+        property bool subtractLetters: true    //page 21, 5.1.4
         property bool addLetters: true          //page 21, 5.1.4
         property int jokerPenalty: 0
         property int numberOfPasses: 3          //page 21, 5.2
@@ -2037,7 +2037,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: true
         property bool cambioSecco: false
-        property bool substractLetters: true
+        property bool subtractLetters: true
         property bool addLetters: true
         property int jokerPenalty: 0
         property int numberOfPasses: 3
@@ -2119,7 +2119,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: false       //point 45.2
         property bool cambioSecco: false
-        property bool substractLetters: true    //point 45.4
+        property bool subtractLetters: true    //point 45.4
         property bool addLetters: true          //point 45.4
         property int jokerPenalty: 0
         property int numberOfPasses: 2          //point 45.2 (point 45.3 is not a feature in Scrabble3D)
@@ -2185,7 +2185,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: true
         property bool cambioSecco: false
-        property bool substractLetters: true
+        property bool subtractLetters: true
         property bool addLetters: true
         property int jokerPenalty: 0
         property int numberOfPasses: 3
@@ -2257,7 +2257,7 @@ Item {
         property bool jokerExchange: false
         property bool changeIsPass: true            //page 21, 5.2
         property bool cambioSecco: false
-        property bool substractLetters: true        //page 21, 5.1.4
+        property bool subtractLetters: true        //page 21, 5.1.4
         property bool addLetters: true              //page 21, 5.1.4
         property int jokerPenalty: 0
         property int numberOfPasses: 3              //page 21, 5.2

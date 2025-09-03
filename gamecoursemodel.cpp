@@ -19,38 +19,42 @@ QVariant gamecoursemodel::data(const QModelIndex &index, int role) const
     ModelData aData = m_pData[i];
 
     switch (role) {
-      case Qt::DisplayRole:
-        if (index.column() == 0) //move #
-            return i+1;
-        else if (index.column() == 1) //word
-            return aData.placedWord;
-        else if (index.column() == 2) //value
-            return aData.value;
-        else if (index.column() == 3) //best value
-            return aData.bestValue;
-        else if (index.column() == 4) //move time
-        {
-            QTime aTime(0,0,0);
-            aTime = aTime.addSecs(aData.time);
-            return aTime.toString("mm:ss");
-        }
-        break;
-      case WhoRole:
-        return aData.who;
-        break;
-      case ConnectedWords:
-        return aData.connectedWords;
-        break;
-      case IsScrabbleRole:
-        return aData.isScrabble;
-        break;
+      case MoveRole:
+          return i+1;
+          break;
+      case WordRole:
+          return aData.placedWord;
+          break;
+      case ValueRole:
+          return aData.value;
+          break;
+      case BestValueRole:
+          return aData.bestValue == 0 ? "" : QString::number(aData.bestValue);
+          break;
       case TimeRole:
-        return aData.time;
-        break;
+          {
+              QTime aTime(0,0,0);
+              aTime = aTime.addSecs(aData.time);
+              return aTime.toString("mm:ss");
+          }
+          break;
+      case WhoRole:
+          return aData.who;
+          break;
+      case ConnectedWords:
+          return aData.connectedWords;
+          break;
+      case IsScrabbleRole:
+          return aData.isScrabble;
+          break;
+      case BonusWho:
+          return aData.bonuswho;
+          break;
+      case Bonus:
+          return aData.bonus;
+          break;
     }
-
     return QVariant();
-
 }
 
 QVariant gamecoursemodel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -86,12 +90,17 @@ int gamecoursemodel::columnCount(const QModelIndex &parent) const
 QHash<int, QByteArray> gamecoursemodel::roleNames() const
 {
     QHash<int, QByteArray> roles;
-    roles[Qt::DisplayRole] = "display";
+    roles[Qt::DisplayRole] = "display"; // needed for headerdata
     roles[WhoRole] = "who";
+    roles[MoveRole] = "move";
+    roles[WordRole] = "word";
     roles[ConnectedWords] = "connectedWords";
+    roles[ValueRole] = "value";
     roles[IsScrabbleRole] = "isScrabble";
-    roles[BestValueRole] = "bonus";
+    roles[BestValueRole] = "best";
     roles[TimeRole] = "time";
+    roles[BonusWho] = "bonuswho";
+    roles[Bonus] = "bonus";
     return roles;
 }
 
@@ -100,13 +109,11 @@ void gamecoursemodel::setSelected(const int nSelected)
     beginResetModel();
     if (m_nSelected == nSelected)
         m_nSelected = -1;
-    else if ((nSelected >= 0) && (nSelected < m_pData.count()))
+    else if ((nSelected > 0) && (nSelected <= m_pData.count()))
         m_nSelected = nSelected;
     endResetModel();
     //change board & rack via gameplay
-    emit onSelectedMoveChanged( m_nSelected == -1
-                                ? -1
-                                : m_pData.count() - m_nSelected );
+    emit onSelectedMoveChanged( m_nSelected );
 }
 
 void gamecoursemodel::clear()
@@ -137,6 +144,8 @@ void gamecoursemodel::addMove(QString PlacedWord,
     aData.bestValue = bestValue;
     aData.isScrabble = IsScrabble;
     aData.time = moveTime;
+    aData.bonuswho = -1;
+    aData.bonus = 0;
     aData.rack << rack;
 
     const int i = m_pData.count();
@@ -147,31 +156,27 @@ void gamecoursemodel::addMove(QString PlacedWord,
 
 void gamecoursemodel::clearLastMove()
 {
-    ModelData aData;
-    aData.placedWord = "";
-    aData.connectedWords = "";
-    aData.who = m_pData.last().who;
-    m_Total[m_pData.last().who] -= m_pData.last().value;
-    aData.value = 0;
-    aData.bestValue = 0;
-    aData.isScrabble = false;
-    aData.time = 0;
+    beginResetModel();
 
-    int i = m_pData.count();
-    beginRemoveRows(QModelIndex(), i, i);
-    m_pData.removeLast();
-    endRemoveRows();
+    const int nLastMove = m_pData.count() - 1;
+    m_pData[nLastMove].placedWord = "";
+    m_pData[nLastMove].connectedWords = "";
+    m_Total[m_pData[nLastMove].who] -= m_pData[nLastMove].value;
+    m_pData[nLastMove].value = 0;
+    m_pData[nLastMove].isScrabble = false;
+    // keep: who, bestValue, time, rack;
 
-    i--;
-    beginInsertRows(QModelIndex(), i, i);
-    m_pData.append(aData);
-    endInsertRows();
-
+    endResetModel();
 }
 
 void gamecoursemodel::addBonus(int player, int value)
 {
+    beginResetModel();
+    const int nLastMove = m_pData.count() - 1;
+    m_pData[nLastMove].bonuswho = player;
+    m_pData[nLastMove].bonus = value;
     m_Total[player] += value;
+    endResetModel();
 }
 
 int gamecoursemodel::getScore(const int nPlayer)
@@ -212,7 +217,7 @@ void gamecoursemodel::getWinner(QList<int> &result)
     if (lWinner.count()>0)
         result.append(lWinner[0].player);
 
-    //draw?
+    //TODO: gamecourse: getWinner draw?
     if (lWinner.count()>1) {
         int i=1;
         while ((lWinner[i].value == lWinner[0].value) && (i<MaxPlayers)) {

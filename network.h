@@ -14,8 +14,8 @@ public:
         nwDisconnect,
         nwRefresh,       // updated on player data, eg. new group, move -> playerstree::doRefresh
         nwInvite,        // gameplay::doInvite() invitation received to join a group, gameplay::doNetworkInvite
-        nwLeave,         // send = about leaving a group, receive = abort running game in TODO: network nwLeave
-        nwJoin,          // send = invitation accepted, receive = loadgame in TODO: network nwJoin
+        nwLeave,         // send = about leaving a group, receive = abort running game in TODO: network: nwLeave
+        nwJoin,          // send = invitation accepted, receive = loadgame in TODO: network: nwJoin
         nwInformation,   // static information received, eg. feedback or finger/best -> gameplay::doNetworkInfo
         nwChat,          // chat message received, emits onChat(), passed via gameplay to -> msgmodel::addMessage
 //        nwPoll,          // obsolete; was suspend the running game and ask all mates whether a word should be accepted or a new game started, for example -> gameplay::doNetworkPoll

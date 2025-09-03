@@ -3,9 +3,11 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 GridLayout {
-    columns: 2
+
+    columns: 3
     columnSpacing: 8
     rowSpacing: 8
+
     property int defaultLetterSet: 0
     onDefaultLetterSetChanged: {
         rbNoLimit.checked = defaults.languages[defaultLetterSet].timeControl === 0
@@ -70,138 +72,151 @@ GridLayout {
 
     }
 
+    ButtonGroup {
+        id: rbTimeGroup
+    }
+
     ColorLabel {
         id: lbTimeControl
-        leftPadding: 8
-        Layout.alignment: Qt.AlignRight | Qt.AlignTop
-        Layout.topMargin: rbNoLimit.topPadding
+        Layout.column: 0; Layout.row: 0
+        Layout.alignment: Qt.AlignRight
+        Layout.leftMargin: 8
+        Layout.topMargin: 8
         text: qsTr("Time control:")
     }
-    GridLayout {
-        id: layoutTimeControl
-        columns: 2
-        Layout.bottomMargin: 8
-        ButtonGroup {id: rbTimeGroup}
+    ColorRadioButton {
+        id: rbNoLimit
+        Layout.column: 1; Layout.row: 0
+        Layout.topMargin: 8
+        text: qsTr("No Limit")
+        ButtonGroup.group: rbTimeGroup
+        onCheckedChanged: if (checked) config.timeControl = 0
+    }
+    ColorRadioButton {
+        id: rbPerMove
+        Layout.column: 1; Layout.row: 1
+        text: qsTr("Per Move")
+        ButtonGroup.group: rbTimeGroup
+        onCheckedChanged: if (checked) {
+            config.timeControl = 1
+            tiPerMove.textChanged()
+        }
+    }
+    TimeField {
+        id: tiPerMove
+        Layout.column: 2; Layout.row: 1
+        enabled: rbPerMove.checked
+        text: "0:01:00" //1 min
+        onTextChanged: if (rbPerMove.checked) {
+            config.timeControlValue = timeStringToSeconds(tiPerMove.text)
+            tiPerMove.accepted = config.timeControlValue === 0
+        }
+    }
+    ColorRadioButton {
+        id: rbPerGame
+        Layout.column: 1; Layout.row: 2
+        text: qsTr("Per Game")
+        ButtonGroup.group: rbTimeGroup
+        onCheckedChanged: if (checked) {
+            config.timeControl = 2
+            tiPerGame.textChanged()
+        }
+    }
+    TimeField {
+        id: tiPerGame
+        Layout.column: 2; Layout.row: 2
+        enabled: rbPerGame.checked
+        text: "1:00:00" //1 h
+        onTextChanged: if (rbPerGame.checked) {
+            config.timeControlValue = timeStringToSeconds(tiPerGame.text)
+            tiPerGame.accepted = config.timeControlValue === 0
+        }
+    }
+
+    ButtonGroup { id: rbPenaltyGroup }
+
+    ColorLabel {
+        id: lbPenalty
+        Layout.column: 0; Layout.row: 3
+        Layout.alignment: Qt.AlignRight
+        Layout.topMargin: 8
+        text: qsTr("Penalty:")
+    }
+    RowLayout {
+        Layout.column: 1; Layout.row: 3; Layout.columnSpan: 2
+        Layout.topMargin: 8
         ColorRadioButton {
-            id: rbNoLimit
+            id: rbGameEnd
             Layout.columnSpan: 2
-            text: qsTr("No Limit")
-            ButtonGroup.group: rbTimeGroup
-            onCheckedChanged: if (checked) config.timeControl = 0
-        }
-        ColorRadioButton {
-            id: rbPerMove
-            text: qsTr("Per Move")
-            ButtonGroup.group: rbTimeGroup
-            onCheckedChanged: if (checked) {
-                config.timeControl = 1
-                tiPerMove.textChanged()
-            }
-        }
-        TimeField {
-            id: tiPerMove
-            enabled: rbPerMove.checked
-            text: "0:01:00" //1 min
-            onTextChanged: if (rbPerMove.checked) {
-                config.timeControlValue = timeStringToSeconds(tiPerMove.text)
-                tiPerMove.accepted = config.timeControlValue === 0
-            }
-        }
-        ColorRadioButton {
-            id: rbPerGame
-            text: qsTr("Per Game")
-            ButtonGroup.group: rbTimeGroup
-            onCheckedChanged: if (checked) {
-                config.timeControl = 2
-                tiPerGame.textChanged()
-            }
-        }
-        TimeField {
-            id: tiPerGame
+            ButtonGroup.group: rbPenaltyGroup
+            text: qsTr("Game ends on timeout")
             enabled: rbPerGame.checked
-            text: "1:00:00" //1 h
-            onTextChanged: if (rbPerGame.checked) {
-                config.timeControlValue = timeStringToSeconds(tiPerGame.text)
-                tiPerGame.accepted = config.timeControlValue === 0
-            }
+            onCheckedChanged: config.canbuytime = false
+        }
+        InfoTip { tiptext: qsTr("Players who run out of time will pass automatically") }
+    }
+    RowLayout {
+        Layout.column: 1; Layout.row: 4; Layout.columnSpan: 2
+        ColorRadioButton {
+            id: rbPenalty
+            Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+            ButtonGroup.group: rbPenaltyGroup
+            text: qsTr("Penalty on timeout")
+            enabled: rbPerGame.checked
+            onCheckedChanged: config.canbuytime = true
+        }
+        InfoTip { tiptext: qsTr("You 'buy' one minute of time") }
+    }
+    RowLayout {
+        Layout.column: 1; Layout.row: 5; Layout.columnSpan: 2
+        Layout.leftMargin: 24
+        ColorSpinBox {
+            id: sbPenaltyPoints
+            enabled: rbPenalty.checked && rbPenalty.enabled
+            from: 1
+            to: 5000
+            value: 1
+            onValueChanged: config.buytimepenalty = value
+        }
+        ColorLabel {
+            id: lbPenaltyPointsUnit
+            enabled: rbPenalty.checked && rbPenalty.enabled
+            text: qsTr("points")
         }
     }
     ColorLabel {
-        id: lbPenalty
-        Layout.alignment: Qt.AlignRight | Qt.AlignTop
-        Layout.topMargin: rbGameEnd.topPadding
-        text: qsTr("Penalty:")
+        id: lbPenltyJoiner
+        Layout.column: 1; Layout.row: 6; Layout.columnSpan: 2
+        Layout.leftMargin: 24
+        enabled: rbPenalty.checked && rbPenalty.enabled
+        text: qsTr("but not more than")
     }
-    ColumnLayout {
-        id: layoutPenalty
-        ButtonGroup { id: rbPenaltyGroup }
-        RowLayout {
-            ColorRadioButton {
-                id: rbGameEnd
-                Layout.columnSpan: 2
-                ButtonGroup.group: rbPenaltyGroup
-                text: qsTr("Game ends on timeout")
-                enabled: rbPerGame.checked
-                onCheckedChanged: config.canbuytime = false
-            }
-            InfoTip { tiptext: qsTr("Players who run out of time will pass automatically") }
+    RowLayout {
+        Layout.column: 1; Layout.row: 7; Layout.columnSpan: 2
+        Layout.leftMargin: 24
+        ColorSpinBox {
+            id: sbPenaltyCount
+            enabled: rbPenalty.checked && rbPenalty.enabled
+            from: 1
+            to: 5000
+            value: 1
+            onValueChanged: config.buytimecount = value
         }
-        RowLayout {
-            ColorRadioButton {
-                id: rbPenalty
-                Layout.alignment: Qt.AlignLeft | Qt.AlignTop
-                ButtonGroup.group: rbPenaltyGroup
-                text: qsTr("Penalty on timeout")
-                enabled: rbPerGame.checked
-                onCheckedChanged: config.canbuytime = true
-            }
-            InfoTip { tiptext: qsTr("You 'buy' one minute of time") }
-        }
-        GridLayout {
-            id: layoutPenaltyPoints
-            Layout.leftMargin: 24
-            columns: 2
-            ColorSpinBox {
-                id: sbPenaltyPoints
-                enabled: rbPenalty.checked && rbPenalty.enabled
-                from: 1
-                to: 5000
-                value: 1
-                onValueChanged: config.buytimepenalty = value
-            }
-            ColorLabel {
-                id: lbPenaltyPointsUnit
-                enabled: rbPenalty.checked && rbPenalty.enabled
-                text: qsTr("points")
-            }
-            ColorLabel {
-                id: lbPenltyJoiner
-                Layout.columnSpan: 2
-                enabled: rbPenalty.checked && rbPenalty.enabled
-                text: qsTr("but not more than")
-            }
-            ColorSpinBox {
-                id: sbPenaltyCount
-                enabled: rbPenalty.checked && rbPenalty.enabled
-                from: 1
-                to: 5000
-                value: 1
-                onValueChanged: config.buytimecount = value
-            }
-            ColorLabel {
-                id: lbPenaltyCountUnit
-                enabled: rbPenalty.checked && rbPenalty.enabled
-                text: qsTr("times")
-            }
-        }
-        RowLayout {
-            ColorCheckBox {
-                id: cbGameEnd
-                text: qsTr("Game lost after last timeout")
-                enabled: rbPerGame.checked
-                onCheckedChanged: config.timegamelost = checked
-            }
-            InfoTip { tiptext: qsTr("If checked the game result will be set to zero after the last timeout") }
+        ColorLabel {
+            id: lbPenaltyCountUnit
+            enabled: rbPenalty.checked && rbPenalty.enabled
+            text: qsTr("times")
         }
     }
+    RowLayout {
+        Layout.column: 1; Layout.row: 8; Layout.columnSpan: 2
+        ColorCheckBox {
+            id: cbGameEnd
+            text: qsTr("Game lost after last timeout")
+            enabled: rbPerGame.checked
+            onCheckedChanged: config.timegamelost = checked
+        }
+        InfoTip { tiptext: qsTr("If checked the game result will be set to zero after the last timeout") }
+    }
+
 }

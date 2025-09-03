@@ -73,11 +73,6 @@ GamePlay::GamePlay(QQmlEngine *engine)
         if (finfo.exists()) //loading a l10n-file that has been deleted triggers a download confirmation, but shouldn't on startup
             localize(locFile);
     }
-/*    m_RemoteGamesProxy = new remoteGamesProxy(this);
-    m_RemoteGamesProxy->setSourceModel(m_RemoteGamesModel);
-    m_RemoteGamesProxy->setDynamicSortFilter(true);
-//    m_RemoteGamesProxy->setSortRole(remoteGamesModel::LastAccessRole);
-*/
 
 #ifdef Q_OS_ANDROID
     loadGame(config::file("lastgame.ssg"), true); //silent
@@ -115,7 +110,7 @@ void GamePlay::localize(const QString fileName)
     };
 }
 
-//NOTE: gameplay: better signal/slot when dic has been loaded
+//TODO: gameplay: better signal/slot when dic has been loaded
 void GamePlay::doDictionaryLoadingFinished(QString aFileName)
 {
     m_pDicListModel->doLoadingFinished(aFileName);
@@ -141,13 +136,13 @@ void GamePlay::doDownloadFinished(DlType fileType, QString fileName)
                 if (xmlReader.isStartElement() &&
                     (xmlReader.name().toString() == "version"))
                 {
-                    // TODO: make 'binaries' server a variable in *conf
+                    // TODO: gameplay: make 'binaries' server a variable in *conf
                     QString sRemoteVersion = xmlReader.readElementText();
                     if ( version::fromString( version::current() ) <
                         version::fromString( sRemoteVersion ) ) {
                         m_pMsgModel->addMessage( tr("Application: %1 < %2").arg(
                             version::current(), sRemoteVersion));
-                        // TODO: make link interactive or auto update
+                        // TODO: gameplay: make link interactive or auto update
                         if (!InstFileName.isEmpty()) {
                             m_pMsgModel->addMessage( tr("Please update from %1").arg(binaries) );
                         }
@@ -175,6 +170,29 @@ void GamePlay::doDownloadFinished(DlType fileType, QString fileName)
         break;
     }
     } //switch
+}
+
+void GamePlay::syncChallengeWord()
+{
+    if (!m_bIsConnected)
+    {
+        endChallenge();
+        if (!doCheckWords(true))
+        {
+            rollbackLastMove();
+            m_pGameCourseModel->addBonus(m_nCurrentPlayer, m_nWordCheckBonus);
+            m_pMsgModel->addMessage(tr("%1 legitimately challenged the last move and receives a bonus of %2 points.")
+                                        .arg(m_lPlayerNames[m_nCurrentPlayer])
+                                        .arg(m_nWordCheckBonus));
+        } else
+        {
+            m_pGameCourseModel->addBonus(m_nCurrentPlayer, -m_nWordCheckPenalty);
+            m_pMsgModel->addMessage(tr("%1 illegitimately challenged the last move and receives a penalty of %2 points.")
+                                        .arg(m_lPlayerNames[m_nCurrentPlayer])
+                                        .arg(m_nWordCheckPenalty));
+        }
+    } else
+        doNetworkSyncChallengeWord();
 }
 
 void GamePlay::startNewGame(QVariantMap gameConfig)
@@ -269,7 +287,7 @@ void GamePlay::startNewGame(QVariantMap gameConfig)
     emit cambioSeccoChanged();
     m_bWhatif = gameConfig["Whatif"].toBool();
     m_bAdd = gameConfig["Add"].toBool();
-    m_bSubstract = gameConfig["Substract"].toBool();
+    m_bSubtract = gameConfig["Subtract"].toBool();
     m_bTimeGameLost = gameConfig["TimeGameLost"].toBool();
     m_nTimePenaltyValue = gameConfig["TimePenaltyValue"].toInt();
     m_nTimePenaltyCount.clear();
@@ -339,8 +357,21 @@ void GamePlay::nextPlayer(const bool bIsLoading)
         (!m_bIsConnected) && //word check has been done before in network mode
         (!m_pMoves.last()->PlacedWord.isEmpty()))
     {
-        if ( !doCheckWords() )
-            return;
+        if (m_eWordCheckMode != wcChallenge)
+        {
+            if (!doCheckWords())
+            {
+                if (m_eWordCheckMode == wcPoll)
+                    GamePlay::resetPieces();
+                else
+                    return;
+            }
+        } else
+        {
+            m_bIsChallenge = true;
+            emit isChallengeChanged();
+            QTimer::singleShot(m_nWordCheckPeriod * 1000, this, SLOT(endChallenge()));
+        }
     }
 
     //result message
@@ -490,23 +521,23 @@ void GamePlay::doGameEnd()
                                     .arg(m_lPlayerNames[m_nCurrentPlayer]));
 
     int nAdd = 0;
-    int nSubstract;
+    int nSubtract;
     Letter aLetter;
     for (uint nPlayer = 0; nPlayer < m_nPlayerCount; nPlayer++) {
-        nSubstract = 0;
+        nSubtract = 0;
         for (int nRackPos = 0; nRackPos < m_pRackModel->rackSize(); nRackPos++) {
             aLetter = m_pRackModel->getLetter(nRackPos, nPlayer);
-            nSubstract += aLetter.Value;
+            nSubtract += aLetter.Value;
             nAdd += aLetter.Value;
             if (aLetter.IsJoker)
-                nSubstract += m_nJokerPenalty;
+                nSubtract += m_nJokerPenalty;
         }
-        if (m_bSubstract && (nSubstract > 0)) {
-                m_pGameCourseModel->addBonus(nPlayer, -nSubstract);
+        if (m_bSubtract && (nSubtract > 0)) {
+                m_pGameCourseModel->addBonus(nPlayer, -nSubtract);
                 m_pMsgModel->addMessage(tr("%1: %2 minus %3 points")
                                             .arg(m_lPlayerNames[nPlayer])
-                                            .arg(m_pGameCourseModel->getScore(nPlayer) + nSubstract)
-                                            .arg(nSubstract)
+                                            .arg(m_pGameCourseModel->getScore(nPlayer) + nSubtract)
+                                            .arg(nSubtract)
                                         );
         }
     }
@@ -581,7 +612,7 @@ void GamePlay::doUpdateRack()
             rackLetter.State = LetterState::lsBag;
             rackLetter.RackPos = 0;
             rackLetter.IsExchange = false;
-            //FIXME: gameplay: do not append exchanged letters but randomly insert
+            //TODO: gameplay: do not append exchanged letters but randomly insert
             m_lBag.append(rackLetter);
             m_pRackModel->placeLetter(i, false); //set empty
             Letter aLetter = m_lBag[0];
@@ -690,8 +721,8 @@ void GamePlay::resetPieces()
 
 void GamePlay::rollbackLastMove()
 {
-    const int nLastPlayer = (m_nCurrentMove-1) % m_nPlayerCount;
-    m_pMoves[m_pMoves.count()-2]->clear();
+    const int nLastPlayer = (m_nCurrentMove - 1) % m_nPlayerCount;
+    m_pMoves[m_pMoves.count() - 2]->clear();
     m_pGameCourseModel->clearLastMove();
 
     Letter boardLetter;
@@ -721,7 +752,7 @@ void GamePlay::rollbackLastMove()
             m_pBoardModel->updateSquare(aPoint);
             if (m_pBoard->is3D()) cubeModel()->updateSquare(aPoint);//aIndex);
 
-            //NOTE: gameplay: rollbackLastMove() fails with multiple start fields
+            //TODO: gameplay: rollbackLastMove() fails with multiple start fields
             if (m_pBoard->getFieldtype(i) == FieldType::ftStart) { // make current move the first
                 m_pMoves.last()->setFirstMove(true);
                 m_bIsFirstMove = true;
@@ -839,7 +870,7 @@ void GamePlay::dropLetter(const uint rackIndex, const uint boardIndex)
 
     if (!m_bIsHistory) {
         m_bIsAccepted = m_pMoves.last()->addLetter(aLetter);
-        if (m_bIsAccepted) //FIXME: history bonus not done correctly due to last()
+        if (m_bIsAccepted) //TODO: gameplay: history bonus not done correctly due to last()
         {
             if (m_pRackModel->rackSize() == m_pMoves.last()->letterCount())
                 m_pMoves.last()->setBonus( m_nScrabbleBonus, true );
@@ -1067,6 +1098,15 @@ void GamePlay::doComputeMove()
     nextPlayer();
 }
 
+void GamePlay::runDemo()
+{
+    while (m_lBag.count() >= m_pRackModel->rackSize())
+    {
+        doComputeMove();
+    }
+
+}
+
 void GamePlay::placeBestMove(const int index)
 {
     //clear board
@@ -1174,7 +1214,7 @@ void GamePlay::saveGame(QString fileName, const bool bSilent)
         settings.setValue("CambioSecco", aList.join(","));
         settings.setValue("Whatif", m_bWhatif);
         settings.setValue("Add", m_bAdd);
-        settings.setValue("Substract", m_bSubstract);
+        settings.setValue("Subtract", m_bSubtract);
         settings.setValue("TimePenaltyValue", m_nTimePenaltyValue);
         aList.clear();
         for (uint i = 0; i < m_nPlayerCount; i++)
@@ -1232,6 +1272,8 @@ void GamePlay::saveGame(QString fileName, const bool bSilent)
                 settings.endArray();
             }
             settings.setValue("time", m_pGameCourseModel->timePerMove(i));
+            settings.setValue("bonuswho", m_pGameCourseModel->getBonusWho(i));
+            settings.setValue("bonus", m_pGameCourseModel->getBonus(i));
         }
     }
     settings.endArray();
@@ -1306,7 +1348,7 @@ void GamePlay::loadGame(QString fileName, const bool bSilent)
             m_bCanCambioSecco.append(aList[i].toInt());
         m_bWhatif = settings.value("/Whatif").toBool();
         m_bAdd = settings.value("Add").toBool();
-        m_bSubstract = settings.value("Substract").toBool();
+        m_bSubtract = settings.value("Subtract").toBool();
         m_nTimePenaltyValue = settings.value("TimePenaltyValue").toUInt();
         aList.clear();
         aList = settings.value("TimePenaltyCount").toString().split(",");
@@ -1409,8 +1451,12 @@ void GamePlay::loadGame(QString fileName, const bool bSilent)
             if (i < nMoves-1) //initial rack of very last move is stored in setLocalPlayer()
                 m_pRackModel->setInitialRack(aLetters);
 
-            if (i < nMoves-1)
+            if (i < nMoves-1) {
                 nextPlayer(true); //bIsLoading = true; last move when game has ended follows below
+                int nBonusWho = settings.value("bonuswho").toInt();
+                if (nBonusWho > -1)
+                    m_pGameCourseModel->addBonus(nBonusWho, settings.value("bonus").toInt());
+            }
             else
                 m_pBoardModel->updateAllSquares(); //refresh for currently placed pieces
         }

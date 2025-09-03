@@ -3,21 +3,6 @@
 #include <QObject>
 #include <QAbstractTableModel>
 
-//TODO: remotegames: sort
-/*
-#include <QSortFilterProxyModel>
-
-class remoteGamesProxy: public QSortFilterProxyModel
-{
-    Q_OBJECT
-
-public:
-    remoteGamesProxy(QObject *parent = nullptr);
-
-protected:
-    bool lessThan(const QModelIndex &left, const QModelIndex &right) const override;
-};
-*/
 class remoteGamesModel: public QAbstractTableModel
 {
     Q_OBJECT
@@ -35,6 +20,7 @@ public:
 
     explicit remoteGamesModel(QObject *parent = nullptr);;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     int rowCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
     int columnCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
     void setRemoteGames(const QVariantMap games, const QString sOwnName);

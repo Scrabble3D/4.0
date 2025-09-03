@@ -243,7 +243,7 @@ Dialog {
         gameConfig["CambioSecco"] = config.cambiosecco
         gameConfig["Whatif"] = false //FEATURE: newgame Whatif
         gameConfig["Add"] = config.addLetters
-        gameConfig["Substract"] = config.substractLetters
+        gameConfig["Subtract"] = config.subtractLetters
         gameConfig["TimePenaltyValue"] = config.buytimepenalty
         gameConfig["TimePenaltyCount"] = config.canbuytime ? config.buytimecount : 0
         gameConfig["TimeGameLost"] = config.timegamelost

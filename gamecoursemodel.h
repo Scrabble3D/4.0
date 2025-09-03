@@ -9,12 +9,16 @@ class gamecoursemodel : public QAbstractTableModel
 
 public:
     enum ModelRoles {
-        //Display = placed, connected, value
         WhoRole = Qt::UserRole + 1,
+        MoveRole,
+        WordRole,
         ConnectedWords,
-        BestValueRole,
+        ValueRole,
         IsScrabbleRole,
+        BestValueRole,
         TimeRole,
+        BonusWho,
+        Bonus,
     };
 
     explicit gamecoursemodel(QObject *parent = nullptr);
@@ -23,6 +27,7 @@ public:
     int rowCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
     int columnCount(const QModelIndex &parent) const Q_DECL_OVERRIDE;
     Q_PROPERTY(int selectedMove READ getSelected WRITE setSelected NOTIFY onSelectedMoveChanged)
+
     void addMove(QString PlacedWord,
                  QString ConnectedWords,
                  uint Who,
@@ -40,6 +45,8 @@ public:
     void clear();
     void zerototal(const uint nPlayer) { m_Total[nPlayer] = 0; }
     QList<Letter> getRack(const int nMove) { return m_pData[nMove].rack; }
+    int getBonus(const int nMove) { if (nMove < m_pData.count()) return m_pData[nMove].bonus; else return 0; }
+    int getBonusWho(const int nMove) { if (nMove < m_pData.count()) return m_pData[nMove].bonuswho; else return -1; }
 
 signals:
     void onSelectedMoveChanged(int nMove);
@@ -58,6 +65,8 @@ private:
       int bestValue;
       bool isScrabble;
       int time;
+      int bonuswho;
+      int bonus;
       QList<Letter> rack;
     };
 

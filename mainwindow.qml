@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Qt.labs.platform // native dialog, instead of import QtQuick.Dialogs
-import Qt.labs.settings // INTERNAL: main: replace settings by QtCore
+import Qt.labs.platform // native dialogs, instead of import QtQuick.Dialogs
+import QtCore
 
 ApplicationWindow {
     id: scrabble3D
@@ -16,10 +16,11 @@ ApplicationWindow {
         color: config.myPalette.window
     }
     property int gcSplitter: -1 //preferredHeight of gamecourse:totalStat
-
+    //FIXME: main: Settings: Failed to initialize QSettings set: QList("organizationName", "organizationDomain")
+/*
     Settings {
         id: settings
-        fileName: GamePlay.config()
+        location: GamePlay.config()
         property alias x: scrabble3D.x
         property alias y: scrabble3D.y
         property alias width: scrabble3D.width
@@ -27,7 +28,7 @@ ApplicationWindow {
         property alias showTips: config.showTips
         property alias gcSplitter: scrabble3D.gcSplitter
     }
-
+*/
     property alias main: mainLoader.item
 
     property color iconColor: isDark(config.myPalette.window) ? "white" : "black"
@@ -142,8 +143,9 @@ ApplicationWindow {
     Action {
         id: acNetwork
         checked: GamePlay.isConnected
-        checkable: GamePlay.isConnected
-        text: "" //set on menus to avoid showing up at toolbar on l10n
+        text: GamePlay.isConnected
+              ? qsTr("Disconnect from game server")
+              : qsTr("Connect to game server")
         icon.source: GamePlay.isConnected
                      ? "qrc:///resources/netw_disco.png"
                      : "qrc:///resources/netw_connect.png"
@@ -155,15 +157,13 @@ ApplicationWindow {
     ActionGroup {
         id: acViewType
         exclusive: true
-        // crashes when done repeatedly
-        // TODO: enable on Android
-/*        Action {
+        Action {
             id: acAutomaticView
-            checked: true
+            checked: Qt.platform.os === "android"
             checkable: true
             text: qsTr("Automatic")
         }
-*/        Action {
+        Action {
             id: acLandscapeView
             checked: Qt.platform.os !== "android"
             checkable: true
@@ -172,7 +172,7 @@ ApplicationWindow {
         }
         Action {
             id: acPortraitView
-            checked: Qt.platform.os === "android"
+            checked: false
             checkable: true
             text: qsTr("Mobile")
             onCheckedChanged: if (acPortraitView.checked) mainLoader.state = "portrait"
@@ -183,11 +183,6 @@ ApplicationWindow {
         text: qsTr("Word Search")
         enabled: !GamePlay.isConnected || !GamePlay.isRunning
         onTriggered: dictionary.open()
-    }
-    Action {
-        id: acUpdate
-        text: qsTr("Check for updates")
-        onTriggered: GamePlay.checkForUpdates()
     }
     Action {
         id: acAbout
@@ -202,6 +197,16 @@ ApplicationWindow {
         onTriggered: GamePlay.isConnected
                      ? GamePlay.syncCambioSecco()
                      : GamePlay.doCambioSecco()
+    }
+    Action {
+        id: acUpdate
+        text: "Check for updates" // testing only
+        onTriggered: GamePlay.checkForUpdates()
+    }
+    Action {
+        id: acDemo
+        text: "Demo Mode" // testing only
+        onTriggered: GamePlay.runDemo()
     }
 
     function doLoad(aFileName)
@@ -228,13 +233,13 @@ ApplicationWindow {
     ScrAbout       { id: about }
     ScrRemoteGames { id: remotegames}
     ScrConfig      { id: config } //needs to come last trigger system palette change
-/*
+
     onWidthChanged: if (acAutomaticView.checked) {
         height > width
             ? mainLoader.state = "portrait"
             : mainLoader.state = "landscape"
     }
-*/
+
     Loader {
         id: mainLoader
         anchors.fill: parent

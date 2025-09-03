@@ -293,7 +293,7 @@ Dialog {
                 id: server
                 Layout.fillWidth: true
                 model: ["Free International Scrabble Server"]
-                //NOTE network: scrnetwork: make server variable
+                //TODO QML network: make server variable
             }
             Label { text: qsTr("Login name:") }
             TextField {

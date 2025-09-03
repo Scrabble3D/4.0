@@ -4,8 +4,6 @@
 #include <QMetaType>
 #include <QStandardItemModel>
 
-enum EclientState { csOpenForGames,csNotOpen,csAfk,csBusy };
-
 struct clientInfo {
     QString playerName;
     QString country;
@@ -23,7 +21,7 @@ struct clientInfo {
     bool isKibitz;
     uint groupID;
     uint gameID;
-    EclientState clientState;
+    bool isOpenForGames;
     bool isExpanded;
 };
 Q_DECLARE_METATYPE(clientInfo);
@@ -51,7 +49,7 @@ public:
         isKibitz = Qt::UserRole + 14,
         groupID = Qt::UserRole + 15,
         gameID = Qt::UserRole + 16,
-        clientState = Qt::UserRole + 17,
+        isOpenForGames = Qt::UserRole + 17,
         flag = Qt::UserRole + 18,
     };
     void playerTree(QObject *parent = nullptr);

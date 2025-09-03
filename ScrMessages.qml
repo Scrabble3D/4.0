@@ -13,6 +13,17 @@ TableView {
         text: "01.01.1970" //first column width
     }
 
+    SortFilterProxyModel {
+        id: sortModel
+        model: GamePlay.msgModel
+        sorters: [
+            RoleSorter {
+                roleName: "When"
+                sortOrder: Qt.DescendingOrder
+            }
+        ]
+    }
+
     columnWidthProvider: function(column) {
         const colwidth = textMetrics.width
         return (column === 0)
@@ -21,7 +32,7 @@ TableView {
     }
 
     ScrollBar.vertical: ScrollBar { }
-    model: GamePlay.msgModel
+    model: sortModel
 
     delegate: Rectangle {
         id: delegateRect
