@@ -407,10 +407,10 @@ QString move::getResults(const Dimension eDimension, const Point3D nStart)
               case ftStart: aWordBonus *= 2; break;
               case ftDefault: break;
               case ftDoubleLetter: aLetterBonus = 2; break;
-              case ftTrippleLetter: aLetterBonus = 3; break;
+              case ftTripleLetter: aLetterBonus = 3; break;
               case ftQuadLetter: aLetterBonus = 4; break;
               case ftDoubleWord: aWordBonus *= 2; break;
-              case ftTrippleWord: aWordBonus *= 3; break;
+              case ftTripleWord: aWordBonus *= 3; break;
               case ftQuadWord: aWordBonus *= 4; break;
               case ftPiece: qFatal("Field is occupied"); break;
             }

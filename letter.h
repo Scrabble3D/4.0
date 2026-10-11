@@ -9,8 +9,8 @@ namespace LetterState {
     enum State {lsEmpty,    //no letter placed
                 lsBag,      //in bag
                 lsRack,     //on rack, can be changed or dragged
-                lsDragging, //on rank, just dragging; need for removing a letter from board by calling in Pieces.DoUpdate
-                lsChange,   //on rank, marked for change, can't be dragged
+                lsDragging, //needed for removing a letter from board by calling in Pieces.DoUpdate
+                lsChange,   //on rack, marked for change, can't be dragged
                 lsBoard,    //on board, currently placed, can be dragged
                 lsPlaced};  //on board placed, can't be dragged
     Q_ENUM_NS(State)

@@ -275,6 +275,7 @@ private:
     }
     QString getStatInfoType(const int aType);
     QString getAllStat();
+    bool IsTimePerMoveOver() { return (m_eTimeControlType != tcNoLimit) && (m_nMoveTime >= m_nTimeLeft); }
 
     QStringList m_lPlayerNames;               // player names; also count
     QList<Letter> m_lBag;                     // letters in bag

@@ -361,10 +361,15 @@ void GamePlay::nextPlayer(const bool bIsLoading)
         {
             if (!doCheckWords())
             {
-                if (m_eWordCheckMode == wcPoll)
+                if ((m_eWordCheckMode == wcPoll) || IsTimePerMoveOver())
                     GamePlay::resetPieces();
                 else
+                {
+                    // restart the timer
+                    if ((m_eTimeControlType != tcNoLimit) && (m_nMoveTime < m_nTimeLeft))
+                        m_nTimerID = startTimer(1000);
                     return;
+                }
             }
         } else
         {
@@ -460,7 +465,7 @@ void GamePlay::nextPlayer(const bool bIsLoading)
     emit currentMoveChanged();
 
     if (m_lBag.count() < m_pRackModel->rackSize())
-        for (int i : m_bCanCambioSecco) m_bCanCambioSecco[i] = false;
+        for (int i : std::as_const(m_bCanCambioSecco)) m_bCanCambioSecco[i] = false;
     emit cambioSeccoChanged();
 
     //start the timer
@@ -779,11 +784,14 @@ void GamePlay::timerEvent(QTimerEvent *event)
             emit statInfoChanged();
     }
 
-    if ( m_pRackModel->isLocalIsActive() &&
-         (m_eTimeControlType != tcNoLimit) && (m_nMoveTime >= m_nTimeLeft))
+    if ( m_pRackModel->isLocalIsActive() && IsTimePerMoveOver() )
         nextPlayer();
 
-    m_nMoveTime++;
+    // in network games with wordcheckmode takeback a player may show the
+    // confirmation dialog which halts the timer for this player;
+    // if the time is over it makes no sense to further increase the ticks
+    if (!IsTimePerMoveOver())
+        m_nMoveTime++;
 
     if (m_nStatInfoType == 2)
         emit statInfoChanged();

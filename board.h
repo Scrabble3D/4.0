@@ -7,10 +7,10 @@
 enum FieldType {ftStart=0,
                 ftDefault=1,
                 ftDoubleLetter=2,
-                ftTrippleLetter=3,
+                ftTripleLetter=3,
                 ftQuadLetter=4,
                 ftDoubleWord=5,
-                ftTrippleWord=6,
+                ftTripleWord=6,
                 ftQuadWord=7,
                 ftPiece=8};
 

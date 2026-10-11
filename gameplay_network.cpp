@@ -235,7 +235,7 @@ void GamePlay::doNetworkSyncNewGame(QVariantMap aMsg)
 void GamePlay::syncNextPlayer()
 {
     //return in wcAsk mode if word is not found and user doesn't insist to place
-    if (m_eWordCheckMode == wcAsk && !doCheckWords())
+    if (m_eWordCheckMode == wcAsk && (!doCheckWords()))
         return;
     if (m_bIsHistory)
         doSelectedMoveChanged(-1);

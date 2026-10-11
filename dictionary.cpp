@@ -12,6 +12,7 @@
 #include <QDebug>
 #endif
 
+// TODO: Enable sorting for user-defined dic
 #undef doSort
 
 //TODO: dicitionary: DAWG / Aho–Corasick algorithm
